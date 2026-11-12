@@ -4,6 +4,7 @@ import type {
     Progress,
     Settings,
     User,
+    WatchEvent,
 } from './model/index.ts';
 import type { Config } from './Config.ts';
 import {
@@ -37,6 +38,8 @@ export interface SyncStatus {
 
 const DAY_SECONDS = 86_400;
 const INSTALLED_AT = 'app.installedAt';
+// With awardsFrom "setup", only watches from this time win awards.
+const AWARDS_START = 'awards.startsAt';
 
 // Sync, score, award, notify. Repeats every pollMinutes.
 export class App {
@@ -62,6 +65,7 @@ export class App {
         this.store = new Store(config.databasePath);
         this.catalogue = Catalogue.fromFile(config.achievementsPath, config.customAwardsPath);
         this.settingsStore = new SettingsStore(config.settingsPath, config.env);
+        this.keepPastAwards();
         this.scoreboard = new Scoreboard(this.settings.timeZone);
         this.notifier = new DiscordNotifier('', '');
         this.rebuild();
@@ -150,9 +154,18 @@ export class App {
             }));
     }
 
+    // All of one person's watches, for the Season review and the Ceremony.
     historyOf(userId: string): UserHistory {
         const events = this.store.events().filter((event) => event.userId === userId);
         const partial = this.store.partialPlays().filter((event) => event.userId === userId);
+        return new UserHistory(userId, events, this.store.items(), this.settings.timeZone, partial);
+    }
+
+    // The watches that can win awards. With awardsFrom "setup", only watches from setup on.
+    awardHistoryOf(userId: string): UserHistory {
+        const isMine = (event: WatchEvent) => event.userId === userId;
+        const events = this.awardEvents(this.store.events()).filter(isMine);
+        const partial = this.awardEvents(this.store.partialPlays()).filter(isMine);
         return new UserHistory(userId, events, this.store.items(), this.settings.timeZone, partial);
     }
 
@@ -254,11 +267,41 @@ export class App {
         this.watcherIds = new Set(events.map((event) => event.userId));
         this.scoreboard.refresh(
             this.visibleUsers(),
-            events,
+            this.awardEvents(events),
             this.store.items(),
             this.achievements,
-            this.store.partialPlays(),
+            this.awardEvents(this.store.partialPlays()),
         );
+    }
+
+    private awardEvents(events: WatchEvent[]): WatchEvent[] {
+        if (this.settings.awardsFrom === 'all') {
+            return events;
+        }
+        const startsAt = this.awardsStart();
+        return events.filter((event) => event.watchedAt >= startsAt);
+    }
+
+    // The time of setup: the first time Laurels scores in "setup" mode.
+    // It stays the same after that, also when the owner switches the setting back and forth.
+    private awardsStart(): number {
+        const saved = this.store.getState(AWARDS_START);
+        if (saved) {
+            return Number(saved);
+        }
+        const now = Math.floor(Date.now() / 1000);
+        this.store.setState(AWARDS_START, String(now));
+        return now;
+    }
+
+    // An install from before this setting already gave awards for past watches.
+    // It keeps doing so, unless the owner changes the setting.
+    private keepPastAwards(): void {
+        const hasChoice = this.settingsStore.hasSaved('awardsFrom');
+        const hasWatches = this.store.events().length > 0;
+        if (!hasChoice && hasWatches) {
+            this.settingsStore.save({ awardsFrom: 'all' });
+        }
     }
 
     // Saved awards keep the date, watch and poster of the current rules.

@@ -17,6 +17,7 @@ const ENV_NAMES = {
     userAliases: 'USER_ALIASES',
     allowedUsers: 'ALLOWED_USERS',
     authMode: 'AUTH',
+    awardsFrom: 'AWARDS_FROM',
     lanGuests: 'LAN_GUESTS',
 };
 
@@ -70,7 +71,7 @@ export class SettingsView {
             + `<ol class="steps">`
             + `<li>Select your server below, or type its address.</li>`
             + `<li>Click Test connection.</li>`
-            + `<li>Click Save settings. Laurels reads your watch history and gives the first awards.</li>`
+            + `<li>Click Save settings. Laurels reads your watch history.</li>`
             + `</ol></header>`;
     }
 
@@ -215,7 +216,26 @@ export class SettingsView {
                 'Write the account id, a colon and the name. Separate the people with commas.')
             + this.textField('allowedUsers', 'People to show', 'Mum, Dad',
                 'Write names or account ids, with commas between them. If you leave it empty, Laurels shows everyone who watched something.')
+            + this.awardsFromField()
             + `</fieldset>`;
+    }
+
+    // Which watches can win awards: from setup on, or all past watches too.
+    awardsFromField() {
+        const current = this.settings.values.awardsFrom ?? 'setup';
+        const lock = this.lockAttr('awardsFrom');
+        const choices = [
+            ['setup', 'Only watches from setup', 'Everyone starts with no awards. Each award needs new watches.'],
+            ['all', 'All watches, also from before setup', 'Laurels gives awards for your past watches, with the date of the watch.'],
+        ];
+        const options = choices.map(([value, label, help]) => {
+            const checked = value === current ? ' checked' : '';
+            return `<label class="choice"><input type="radio" name="awardsFrom" value="${value}"${checked}${lock}>`
+                + `<span><span class="label">${escapeHtml(label)}</span><br>`
+                + `<span class="help">${escapeHtml(help)}</span></span></label>`;
+        });
+        return `<p class="label">Watches that win awards</p>${options.join('')}`
+            + `<p class="help">${this.helpFor('awardsFrom', 'Your watch history still shows in the Season review.')}</p>`;
     }
 
     // Security

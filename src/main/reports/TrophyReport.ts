@@ -33,7 +33,7 @@ export class TrophyReport {
         }
         const awards = this.app.store.awards().filter((award) => award.achievementId === achievementId);
         const progress = this.progressOf(user.id, achievementId);
-        const history = this.app.historyOf(user.id);
+        const history = this.app.awardHistoryOf(user.id);
         const credits = this.credits.build(history, achievement, progress);
         const award = awards.find((candidate) => candidate.userId === user.id);
         return {

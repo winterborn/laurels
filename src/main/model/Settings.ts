@@ -8,6 +8,9 @@ export interface Settings {
     tautulliUrl: string;
     tautulliApiKey: string;
     pollMinutes: number;
+    // "setup": only watches after setup win awards. "all": past watches win awards too,
+    // with the date of the watch.
+    awardsFrom: 'setup' | 'all';
     timeZone: string;
     discordWebhookUrl: string;
     publicUrl: string;

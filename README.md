@@ -37,6 +37,8 @@ Laurels works with Plex Media Server. Laurels is not made or endorsed by Plex, I
 5. Select your server. Click **Test connection**, then **Save settings**.
 
 The first sync reads all of your Plex history.
+By default, only watches from setup win awards, so everyone starts with no awards.
+To give awards for past watches too, open **Settings**, then **Household**, and select **All watches**.
 Laurels then dates each award to the watch that won it.
 
 The full guide is [docs/install.md](docs/install.md).

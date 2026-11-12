@@ -45,7 +45,7 @@ export class DemoWatch {
     }
 
     private bestCandidate(userId: string): Candidate | undefined {
-        const history = this.app.historyOf(userId);
+        const history = this.app.awardHistoryOf(userId);
         const items = this.app.store.items();
         const earned = this.earnedIds(history);
         const watchable = [...items.values()].filter((item) => {

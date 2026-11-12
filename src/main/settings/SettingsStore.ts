@@ -28,8 +28,14 @@ const ENV_NAMES: Record<Exclude<SettingName, 'clientId' | 'ownerId'>, string> = 
     userAliases: 'USER_ALIASES',
     allowedUsers: 'ALLOWED_USERS',
     authMode: 'AUTH',
+    awardsFrom: 'AWARDS_FROM',
     lanGuests: 'LAN_GUESTS',
 };
+
+const AWARD_STARTS = [
+    'setup',
+    'all',
+];
 
 const AUTH_MODES = [
     'plex',
@@ -75,6 +81,11 @@ export class SettingsStore {
         return Object.keys(this.envValues) as SettingName[];
     }
 
+    // True if settings.json has this field. Defaults do not count.
+    hasSaved(name: SettingName): boolean {
+        return name in this.saved;
+    }
+
     // Internal fields that no form or variable may set.
     saveOwner(ownerId: string): void {
         this.merged = null;
@@ -114,6 +125,10 @@ export class SettingsStore {
         if (name === 'lanGuests') {
             return value === true || value === 'true' || value === 'on';
         }
+        if (name === 'awardsFrom') {
+            const start = String(value);
+            return AWARD_STARTS.includes(start) ? start : 'setup';
+        }
         if (name === 'authMode') {
             const mode = String(value);
             return AUTH_MODES.includes(mode) ? mode : 'plex';
@@ -149,6 +164,7 @@ export class SettingsStore {
             userAliases: '',
             allowedUsers: '',
             authMode: 'plex',
+            awardsFrom: 'setup',
             lanGuests: false,
             ownerId: '',
         };

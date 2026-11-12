@@ -34,6 +34,7 @@ describe('sign in with Plex', () => {
             PLEX_TV_URL: mockUrl,
             PLEX_AUTH_URL: `${mockUrl}/auth`,
             TZ: 'UTC',
+            AWARDS_FROM: 'all',
         });
         context.app = new App(config);
         await context.app.runCycle();
@@ -123,7 +124,7 @@ describe('sign in with Plex', () => {
         assert.equal(await statusOf('/api/settings', alex.cookie), 401);
     });
 
-    it('gives awards and progress in the reference project format', async () => {
+    it('gives awards and progress to a shared user', async () => {
         const sam = await signIn('mock-token-sam');
         const awards = await fetch(`${context.base}/api/awards?user=1`, {
             headers: { Cookie: sam.cookie },

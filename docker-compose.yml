@@ -31,6 +31,7 @@ services:
       # - ALLOWED_USERS=
       # - AUTH=plex
       # - LAN_GUESTS=false
+      # - AWARDS_FROM=setup    # or "all": past watches win awards too
     volumes:
       - ./config:/config
     # To use http://plex:32400, connect Laurels to the network of your

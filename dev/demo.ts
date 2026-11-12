@@ -28,6 +28,8 @@ const config = new Config({
     DATA_DIR: dataDir,
     TZ: 'Europe/London',
     POLL_MINUTES: '60',
+    // The demo shows awards for the mock history.
+    AWARDS_FROM: 'all',
     PLEX_TV_URL: `http://localhost:${MOCK_PORT}`,
     PLEX_AUTH_URL: `http://localhost:${MOCK_PORT}/auth`,
     DEMO_MOCK_URL: `http://localhost:${MOCK_PORT}`,

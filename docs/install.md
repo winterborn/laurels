@@ -54,6 +54,8 @@ The first Plex account that signs in becomes the Laurels owner.
 5. Click **Save settings**.
 
 The first sync reads all of your Plex history.
+By default, only watches from setup win awards, so everyone starts with no awards.
+To give awards for past watches too, open **Settings**, then **Household**, and select **All watches**.
 Laurels then dates each award to the watch that won it.
 Laurels does not send these old awards to Discord.
 
@@ -117,6 +119,7 @@ The environment variable has priority, and the Settings page locks that field.
 | People to show | `ALLOWED_USERS` | everyone who watched something |
 | Sign-in: `plex` or `off` | `AUTH` | `plex` |
 | Guest view on the home network | `LAN_GUESTS` | `false` |
+| Watches that win awards: `setup` (from setup on) or `all` | `AWARDS_FROM` | `setup` |
 
 Container variables:
 
