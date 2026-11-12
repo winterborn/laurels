@@ -1,9 +1,9 @@
 .claude/
 .DS_Store
 .env
-config/
-data/
-data-demo/
+/config/
+/data/
+/data-demo/
 node_modules/
 spike-output/
 spike/.env
