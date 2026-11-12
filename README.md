@@ -1,6 +1,9 @@
 # Laurels
 
-Laurels gives awards for the films and TV that your household watches on Plex.
+**An achievement system for Plex.**
+
+Laurels reads your Plex watch history and gives achievements for the films and TV that your household watches.
+Laurels calls each achievement an award, like an award at a film festival.
 Each award shows the poster of the film or show that won it.
 There are five tiers, from Official selection to Lifetime achievement.
 Each award is in one of three categories: Film, Television or Screen (film and TV together).

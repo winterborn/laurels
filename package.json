@@ -2,7 +2,7 @@
     "name": "laurels",
     "version": "0.1.0",
     "private": true,
-    "description": "Awards for the films and TV that your household watches on Plex.",
+    "description": "An achievement system for Plex: awards for the films and TV that your household watches.",
     "type": "module",
     "engines": {
         "node": ">=24"

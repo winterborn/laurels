@@ -1,7 +1,7 @@
 FROM node:24-alpine
 
 LABEL org.opencontainers.image.title="Laurels" \
-      org.opencontainers.image.description="Awards for the films and TV that your household watches on Plex."
+      org.opencontainers.image.description="An achievement system for Plex."
 
 RUN apk add --no-cache su-exec
 
