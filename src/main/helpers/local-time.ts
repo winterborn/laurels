@@ -31,6 +31,11 @@ export function localParts(epochSeconds: number, timeZone: string): LocalParts {
     return parts;
 }
 
+// 0 (Sunday) to 6 (Saturday) for a YYYY-MM-DD string.
+export function weekdayOf(day: string): number {
+    return new Date(`${day}T12:00:00Z`).getUTCDay();
+}
+
 // Whole days since 1970-01-01 for a YYYY-MM-DD string.
 export function dayNumber(day: string): number {
     const [year, month, date] = day.split('-').map(Number);

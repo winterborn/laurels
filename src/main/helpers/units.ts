@@ -1,5 +1,6 @@
 import type {
     EventFilterSpec,
+    GroupKey,
     Rule,
 } from '../model/index.ts';
 
@@ -41,6 +42,58 @@ const UNITS: Record<string, Unit> = {
         one: 'watch',
         many: 'watches',
     },
+    inARow: {
+        one: 'in a row',
+        many: 'in a row',
+    },
+    returns: {
+        one: 'return',
+        many: 'returns',
+    },
+    years: {
+        one: 'year',
+        many: 'years',
+    },
+    times: {
+        one: 'time',
+        many: 'times',
+    },
+    kinds: {
+        one: 'kind',
+        many: 'kinds',
+    },
+};
+
+// What a variety rule counts, for "5 of 8 decades".
+const VARIETY_UNITS: Partial<Record<GroupKey, Unit>> = {
+    collection: {
+        one: 'collection',
+        many: 'collections',
+    },
+    country: {
+        one: 'country',
+        many: 'countries',
+    },
+    decade: {
+        one: 'decade',
+        many: 'decades',
+    },
+    genre: {
+        one: 'genre',
+        many: 'genres',
+    },
+    letter: {
+        one: 'letter',
+        many: 'letters',
+    },
+    show: {
+        one: 'show',
+        many: 'shows',
+    },
+    weekday: {
+        one: 'day of the week',
+        many: 'days of the week',
+    },
 };
 
 // What the progress of a rule counts, for "8 of 10 films".
@@ -59,8 +112,29 @@ export function unitOf(rule: Rule): Unit {
         case 'streak':
             return UNITS.days;
         case 'window':
-            return rule.distinct === 'day' ? UNITS.days : kindUnit(rule.filter);
+            return windowUnit(rule.distinct, rule.measure, rule.filter);
+        case 'variety':
+            return VARIETY_UNITS[rule.of] ?? UNITS.kinds;
+        case 'chain':
+            return UNITS.inARow;
+        case 'comeback':
+            return UNITS.returns;
+        case 'anniversary':
+            return UNITS.years;
+        case 'outOfOrder':
+            return UNITS.times;
+        case 'backwards':
+            return UNITS.episodes;
+        case 'first':
+            return kindUnit(rule.filter);
     }
+}
+
+function windowUnit(distinct?: string, measure?: string, filter?: EventFilterSpec): Unit {
+    if (measure === 'hours') {
+        return UNITS.hours;
+    }
+    return distinct === 'day' ? UNITS.days : kindUnit(filter);
 }
 
 // One set wanted: progress counts the episodes of the nearest set.

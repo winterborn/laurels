@@ -30,10 +30,38 @@ export class WindowEvaluator implements Evaluator<WindowRule> {
             case 'day':
             case 'month':
             case 'year':
-                return this.byPeriod(history, rule, events);
+                return rule.measure === 'hours'
+                    ? this.hoursByPeriod(history, rule, events)
+                    : this.byPeriod(history, rule, events);
             case '24h':
                 return this.bySlidingDay(history, rule, events);
         }
+    }
+
+    // Hours watched in one local day, month or year.
+    private hoursByPeriod(
+        history: UserHistory,
+        rule: WindowRule,
+        events: WatchEvent[],
+    ): RuleResult {
+        const seconds = new Map<string, number>();
+        const targetSeconds = rule.target * 3600;
+        const crossing = events.find((event) => {
+            const group = this.periodGroupOf(history, rule, event);
+            const total = (seconds.get(group) ?? 0) + history.secondsOf(event);
+            seconds.set(group, total);
+            return total >= targetSeconds;
+        });
+        const bestHours = Math.floor(Math.max(0, ...seconds.values()) / 3600);
+        return {
+            earned: crossing !== undefined,
+            value: crossing ? rule.target : Math.min(bestHours, rule.target),
+            target: rule.target,
+            earnedAt: crossing?.watchedAt,
+            eventId: crossing?.id,
+            posterKey: crossing ? history.posterKeyOf(crossing) : undefined,
+            note: crossing ? undefined : `Best ${bestHours} hours ${this.spanWords(rule)}`,
+        };
     }
 
     private byPeriod(
@@ -95,10 +123,14 @@ export class WindowEvaluator implements Evaluator<WindowRule> {
     }
 
     private showOf(rule: WindowRule, event: WatchEvent): string {
-        if (!rule.groupBy) {
-            return 'all';
+        switch (rule.groupBy) {
+            case 'show':
+                return event.showKey ?? event.ratingKey;
+            case 'item':
+                return event.ratingKey;
+            default:
+                return 'all';
         }
-        return event.showKey ?? event.ratingKey;
     }
 
     private spanWords(rule: WindowRule): string {

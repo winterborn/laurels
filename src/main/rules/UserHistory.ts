@@ -1,11 +1,14 @@
+import {
+    type LocalParts,
+    localParts,
+    weekdayOf,
+} from '../helpers/index.ts';
 import type {
     EventFilterSpec,
     GroupKey,
     Item,
     WatchEvent,
 } from '../model/index.ts';
-import { localParts } from '../helpers/index.ts';
-import type { LocalParts } from '../helpers/index.ts';
 import { EventFilter } from './EventFilter.ts';
 
 // One user's watches, oldest first, with the item cache beside them.
@@ -20,6 +23,8 @@ export class UserHistory {
     private readonly filter: EventFilter;
     // Many rules use the same filter, so each result is kept. Callers must not change it.
     private readonly selected = new Map<string, WatchEvent[]>();
+    // The local start of each watch, worked out once.
+    private readonly starts = new Map<string, LocalParts>();
 
     constructor(
         userId: string,
@@ -34,6 +39,10 @@ export class UserHistory {
         this.items = items;
         this.timeZone = timeZone;
         this.filter = new EventFilter(this);
+    }
+
+    matches(event: WatchEvent, spec: EventFilterSpec): boolean {
+        return this.filter.matches(event, spec);
     }
 
     select(spec: EventFilterSpec = {}): WatchEvent[] {
@@ -76,7 +85,22 @@ export class UserHistory {
     }
 
     localStart(event: WatchEvent): LocalParts {
-        return localParts(this.startOf(event), this.timeZone);
+        const known = this.starts.get(event.id);
+        if (known) {
+            return known;
+        }
+        const parts = localParts(this.startOf(event), this.timeZone);
+        this.starts.set(event.id, parts);
+        return parts;
+    }
+
+    localEnd(event: WatchEvent): LocalParts {
+        return localParts(event.watchedAt, this.timeZone);
+    }
+
+    // Shows give their genres, countries and year to their episodes.
+    showOrItem(event: WatchEvent): Item | undefined {
+        return this.item(event.showKey) ?? this.itemOf(event);
     }
 
     // Seconds watched: real play time when known, else running time.
@@ -121,13 +145,61 @@ export class UserHistory {
                 return [event.ratingKey];
             case 'show':
                 return [event.showKey ?? event.ratingKey];
+            case 'season':
+                return event.seasonKey ? [event.seasonKey] : [];
             case 'director':
                 return item?.directors ?? [];
             case 'actor':
                 return item?.actors ?? [];
             case 'studio':
                 return item?.studio ? [item.studio] : [];
+            case 'collection':
+                return item?.collections ?? [];
+            case 'genre':
+                return this.genresOf(event);
+            case 'country':
+                return this.showOrItem(event)?.countries ?? [];
+            default:
+                return this.valuesOf(event, key);
         }
+    }
+
+    // Keys with one value or none.
+    private valuesOf(event: WatchEvent, key: GroupKey): string[] {
+        const value = this.valueOf(event, key);
+        return value ? [value] : [];
+    }
+
+    private valueOf(event: WatchEvent, key: GroupKey): string | undefined {
+        switch (key) {
+            case 'decade':
+                return this.decadeOf(event);
+            case 'letter':
+                return this.letterOf(event);
+            case 'hour':
+                return String(this.localStart(event).hour);
+            case 'weekday':
+                return String(weekdayOf(this.localStart(event).day));
+            case 'platform':
+                return event.platform;
+            case 'rating':
+                return this.itemOf(event)?.contentRating;
+            default:
+                return undefined;
+        }
+    }
+
+    // "1990s" from the release year of the film, or of the show.
+    private decadeOf(event: WatchEvent): string | undefined {
+        const year = this.showOrItem(event)?.year;
+        return year ? `${Math.floor(year / 10) * 10}s` : undefined;
+    }
+
+    // The first letter of the title, A to Z. A title that starts with a digit has none.
+    private letterOf(event: WatchEvent): string | undefined {
+        const title = this.itemOf(event)?.title ?? '';
+        const first = title.trim().charAt(0).toUpperCase();
+        return /[A-Z]/.test(first) ? first : undefined;
     }
 
 }

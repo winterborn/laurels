@@ -84,9 +84,16 @@ Most rules also take a `filter` (see [Filters](#filters)).
 | `count` | Watches. Add `"distinct": "item"` to count each film or episode once, or `"distinct": "show"` to count each show once. Add `"groupBy"` to need the target from one `director`, `actor`, `studio`, `show` or `item`. | `{"type": "count", "filter": {"kind": "movie"}, "groupBy": "director", "distinct": "item", "target": 5}` |
 | `hours` | Hours watched. | `{"type": "hours", "target": 100}` |
 | `streak` | Days in a row with a watch. | `{"type": "streak", "target": 7}` |
-| `window` | Watches in one `day`, `month` or `year`, or in any `24h`. Add `"distinct": "day"` to count days, not watches. Add `"groupBy": "show"` to need one show. | `{"type": "window", "span": "month", "distinct": "day", "target": 20}` |
-| `complete` | Shows or seasons with every episode in your library watched. `set` is `show` or `season`. Add `withinDays` to need the first and last episode close together. | `{"type": "complete", "set": "show", "withinDays": 7, "target": 1}` |
-| `shared` | Films or episodes that another person also watched within `withinDays`. Each item counts once. | `{"type": "shared", "withinDays": 7, "target": 1}` |
+| `window` | Watches in one `day`, `month` or `year`, or in any `24h`. Add `"distinct": "day"` to count days, not watches. Add `"measure": "hours"` to count hours. Add `"groupBy": "show"` or `"item"` to need one show or one item. | `{"type": "window", "span": "month", "distinct": "day", "target": 20}` |
+| `complete` | Shows or seasons with every episode in your library watched. `set` is `show` or `season`. Add `withinDays` to need the first and last episode close together. Add `minEpisodes` or `maxEpisodes` for the size of the set. | `{"type": "complete", "set": "show", "withinDays": 7, "target": 1}` |
+| `shared` | Films or episodes that other people also watched within `withinDays`. Add `people` to need more than one other person. Each item counts once. | `{"type": "shared", "withinDays": 7, "people": 3, "target": 1}` |
+| `variety` | Different values of one thing (see [Things to group by](#things-to-group-by)). Add `span` (`day`, `month` or `year`) to need them in one period. | `{"type": "variety", "of": "decade", "target": 8}` |
+| `chain` | Watches back to back, with at most `maxGapHours` between them. With `steps`, each watch matches its step, in order. With `same` and `length`, each watch shares one value. | `{"type": "chain", "same": "director", "length": 2, "maxGapHours": 3, "target": 1}` |
+| `comeback` | Watches of an `item` or a `show` after at least `minDays` away from it. | `{"type": "comeback", "groupBy": "show", "minDays": 365, "target": 1}` |
+| `anniversary` | The same item on the same date in `target` different years. | `{"type": "anniversary", "target": 3}` |
+| `outOfOrder` | With `set` `season`: a season finale before episode 1. With `set` `collection`: a later film of a collection before an earlier one. | `{"type": "outOfOrder", "set": "collection", "target": 1}` |
+| `backwards` | Episodes of one season back to back, each one the episode before the last. | `{"type": "backwards", "target": 3}` |
+| `first` | Items that you watched before anyone else in the house. Another person must watch them later. | `{"type": "first", "target": 10}` |
 | `awards` | Other awards won. | `{"type": "awards", "target": 25}` |
 
 ## Filters
@@ -101,6 +108,23 @@ A watch counts only if it matches every field in the filter.
 | `durationMin`, `durationMax` | The running time in minutes. `durationMin` counts the number itself. `durationMax` does not. |
 | `hourFrom`, `hourTo` | The local hour that the watch started, 0 to 23. `hourTo` does not count the hour itself. `hourFrom` 22 and `hourTo` 2 means 22:00 to 01:59. |
 | `episodeIndex` | The number of the episode in its season, for example `1`. |
+| `seasonMin` | The season number is this number or higher. |
+| `isFinale` | `true`: the last episode of its season. |
+| `weekdays` | Days of the week that the watch started: `0` is Sunday, `6` is Saturday. |
+| `dates` | Dates that the watch started, as `"MM-DD"`, for example `["12-25"]`. |
+| `onReleaseDate` | `true`: the watch started on the date that the item came out, in any year. |
+| `titleWords` | Whole words in the title. Any of them matches. Not case-sensitive. |
+| `titleWordsMin`, `titleWordsMax` | The number of words in the title. |
+| `ratings` | Content ratings, for example `["R", "18"]`. `gb/18` matches `18`. |
+| `ageMin`, `ageMax` | Years from the release year to the year of the watch. `0` is the same year. |
+| `crossesMidnight` | `true`: the watch started on one day and ended on the next. |
+| `pausedMin` | Seconds paused during the watch. This needs Tautulli. |
+
+## Things to group by
+
+`groupBy`, `of` and `same` take one of these:
+`actor`, `collection`, `country`, `decade`, `director`, `genre`, `hour`, `item`, `letter` (the first letter of the title, A to Z), `platform` (needs Tautulli), `rating`, `season`, `show`, `studio` and `weekday`.
+Episodes use their show for `genre`, `country` and `decade`.
 
 Times and days use the time zone in Settings.
 Plex history gives the end of a watch, not the start.

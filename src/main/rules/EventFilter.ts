@@ -2,27 +2,33 @@ import type {
     EventFilterSpec,
     WatchEvent,
 } from '../model/index.ts';
+import { DetailFilter } from './DetailFilter.ts';
 import type { UserHistory } from './UserHistory.ts';
 
 // Every set field must match. Unset fields match anything.
 export class EventFilter {
 
     private readonly history: UserHistory;
+    private readonly details: DetailFilter;
+    // Cheap checks first. The first check that fails stops the rest.
+    private readonly checks: Array<(event: WatchEvent, spec: EventFilterSpec) => boolean>;
 
     constructor(history: UserHistory) {
         this.history = history;
+        this.details = new DetailFilter(history);
+        this.checks = [
+            (event, spec) => this.matchesKind(event, spec),
+            (event, spec) => this.matchesEpisode(event, spec),
+            (event, spec) => this.matchesGenre(event, spec),
+            (event, spec) => this.matchesYear(event, spec),
+            (event, spec) => this.matchesDuration(event, spec),
+            (event, spec) => this.matchesHour(event, spec),
+            (event, spec) => this.details.matches(event, spec),
+        ];
     }
 
     matches(event: WatchEvent, spec: EventFilterSpec): boolean {
-        const checks = [
-            this.matchesKind(event, spec),
-            this.matchesGenre(event, spec),
-            this.matchesYear(event, spec),
-            this.matchesDuration(event, spec),
-            this.matchesHour(event, spec),
-            this.matchesEpisode(event, spec),
-        ];
-        return checks.every(Boolean);
+        return this.checks.every((check) => check(event, spec));
     }
 
     private matchesKind(event: WatchEvent, spec: EventFilterSpec): boolean {

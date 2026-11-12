@@ -4,12 +4,19 @@ import type {
     Rule,
 } from '../model/index.ts';
 import {
+    AnniversaryEvaluator,
     AwardsEvaluator,
+    BackwardsEvaluator,
+    ChainEvaluator,
+    ComebackEvaluator,
     CompleteEvaluator,
     CountEvaluator,
+    FirstEvaluator,
     HoursEvaluator,
+    OutOfOrderEvaluator,
     SharedEvaluator,
     StreakEvaluator,
+    VarietyEvaluator,
     WindowEvaluator,
 } from './evaluators/index.ts';
 import type { RuleResult } from './evaluators/index.ts';
@@ -18,12 +25,19 @@ import type { UserHistory } from './UserHistory.ts';
 
 export class RuleEngine {
 
+    private readonly anniversary = new AnniversaryEvaluator();
     private readonly awards = new AwardsEvaluator();
+    private readonly backwards = new BackwardsEvaluator();
+    private readonly chain = new ChainEvaluator();
+    private readonly comeback = new ComebackEvaluator();
     private readonly complete = new CompleteEvaluator();
     private readonly count = new CountEvaluator();
+    private readonly first = new FirstEvaluator();
     private readonly hours = new HoursEvaluator();
+    private readonly outOfOrder = new OutOfOrderEvaluator();
     private readonly shared = new SharedEvaluator();
     private readonly streak = new StreakEvaluator();
+    private readonly variety = new VarietyEvaluator();
     private readonly window = new WindowEvaluator();
 
     // Awards rules go last, because they count the results of the other rules.
@@ -79,18 +93,32 @@ export class RuleEngine {
 
     private evaluateRule(history: UserHistory, rule: Rule, household: HouseholdWatches): RuleResult {
         switch (rule.type) {
+            case 'anniversary':
+                return this.anniversary.evaluate(history, rule);
             case 'awards':
                 throw new Error('awards rules need the other results');
+            case 'backwards':
+                return this.backwards.evaluate(history, rule);
+            case 'chain':
+                return this.chain.evaluate(history, rule);
+            case 'comeback':
+                return this.comeback.evaluate(history, rule);
             case 'complete':
                 return this.complete.evaluate(history, rule);
             case 'count':
                 return this.count.evaluate(history, rule);
+            case 'first':
+                return this.first.evaluate(history, rule, household);
             case 'hours':
                 return this.hours.evaluate(history, rule);
+            case 'outOfOrder':
+                return this.outOfOrder.evaluate(history, rule);
             case 'shared':
                 return this.shared.evaluate(history, rule, household);
             case 'streak':
                 return this.streak.evaluate(history, rule);
+            case 'variety':
+                return this.variety.evaluate(history, rule);
             case 'window':
                 return this.window.evaluate(history, rule);
         }

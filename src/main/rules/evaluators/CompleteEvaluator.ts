@@ -55,7 +55,7 @@ export class CompleteEvaluator implements Evaluator<CompleteRule> {
     ): void {
         const setKey = this.setKeyOf(rule, event);
         const size = history.item(setKey)?.leafCount ?? 0;
-        if (!setKey || !size) {
+        if (!setKey || !size || !this.isRightSize(rule, size)) {
             return;
         }
         const set = watched.get(setKey) ?? {
@@ -72,6 +72,13 @@ export class CompleteEvaluator implements Evaluator<CompleteRule> {
                 event,
             });
         }
+    }
+
+    // minEpisodes and maxEpisodes: the set has the right number of episodes.
+    private isRightSize(rule: CompleteRule, size: number): boolean {
+        const isBigEnough = rule.minEpisodes === undefined || size >= rule.minEpisodes;
+        const isSmallEnough = rule.maxEpisodes === undefined || size <= rule.maxEpisodes;
+        return isBigEnough && isSmallEnough;
     }
 
     // withinDays: the first and the last watch of the set are close enough.

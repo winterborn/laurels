@@ -30,8 +30,6 @@ export class CreditsBuilder {
         switch (rule.type) {
             case 'awards':
                 return [];
-            case 'shared':
-                return history.events.filter((event) => event.id === progress?.eventId);
             case 'count':
                 return this.forCount(history, rule, progress);
             case 'hours':
@@ -42,6 +40,8 @@ export class CreditsBuilder {
                 return this.forStreak(history, rule, progress);
             case 'window':
                 return this.forWindow(history, rule, progress);
+            default:
+                return history.events.filter((event) => event.id === progress?.eventId);
         }
     }
 

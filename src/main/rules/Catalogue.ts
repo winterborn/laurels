@@ -12,12 +12,19 @@ interface CustomFields {
 }
 
 const RULE_TYPES = [
+    'anniversary',
     'awards',
+    'backwards',
+    'chain',
+    'comeback',
     'complete',
     'count',
+    'first',
     'hours',
+    'outOfOrder',
     'shared',
     'streak',
+    'variety',
     'window',
 ];
 

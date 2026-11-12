@@ -1,7 +1,7 @@
 [
     {
         "id": "film_first",
-        "title": "Fade in",
+        "title": "Opening night",
         "description": "Watch your first film.",
         "flavorText": "For the first time the lights went down.",
         "tier": "Common",
@@ -16,7 +16,7 @@
     },
     {
         "id": "film_10",
-        "title": "Regular",
+        "title": "Popcorn habit",
         "description": "Watch 10 films.",
         "flavorText": "For ten films and a usual seat.",
         "tier": "Common",
@@ -30,63 +30,191 @@
         }
     },
     {
-        "id": "film_50",
-        "title": "Season ticket",
-        "description": "Watch 50 films.",
-        "flavorText": "For fifty films, one at a time.",
-        "tier": "Uncommon",
+        "id": "film_short",
+        "title": "Short and sweet",
+        "description": "Watch 10 films under 90 minutes.",
+        "flavorText": "For ten films under ninety minutes.",
+        "tier": "Common",
         "section": "film",
         "rule": {
             "type": "count",
             "filter": {
-                "kind": "movie"
+                "kind": "movie",
+                "durationMax": 90
             },
-            "target": 50
+            "target": 10
         }
     },
     {
-        "id": "film_100",
-        "title": "That's a wrap",
-        "description": "Watch 100 films.",
-        "flavorText": "For a hundred films seen to the end.",
-        "tier": "Rare",
+        "id": "film_bitesize",
+        "title": "Bite-sized",
+        "description": "Watch a film under 75 minutes.",
+        "flavorText": "For a feature that fits in a lunch break.",
+        "tier": "Common",
         "section": "film",
         "rule": {
             "type": "count",
             "filter": {
-                "kind": "movie"
+                "kind": "movie",
+                "durationMax": 75
             },
-            "target": 100
+            "target": 1
         }
     },
     {
-        "id": "film_250",
-        "title": "Projectionist",
-        "description": "Watch 250 films.",
-        "flavorText": "For two hundred and fifty reels, threaded right.",
-        "tier": "Epic",
+        "id": "film_breakfast",
+        "title": "Breakfast club",
+        "description": "Start a film between 4am and 7am.",
+        "flavorText": "For popcorn before cornflakes.",
+        "tier": "Common",
         "section": "film",
         "rule": {
             "type": "count",
             "filter": {
-                "kind": "movie"
+                "kind": "movie",
+                "hourFrom": 4,
+                "hourTo": 7
             },
-            "target": 250
+            "target": 1
         }
     },
     {
-        "id": "film_1000",
-        "title": "Fade out",
-        "description": "Watch 1,000 films.",
-        "flavorText": "For a thousand films. Roll credits.",
-        "tier": "Legendary",
+        "id": "film_midnight",
+        "title": "Midnight crossing",
+        "description": "Start a film before midnight and finish it after.",
+        "flavorText": "For a plot twist on a new day.",
+        "tier": "Common",
         "section": "film",
         "rule": {
             "type": "count",
             "filter": {
+                "kind": "movie",
+                "crossesMidnight": true
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_xmas",
+        "title": "Yule log",
+        "description": "Watch a film on Christmas Day.",
+        "flavorText": "For a film between the turkey and the pudding.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "dates": [
+                    "12-25"
+                ]
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_fresh",
+        "title": "Fresh print",
+        "description": "Watch a film in the year that it came out.",
+        "flavorText": "For catching it while it is still news.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "ageMax": 0
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_mononym",
+        "title": "Mononymous",
+        "description": "Watch 5 films with a one-word title.",
+        "flavorText": "For films that need only one word.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "titleWordsMax": 1
+            },
+            "target": 5
+        }
+    },
+    {
+        "id": "film_colour",
+        "title": "Technicolour",
+        "description": "Watch 3 films with a colour in the title.",
+        "flavorText": "For a rainbow, one title at a time.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "titleWords": [
+                    "red",
+                    "blue",
+                    "green",
+                    "yellow",
+                    "black",
+                    "white",
+                    "orange",
+                    "purple",
+                    "pink",
+                    "gold",
+                    "silver",
+                    "grey",
+                    "gray",
+                    "scarlet",
+                    "crimson",
+                    "violet",
+                    "brown"
+                ]
+            },
+            "target": 3
+        }
+    },
+    {
+        "id": "film_family",
+        "title": "All ages",
+        "description": "Watch 10 films rated U, G or PG.",
+        "flavorText": "For films that the whole family can see.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "ratings": [
+                    "U",
+                    "G",
+                    "PG",
+                    "TV-G",
+                    "TV-Y",
+                    "TV-Y7"
+                ]
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "film_genres",
+        "title": "Genre tourist",
+        "description": "Watch films from 5 different genres.",
+        "flavorText": "For a ticket to every screen in the house.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "variety",
+            "of": "genre",
+            "filter": {
                 "kind": "movie"
             },
-            "target": 1000
+            "target": 5
         }
     },
     {
@@ -94,7 +222,7 @@
         "title": "Double feature",
         "description": "Start 2 films after 5pm on the same day.",
         "flavorText": "For staying on for the second picture.",
-        "tier": "Uncommon",
+        "tier": "Common",
         "section": "film",
         "rule": {
             "type": "window",
@@ -107,34 +235,36 @@
         }
     },
     {
-        "id": "film_marathon",
-        "title": "Marathon",
-        "description": "Start 4 films on the same day.",
-        "flavorText": "For four films between breakfast and bed.",
-        "tier": "Epic",
+        "id": "film_two_for_one",
+        "title": "Two for one",
+        "description": "Watch 2 films by one director, back to back.",
+        "flavorText": "For a second helping from the same kitchen.",
+        "tier": "Common",
         "section": "film",
         "rule": {
-            "type": "window",
-            "span": "day",
+            "type": "chain",
+            "same": "director",
             "filter": {
                 "kind": "movie"
             },
-            "target": 4
+            "length": 2,
+            "maxGapHours": 3,
+            "target": 1
         }
     },
     {
-        "id": "film_dailies",
-        "title": "Dailies",
-        "description": "Watch a film on 7 days in a row.",
-        "flavorText": "For a film a day, seven days running.",
-        "tier": "Rare",
+        "id": "film_50",
+        "title": "Loyalty card",
+        "description": "Watch 50 films.",
+        "flavorText": "For fifty stamps and no free coffee.",
+        "tier": "Uncommon",
         "section": "film",
         "rule": {
-            "type": "streak",
+            "type": "count",
             "filter": {
                 "kind": "movie"
             },
-            "target": 7
+            "target": 50
         }
     },
     {
@@ -155,40 +285,8 @@
         }
     },
     {
-        "id": "film_long",
-        "title": "Director's cut",
-        "description": "Watch a film of 3 hours or longer.",
-        "flavorText": "For every minute of the long version.",
-        "tier": "Rare",
-        "section": "film",
-        "rule": {
-            "type": "count",
-            "filter": {
-                "kind": "movie",
-                "durationMin": 180
-            },
-            "target": 1
-        }
-    },
-    {
-        "id": "film_short",
-        "title": "Short and sweet",
-        "description": "Watch 10 films under 90 minutes.",
-        "flavorText": "For ten films under ninety minutes.",
-        "tier": "Common",
-        "section": "film",
-        "rule": {
-            "type": "count",
-            "filter": {
-                "kind": "movie",
-                "durationMax": 90
-            },
-            "target": 10
-        }
-    },
-    {
         "id": "film_again",
-        "title": "Again",
+        "title": "Again!",
         "description": "Watch the same film 3 times.",
         "flavorText": "For loving one film three times over.",
         "tier": "Uncommon",
@@ -200,6 +298,23 @@
             },
             "groupBy": "item",
             "target": 3
+        }
+    },
+    {
+        "id": "film_instant_replay",
+        "title": "Instant replay",
+        "description": "Watch the same film twice in one day.",
+        "flavorText": "For pressing play the moment the credits ended.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "groupBy": "item",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 2
         }
     },
     {
@@ -234,6 +349,223 @@
             "distinct": "item",
             "groupBy": "actor",
             "target": 10
+        }
+    },
+    {
+        "id": "film_halloween",
+        "title": "Trick or treat",
+        "description": "Watch a horror film on Halloween.",
+        "flavorText": "For the scariest night of the year, done properly.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "genre": "Horror",
+                "dates": [
+                    "10-31"
+                ]
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_valentine",
+        "title": "Date night",
+        "description": "Watch a romance on Valentine's Day.",
+        "flavorText": "For a love story on the right day.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "genre": "Romance",
+                "dates": [
+                    "02-14"
+                ]
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_witching",
+        "title": "Witching hour",
+        "description": "Start a horror film between midnight and 1am.",
+        "flavorText": "For the worst possible time to see that.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "genre": "Horror",
+                "hourFrom": 0,
+                "hourTo": 1
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_vintage",
+        "title": "Vintage reel",
+        "description": "Watch a film that is more than 50 years old.",
+        "flavorText": "For a film older than most of the audience.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "ageMin": 51
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_mood_swing",
+        "title": "Mood swing",
+        "description": "Watch a horror film, then a comedy, back to back.",
+        "flavorText": "For screams, then laughs, in that order.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "chain",
+            "steps": [
+                {
+                    "kind": "movie",
+                    "genre": "Horror"
+                },
+                {
+                    "kind": "movie",
+                    "genre": "Comedy"
+                }
+            ],
+            "maxGapHours": 2,
+            "target": 1
+        }
+    },
+    {
+        "id": "film_creature",
+        "title": "Creature feature",
+        "description": "Watch 5 films with an animal in the title.",
+        "flavorText": "For a zoo on the poster wall.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "titleWords": [
+                    "dog",
+                    "dogs",
+                    "cat",
+                    "cats",
+                    "shark",
+                    "sharks",
+                    "bear",
+                    "bears",
+                    "wolf",
+                    "wolves",
+                    "horse",
+                    "horses",
+                    "bird",
+                    "birds",
+                    "snake",
+                    "snakes",
+                    "spider",
+                    "spiders",
+                    "ape",
+                    "apes",
+                    "monkey",
+                    "lion",
+                    "tiger",
+                    "fox",
+                    "rat",
+                    "rats",
+                    "bat",
+                    "bats",
+                    "dragon",
+                    "dragons",
+                    "whale",
+                    "eagle",
+                    "crow",
+                    "pig",
+                    "duck",
+                    "mouse",
+                    "elephant",
+                    "gorilla",
+                    "bee",
+                    "bees",
+                    "frog"
+                ]
+            },
+            "target": 5
+        }
+    },
+    {
+        "id": "film_docs",
+        "title": "Know-it-all",
+        "description": "Watch 10 different documentaries.",
+        "flavorText": "For ten true stories and a head full of facts.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "genre": "Documentary"
+            },
+            "distinct": "item",
+            "target": 10
+        }
+    },
+    {
+        "id": "film_wordsmith",
+        "title": "Wordsmith",
+        "description": "Watch a film with 8 or more words in the title.",
+        "flavorText": "For a title that needs a deep breath.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "titleWordsMin": 8
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_100",
+        "title": "That's a wrap",
+        "description": "Watch 100 films.",
+        "flavorText": "For a hundred films seen to the end.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 100
+        }
+    },
+    {
+        "id": "film_long",
+        "title": "Director's cut",
+        "description": "Watch a film of 3 hours or longer.",
+        "flavorText": "For every minute of the long version.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "durationMin": 180
+            },
+            "target": 1
         }
     },
     {
@@ -287,6 +619,132 @@
         }
     },
     {
+        "id": "film_dailies",
+        "title": "Dailies",
+        "description": "Watch a film on 7 days in a row.",
+        "flavorText": "For a film a day, seven days running.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "streak",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 7
+        }
+    },
+    {
+        "id": "film_countries",
+        "title": "Passport stamps",
+        "description": "Watch films from 10 different countries.",
+        "flavorText": "For seeing the world without a passport.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "variety",
+            "of": "country",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "film_couch_fort",
+        "title": "Couch fort",
+        "description": "Watch 8 hours of films in one day.",
+        "flavorText": "For a fort of cushions, held for a full day.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "measure": "hours",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 8
+        }
+    },
+    {
+        "id": "film_prequel",
+        "title": "Prequel problems",
+        "description": "Watch a later film of a collection before an earlier one.",
+        "flavorText": "For starting the story in the middle.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "outOfOrder",
+            "set": "collection",
+            "target": 1
+        }
+    },
+    {
+        "id": "film_birthday",
+        "title": "Many happy returns",
+        "description": "Watch a film on the date that it came out.",
+        "flavorText": "For a birthday party for a film.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "onReleaseDate": true
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_hat_trick",
+        "title": "Hat-trick",
+        "description": "Watch 3 films with one actor, back to back.",
+        "flavorText": "For three films and the same face each time.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "chain",
+            "same": "actor",
+            "filter": {
+                "kind": "movie"
+            },
+            "length": 3,
+            "maxGapHours": 3,
+            "target": 1
+        }
+    },
+    {
+        "id": "film_250",
+        "title": "Projectionist",
+        "description": "Watch 250 films.",
+        "flavorText": "For two hundred and fifty reels, threaded right.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 250
+        }
+    },
+    {
+        "id": "film_marathon",
+        "title": "Marathon",
+        "description": "Start 4 films on the same day.",
+        "flavorText": "For four films between breakfast and bed.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 4
+        }
+    },
+    {
         "id": "film_year_100",
         "title": "Festival circuit",
         "description": "Watch 100 films in one calendar year.",
@@ -300,6 +758,134 @@
                 "kind": "movie"
             },
             "target": 100
+        }
+    },
+    {
+        "id": "film_decades",
+        "title": "Time traveller",
+        "description": "Watch films from 8 different decades.",
+        "flavorText": "For a trip through cinema, ten years at a time.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "variety",
+            "of": "decade",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 8
+        }
+    },
+    {
+        "id": "film_comeback",
+        "title": "Long time no see",
+        "description": "Watch a film again after 5 years or more.",
+        "flavorText": "For coming back to an old friend.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "comeback",
+            "groupBy": "item",
+            "minDays": 1826,
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_premiere",
+        "title": "Premiere ticket",
+        "description": "Watch 10 films before anyone else in the house.",
+        "flavorText": "For always having seen it first.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "first",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "film_full_house",
+        "title": "Full house",
+        "description": "Watch a film that 3 other people watched that week.",
+        "flavorText": "For the film that the whole house talked about.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "shared",
+            "filter": {
+                "kind": "movie"
+            },
+            "withinDays": 7,
+            "people": 3,
+            "target": 1
+        }
+    },
+    {
+        "id": "film_1000",
+        "title": "Fade out",
+        "description": "Watch 1,000 films.",
+        "flavorText": "For a thousand films. Roll credits.",
+        "tier": "Legendary",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 1000
+        }
+    },
+    {
+        "id": "film_alphabet",
+        "title": "Alphabet soup",
+        "description": "Watch films that start with every letter from A to Z.",
+        "flavorText": "For a shelf in perfect order, A to Z.",
+        "tier": "Legendary",
+        "section": "film",
+        "rule": {
+            "type": "variety",
+            "of": "letter",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 26
+        }
+    },
+    {
+        "id": "film_annual",
+        "title": "Annual tradition",
+        "description": "Watch the same film on the same date in 3 different years.",
+        "flavorText": "For a tradition that the whole house expects.",
+        "tier": "Legendary",
+        "section": "film",
+        "rule": {
+            "type": "anniversary",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 3
+        }
+    },
+    {
+        "id": "film_old_soul",
+        "title": "Old soul",
+        "description": "Watch 50 different films that are more than 50 years old.",
+        "flavorText": "For a taste that is older than your parents.",
+        "tier": "Legendary",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "ageMin": 51
+            },
+            "distinct": "item",
+            "target": 50
         }
     },
     {
@@ -318,6 +904,226 @@
         }
     },
     {
+        "id": "tv_pilot_light",
+        "title": "Pilot light",
+        "description": "Watch 5 episodes with the title Pilot.",
+        "flavorText": "For five shows, each at the very beginning.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "titleWords": [
+                    "pilot"
+                ],
+                "titleWordsMax": 1
+            },
+            "target": 5
+        }
+    },
+    {
+        "id": "tv_25",
+        "title": "Remote control",
+        "description": "Watch 25 episodes.",
+        "flavorText": "For finding the remote twenty-five times.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 25
+        }
+    },
+    {
+        "id": "tv_xmas",
+        "title": "Christmas special",
+        "description": "Watch an episode on Christmas Day.",
+        "flavorText": "For a special on the most special day.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "dates": [
+                    "12-25"
+                ]
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_breakfast",
+        "title": "Breakfast telly",
+        "description": "Start 10 episodes between 4am and 8am.",
+        "flavorText": "For telly with the toast.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "hourFrom": 4,
+                "hourTo": 8
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_big_finish",
+        "title": "Big finish",
+        "description": "Watch a season finale.",
+        "flavorText": "For the episode the whole season was building to.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "isFinale": true
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_late_late",
+        "title": "Late late show",
+        "description": "Start an episode before midnight and finish it after.",
+        "flavorText": "For an episode that started yesterday.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "crossesMidnight": true
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_mini",
+        "title": "Miniseries",
+        "description": "Watch every episode of a show with 10 episodes or fewer.",
+        "flavorText": "For a whole story in one short run.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "maxEpisodes": 10,
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_two_hander",
+        "title": "Two-hander",
+        "description": "Watch 2 episodes of one show, back to back.",
+        "flavorText": "For \"just one more\", said once.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "chain",
+            "same": "show",
+            "filter": {
+                "kind": "episode"
+            },
+            "length": 2,
+            "maxGapHours": 1,
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_saturday",
+        "title": "Saturday morning",
+        "description": "Watch 5 animated episodes before noon at the weekend.",
+        "flavorText": "For cartoons in pyjamas.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "genre": "Animation",
+                "weekdays": [
+                    0,
+                    6
+                ],
+                "hourFrom": 5,
+                "hourTo": 12
+            },
+            "target": 5
+        }
+    },
+    {
+        "id": "tv_channel_hopper",
+        "title": "Channel hopper",
+        "description": "Watch episodes of 5 different shows in one day.",
+        "flavorText": "For a day with your thumb on the remote.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "variety",
+            "of": "show",
+            "filter": {
+                "kind": "episode"
+            },
+            "span": "day",
+            "target": 5
+        }
+    },
+    {
+        "id": "tv_docs",
+        "title": "Nature break",
+        "description": "Watch 10 documentary episodes.",
+        "flavorText": "For ten episodes of true stories.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "genre": "Documentary"
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_appointment",
+        "title": "Appointment viewing",
+        "description": "Watch an episode within a day of another person.",
+        "flavorText": "For watching it before the spoilers arrived.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "shared",
+            "filter": {
+                "kind": "episode"
+            },
+            "withinDays": 1,
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_one_word",
+        "title": "Short title",
+        "description": "Watch 10 episodes with a one-word title.",
+        "flavorText": "For episodes that say it in one word.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "titleWordsMax": 1
+            },
+            "target": 10
+        }
+    },
+    {
         "id": "tv_100",
         "title": "Season pass",
         "description": "Watch 100 episodes.",
@@ -330,32 +1136,6 @@
                 "kind": "episode"
             },
             "target": 100
-        }
-    },
-    {
-        "id": "tv_boxset",
-        "title": "Box set",
-        "description": "Watch every episode of one show in your library.",
-        "flavorText": "For staying with one show to the very end.",
-        "tier": "Rare",
-        "section": "tv",
-        "rule": {
-            "type": "complete",
-            "set": "show",
-            "target": 1
-        }
-    },
-    {
-        "id": "tv_seasons",
-        "title": "Season finale",
-        "description": "Watch every episode of 5 seasons.",
-        "flavorText": "For seeing five seasons through to the end.",
-        "tier": "Uncommon",
-        "section": "tv",
-        "rule": {
-            "type": "complete",
-            "set": "season",
-            "target": 5
         }
     },
     {
@@ -376,112 +1156,16 @@
         }
     },
     {
-        "id": "tv_couch",
-        "title": "Couch potato",
-        "description": "Start 12 episodes, of any show, on the same day.",
-        "flavorText": "For twelve episodes in a single day.",
-        "tier": "Rare",
-        "section": "tv",
-        "rule": {
-            "type": "window",
-            "span": "day",
-            "filter": {
-                "kind": "episode"
-            },
-            "target": 12
-        }
-    },
-    {
-        "id": "tv_graveyard",
-        "title": "Graveyard slot",
-        "description": "Start 10 episodes between 2am and 5am.",
-        "flavorText": "For the hours when nobody else is up.",
+        "id": "tv_seasons",
+        "title": "Season finale",
+        "description": "Watch every episode of 5 seasons.",
+        "flavorText": "For seeing five seasons through to the end.",
         "tier": "Uncommon",
-        "section": "tv",
-        "secret": true,
-        "rule": {
-            "type": "count",
-            "filter": {
-                "kind": "episode",
-                "hourFrom": 2,
-                "hourTo": 5
-            },
-            "target": 10
-        }
-    },
-    {
-        "id": "tv_500",
-        "title": "Long runner",
-        "description": "Watch 500 episodes.",
-        "flavorText": "For five hundred episodes and counting.",
-        "tier": "Rare",
-        "section": "tv",
-        "rule": {
-            "type": "count",
-            "filter": {
-                "kind": "episode"
-            },
-            "target": 500
-        }
-    },
-    {
-        "id": "tv_1000",
-        "title": "Network veteran",
-        "description": "Watch 1,000 episodes.",
-        "flavorText": "For a thousand episodes on the schedule.",
-        "tier": "Epic",
-        "section": "tv",
-        "rule": {
-            "type": "count",
-            "filter": {
-                "kind": "episode"
-            },
-            "target": 1000
-        }
-    },
-    {
-        "id": "tv_5000",
-        "title": "Test card",
-        "description": "Watch 5,000 episodes.",
-        "flavorText": "For five thousand episodes, past closedown.",
-        "tier": "Legendary",
-        "section": "tv",
-        "rule": {
-            "type": "count",
-            "filter": {
-                "kind": "episode"
-            },
-            "target": 5000
-        }
-    },
-    {
-        "id": "tv_showrunner",
-        "title": "Showrunner",
-        "description": "Watch every episode of 10 shows.",
-        "flavorText": "For ten shows, first episode to last.",
-        "tier": "Epic",
         "section": "tv",
         "rule": {
             "type": "complete",
-            "set": "show",
-            "target": 10
-        }
-    },
-    {
-        "id": "tv_syndication",
-        "title": "Syndication deal",
-        "description": "Watch 100 different episodes of one show.",
-        "flavorText": "For a hundred episodes of one show.",
-        "tier": "Epic",
-        "section": "tv",
-        "rule": {
-            "type": "count",
-            "filter": {
-                "kind": "episode"
-            },
-            "distinct": "item",
-            "groupBy": "show",
-            "target": 100
+            "set": "season",
+            "target": 5
         }
     },
     {
@@ -519,6 +1203,195 @@
         }
     },
     {
+        "id": "tv_graveyard",
+        "title": "Graveyard slot",
+        "description": "Start 10 episodes between 2am and 5am.",
+        "flavorText": "For the hours when nobody else is up.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "secret": true,
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "hourFrom": 2,
+                "hourTo": 5
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_rewind",
+        "title": "Rewind",
+        "description": "Watch 3 episodes of a season in reverse order.",
+        "flavorText": "For telling the story from the end.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "backwards",
+            "target": 3
+        }
+    },
+    {
+        "id": "tv_spoiler",
+        "title": "Spoiler alert",
+        "description": "Watch a season finale before episode 1 of that season.",
+        "flavorText": "For knowing how it ends before it begins.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "outOfOrder",
+            "set": "season",
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_fright_night",
+        "title": "Fright night special",
+        "description": "Watch a horror episode on Halloween.",
+        "flavorText": "For a scare in instalments.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "genre": "Horror",
+                "dates": [
+                    "10-31"
+                ]
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_sunday",
+        "title": "Sunday roast",
+        "description": "Watch 6 episodes on one Sunday.",
+        "flavorText": "For a Sunday spent on the sofa.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "filter": {
+                "kind": "episode",
+                "weekdays": [
+                    0
+                ]
+            },
+            "target": 6
+        }
+    },
+    {
+        "id": "tv_genres",
+        "title": "Variety hour",
+        "description": "Watch episodes from 10 different genres.",
+        "flavorText": "For a schedule with something for everyone.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "variety",
+            "of": "genre",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_on_repeat",
+        "title": "On repeat",
+        "description": "Watch the same episode 3 times.",
+        "flavorText": "For knowing every line by heart.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "groupBy": "item",
+            "target": 3
+        }
+    },
+    {
+        "id": "tv_laugh_track",
+        "title": "Laugh track",
+        "description": "Watch 50 comedy episodes.",
+        "flavorText": "For fifty episodes of canned laughter.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "genre": "Comedy"
+            },
+            "target": 50
+        }
+    },
+    {
+        "id": "tv_season_ten",
+        "title": "Long in the tooth",
+        "description": "Watch an episode from season 10 or later.",
+        "flavorText": "For staying with a show into double figures.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "seasonMin": 10
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_500",
+        "title": "Long runner",
+        "description": "Watch 500 episodes.",
+        "flavorText": "For five hundred episodes and counting.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 500
+        }
+    },
+    {
+        "id": "tv_boxset",
+        "title": "Box set",
+        "description": "Watch every episode of one show in your library.",
+        "flavorText": "For staying with one show to the very end.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_couch",
+        "title": "Couch potato",
+        "description": "Start 12 episodes, of any show, on the same day.",
+        "flavorText": "For twelve episodes in a single day.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 12
+        }
+    },
+    {
         "id": "tv_box_week",
         "title": "Premiere week",
         "description": "Watch every episode of one show within 7 days.",
@@ -530,6 +1403,291 @@
             "set": "show",
             "withinDays": 7,
             "target": 1
+        }
+    },
+    {
+        "id": "tv_square_eyes",
+        "title": "Square eyes",
+        "description": "Watch 10 hours of TV in one day.",
+        "flavorText": "For eyes that slowly turned square.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "measure": "hours",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_cliffhanger",
+        "title": "Cliffhanger",
+        "description": "Watch a season finale, then an episode 1, back to back.",
+        "flavorText": "For not waiting a whole year to find out.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "chain",
+            "steps": [
+                {
+                    "kind": "episode",
+                    "isFinale": true
+                },
+                {
+                    "kind": "episode",
+                    "episodeIndex": 1
+                }
+            ],
+            "maxGapHours": 3,
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_whodunnit",
+        "title": "Whodunnit",
+        "description": "Watch 25 crime episodes.",
+        "flavorText": "For guessing the killer before the detective.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "genre": "Crime"
+            },
+            "target": 25
+        }
+    },
+    {
+        "id": "tv_world_service",
+        "title": "World service",
+        "description": "Watch shows from 8 different countries.",
+        "flavorText": "For a world tour from the sofa.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "variety",
+            "of": "country",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 8
+        }
+    },
+    {
+        "id": "tv_revival",
+        "title": "Revival",
+        "description": "Return to a show after a year away.",
+        "flavorText": "For a comeback that nobody saw coming.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "comeback",
+            "groupBy": "show",
+            "minDays": 365,
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_rerun",
+        "title": "Rerun",
+        "description": "Watch shows from 5 different decades.",
+        "flavorText": "For a schedule full of repeats.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "variety",
+            "of": "decade",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 5
+        }
+    },
+    {
+        "id": "tv_spoiler_shield",
+        "title": "Spoiler shield",
+        "description": "Watch 25 episodes before anyone else in the house.",
+        "flavorText": "For never having to cover your ears.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "first",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 25
+        }
+    },
+    {
+        "id": "tv_1000",
+        "title": "Network veteran",
+        "description": "Watch 1,000 episodes.",
+        "flavorText": "For a thousand episodes on the schedule.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 1000
+        }
+    },
+    {
+        "id": "tv_showrunner",
+        "title": "Showrunner",
+        "description": "Watch every episode of 10 shows.",
+        "flavorText": "For ten shows, first episode to last.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_syndication",
+        "title": "Syndication deal",
+        "description": "Watch 100 different episodes of one show.",
+        "flavorText": "For a hundred episodes of one show.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "distinct": "item",
+            "groupBy": "show",
+            "target": 100
+        }
+    },
+    {
+        "id": "tv_season_day",
+        "title": "Season in a day",
+        "description": "Watch every episode of a season within 1 day.",
+        "flavorText": "For a whole season between breakfast and bed.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "season",
+            "withinDays": 1,
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_long_haul",
+        "title": "Long haul",
+        "description": "Watch every episode of a show with 100 episodes or more.",
+        "flavorText": "For a show that outlasted its first cast.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "minEpisodes": 100,
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_water_cooler",
+        "title": "Water cooler",
+        "description": "Watch an episode that 3 other people watched that week.",
+        "flavorText": "For the episode that the whole house talked about.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "shared",
+            "filter": {
+                "kind": "episode"
+            },
+            "withinDays": 7,
+            "people": 3,
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_no_return",
+        "title": "Point of no return",
+        "description": "Watch 12 episodes of one show in 24 hours.",
+        "flavorText": "For a day that one show took over.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "window",
+            "span": "24h",
+            "groupBy": "show",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 12
+        }
+    },
+    {
+        "id": "tv_5000",
+        "title": "Test card",
+        "description": "Watch 5,000 episodes.",
+        "flavorText": "For five thousand episodes, past closedown.",
+        "tier": "Legendary",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 5000
+        }
+    },
+    {
+        "id": "tv_must_see",
+        "title": "Must-see TV",
+        "description": "Watch an episode on 100 days in a row.",
+        "flavorText": "For a hundred days without missing a night.",
+        "tier": "Legendary",
+        "section": "tv",
+        "rule": {
+            "type": "streak",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 100
+        }
+    },
+    {
+        "id": "tv_completionist",
+        "title": "Completionist",
+        "description": "Watch every episode of 50 shows.",
+        "flavorText": "For fifty shows, every episode, no skips.",
+        "tier": "Legendary",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "target": 50
+        }
+    },
+    {
+        "id": "tv_holiday",
+        "title": "Holiday tradition",
+        "description": "Watch the same episode on the same date in 3 different years.",
+        "flavorText": "For an episode that marks the time of year.",
+        "tier": "Legendary",
+        "section": "tv",
+        "rule": {
+            "type": "anniversary",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 3
         }
     },
     {

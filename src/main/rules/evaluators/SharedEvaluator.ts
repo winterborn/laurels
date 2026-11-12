@@ -35,7 +35,7 @@ export class SharedEvaluator {
         const seen = new Set<string>();
         const shared: SharedWatch[] = [];
         for (const event of history.select(rule.filter)) {
-            const otherAt = household.otherNear(event, rule.withinDays);
+            const otherAt = household.otherNear(event, rule.withinDays, rule.people ?? 1);
             const isNew = otherAt !== undefined && !seen.has(event.ratingKey);
             if (isNew) {
                 seen.add(event.ratingKey);
