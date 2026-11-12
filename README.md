@@ -44,8 +44,7 @@ It tells you how to connect Laurels to Plex when Plex also runs in Docker.
 
 Optional:
 
-- Laurels records each play like Tautulli does, for real start times and real time watched.
-  If you use Tautulli, connect it, and Laurels reads your plays from it.
+- Connect Tautulli for real start times and real time watched.
 - Add your own awards in `/config/awards.json`. See [docs/awards.md](docs/awards.md).
 
 ## Run without Docker

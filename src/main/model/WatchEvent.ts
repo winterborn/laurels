@@ -1,6 +1,6 @@
 export type WatchKind = 'movie' | 'episode';
 
-export type WatchSource = 'plex' | 'recorder' | 'tautulli';
+export type WatchSource = 'plex' | 'tautulli';
 
 export interface WatchEvent {
     id: string;

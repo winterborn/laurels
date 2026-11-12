@@ -2,7 +2,6 @@ import type {
     Item,
     Play,
     WatchEvent,
-    WatchSource,
 } from '../model/index.ts';
 import type { Store } from '../store/index.ts';
 
@@ -23,12 +22,12 @@ const EMPTY_TAGS = {
     collections: [],
 };
 
-// Joins plays (from Tautulli or from the session recorder) to Plex watches:
+// Joins Tautulli plays to Plex watches:
 // - A Plex watch inside a play takes the start, time on screen and device of that play.
 // - A watched play with no Plex watch becomes a watch of its own.
 // - A play that is not watched adds time on screen only (a partial play).
 // - Plex watches from before the first play keep the times that Laurels calculates.
-// A play id carries its source, for example "tautulli:123" or "recorder:45".
+// A play id is "tautulli:" plus the Tautulli reference_id.
 // The watch made from a play has the id of the play.
 export class PlayLinker {
 
@@ -118,7 +117,7 @@ export class PlayLinker {
             playSeconds: play.playSeconds,
             pausedSeconds: play.pausedSeconds,
             platform: play.platform,
-            source: this.sourceOf(play),
+            source: 'tautulli',
             partial: !play.watched,
         };
     }
@@ -236,11 +235,6 @@ export class PlayLinker {
     // The watch made from this play has the id of the play.
     private hasOwnEvent(play: Play): boolean {
         return play.eventId === play.id;
-    }
-
-    // "tautulli:123" -> tautulli, "recorder:45" -> recorder.
-    private sourceOf(play: Play): WatchSource {
-        return play.id.startsWith('recorder:') ? 'recorder' : 'tautulli';
     }
 
     private itemKey(userId: string, ratingKey: string): string {

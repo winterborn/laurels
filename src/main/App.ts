@@ -18,14 +18,11 @@ import {
     Catalogue,
     UserHistory,
 } from './rules/index.ts';
-import { SessionRecorder } from './recorder/index.ts';
 import { Scoreboard } from './scoring/index.ts';
 import { SettingsStore } from './settings/index.ts';
 import {
     PlexClient,
-    PlexSessionReader,
     PlexSource,
-    RecorderSource,
     type SyncReport,
     TautulliClient,
     TautulliSource,
@@ -52,10 +49,7 @@ export class App {
     scoreboard: Scoreboard;
     lastSync: SyncStatus | null = null;
     private source: PlexSource | null = null;
-    // Tautulli when it is connected, else the session recorder, else nothing.
-    private plays: TautulliSource | RecorderSource | null = null;
-    private recorder: SessionRecorder | null = null;
-    private isStarted = false;
+    private tautulli: TautulliSource | null = null;
     private notifier: DiscordNotifier;
     private timer: NodeJS.Timeout | undefined;
     private isRunning = false;
@@ -93,18 +87,14 @@ export class App {
 
     // Scores what is stored, then syncs in the background.
     start(): void {
-        this.isStarted = true;
         this.score();
         this.schedule();
-        this.recorder?.start();
         this.runInBackground();
     }
 
-    // Ends the poll timer and the recorder, so the process can exit.
+    // Ends the poll timer, so the process can exit.
     stop(): void {
-        this.isStarted = false;
         clearInterval(this.timer);
-        this.recorder?.stop();
     }
 
     updateSettings(patch: Partial<Settings>): Settings {
@@ -136,7 +126,7 @@ export class App {
         if (!report) {
             return;
         }
-        const changedWatches = await this.syncPlays();
+        const changedWatches = await this.syncTautulli();
         const hasNewData = report.newEvents > 0 || report.newItems > 0 || changedWatches > 0;
         const canSkip = this.isUpToDate && !hasNewRules && !hasNewData;
         if (canSkip) {
@@ -170,12 +160,7 @@ export class App {
         const settings = this.settings;
         this.plex = this.isConfigured ? new PlexClient(settings.plexUrl, settings.plexToken) : null;
         this.source = this.plex ? new PlexSource(this.plex, this.store) : null;
-        this.recorder?.stop();
-        this.recorder = this.recorderFor(settings);
-        this.plays = this.tautulliFor(settings) ?? (this.recorder ? new RecorderSource(this.store) : null);
-        if (this.isStarted) {
-            this.recorder?.start();
-        }
+        this.tautulli = this.tautulliFor(settings);
         this.notifier = new DiscordNotifier(settings.discordWebhookUrl, settings.publicUrl);
         this.scoreboard = new Scoreboard(settings.timeZone);
         this.score();
@@ -217,37 +202,25 @@ export class App {
         }
     }
 
-    // Plays from Tautulli or from the session recorder.
-    // A failure is logged and never stops the cycle. Returns how many watches changed.
-    private async syncPlays(): Promise<number> {
-        if (!this.plays) {
+    // Optional. A failure is logged and never stops the cycle.
+    // Returns how many watches changed.
+    private async syncTautulli(): Promise<number> {
+        if (!this.tautulli) {
             return 0;
         }
-        const name = this.plays instanceof TautulliSource ? 'Tautulli' : 'Recorded plays';
         try {
-            const report = await this.plays.sync();
+            const report = await this.tautulli.sync();
             const hasNews = report.newPlays > 0 || report.changedWatches > 0;
             if (hasNews) {
                 const counts = `${report.newPlays} new or changed plays, ${report.changedWatches} watches changed`;
-                console.log(`${name}: ${counts}`);
+                console.log(`Tautulli: ${counts}`);
             }
             return report.changedWatches;
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            console.error(`${name} failed: ${message}`);
+            console.error(`Tautulli failed: ${message}`);
             return 0;
         }
-    }
-
-    // On when the setting is on, Plex is set up and Tautulli is not connected.
-    private recorderFor(settings: Settings): SessionRecorder | null {
-        const hasTautulli = settings.tautulliUrl !== '' && settings.tautulliApiKey !== '';
-        const canRecord = settings.recordSessions && this.plex !== null && !hasTautulli;
-        if (!canRecord || !this.plex) {
-            return null;
-        }
-        const reader = new PlexSessionReader(this.plex);
-        return new SessionRecorder(settings.plexUrl, settings.plexToken, this.store, reader);
     }
 
     private tautulliFor(settings: Settings): TautulliSource | null {

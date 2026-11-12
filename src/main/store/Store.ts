@@ -4,9 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import type {
     Award,
     Item,
-    LiveSession,
     Play,
-    RecordedPlay,
     Session,
     User,
     WatchEvent,
@@ -73,18 +71,6 @@ CREATE TABLE IF NOT EXISTS plays (
     watched INTEGER NOT NULL,
     event_id TEXT
 );
-CREATE TABLE IF NOT EXISTS live_sessions (
-    session_key TEXT PRIMARY KEY,
-    json TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS recorded_plays (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    reference_id INTEGER,
-    user_id TEXT NOT NULL,
-    rating_key TEXT NOT NULL,
-    json TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS recorded_plays_item ON recorded_plays (user_id, rating_key);
 CREATE TABLE IF NOT EXISTS sync_state (
     name TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -119,6 +105,28 @@ export class Store {
         if (this.hasTable('tautulli_plays')) {
             this.movePlays();
         }
+        if (this.hasTable('recorded_plays')) {
+            this.removeRecorder();
+        }
+    }
+
+    // Version bc9e775 had a session recorder. Laurels now uses Tautulli only.
+    // This removes the recorder's plays and watches, and the times that it gave
+    // to Plex watches, so that Tautulli can give them again.
+    private removeRecorder(): void {
+        this.transaction(() => {
+            this.db.exec(`UPDATE events
+                SET started_at = NULL, play_seconds = NULL, paused_seconds = NULL, platform = NULL
+                WHERE id IN (SELECT event_id FROM plays WHERE id LIKE 'recorder:%')`);
+            this.db.exec(`UPDATE plays SET event_id = NULL
+                WHERE event_id IN (SELECT event_id FROM plays WHERE id LIKE 'recorder:%')
+                AND id NOT LIKE 'recorder:%'`);
+            this.db.exec("DELETE FROM events WHERE source = 'recorder'");
+            this.db.exec("DELETE FROM plays WHERE id LIKE 'recorder:%'");
+            this.db.exec('DROP TABLE recorded_plays');
+            this.db.exec('DROP TABLE IF EXISTS live_sessions');
+        });
+        this.eventCache = null;
     }
 
     // Version 10eea91 kept Tautulli plays without a source in the id.
@@ -288,7 +296,7 @@ export class Store {
         return this.itemCache.get(ratingKey);
     }
 
-    // Plays (Tautulli and the session recorder)
+    // Plays (Tautulli)
 
     // Saves new plays, and plays that changed since the last read
     // (a play grows when someone resumes it). Returns those plays.
@@ -339,69 +347,6 @@ export class Store {
                 WHERE id = ?`)
             .run(play.started, play.playSeconds, play.pausedSeconds, play.platform ?? null, eventId);
         this.eventCache = null;
-    }
-
-    // Live sessions (the session recorder)
-
-    liveSessions(): LiveSession[] {
-        const rows = this.db.prepare('SELECT json FROM live_sessions').all() as Row[];
-        return rows.map((row) => JSON.parse(row.json));
-    }
-
-    liveSession(sessionKey: string): LiveSession | undefined {
-        const row = this.db
-            .prepare('SELECT json FROM live_sessions WHERE session_key = ?')
-            .get(sessionKey) as Row | undefined;
-        return row ? JSON.parse(row.json) : undefined;
-    }
-
-    saveLiveSession(session: LiveSession): void {
-        this.db
-            .prepare('INSERT OR REPLACE INTO live_sessions (session_key, json) VALUES (?, ?)')
-            .run(session.sessionKey, JSON.stringify(session));
-    }
-
-    deleteLiveSession(sessionKey: string): void {
-        this.db.prepare('DELETE FROM live_sessions WHERE session_key = ?').run(sessionKey);
-    }
-
-    // Recorded plays (the session recorder)
-
-    // Saves a finished session as its own group. Returns the saved play.
-    addRecordedPlay(session: LiveSession, stopped: number): RecordedPlay {
-        const result = this.db
-            .prepare('INSERT INTO recorded_plays (user_id, rating_key, json) VALUES (?, ?, ?)')
-            .run(session.userId, session.ratingKey, '{}');
-        const id = Number(result.lastInsertRowid);
-        const play: RecordedPlay = {
-            ...session,
-            id,
-            referenceId: id,
-            stopped,
-        };
-        this.saveRecordedPlay(play);
-        return play;
-    }
-
-    saveRecordedPlay(play: RecordedPlay): void {
-        this.db
-            .prepare('UPDATE recorded_plays SET reference_id = ?, json = ? WHERE id = ?')
-            .run(play.referenceId, JSON.stringify(play), play.id);
-    }
-
-    // The last plays of one item by one person, newest first.
-    lastRecordedPlays(userId: string, ratingKey: string, count: number): RecordedPlay[] {
-        const rows = this.db
-            .prepare(`SELECT json FROM recorded_plays
-                WHERE user_id = ? AND rating_key = ?
-                ORDER BY id DESC LIMIT ?`)
-            .all(userId, ratingKey, count) as Row[];
-        return rows.map((row) => JSON.parse(row.json));
-    }
-
-    recordedPlays(): RecordedPlay[] {
-        const rows = this.db.prepare('SELECT json FROM recorded_plays ORDER BY id').all() as Row[];
-        return rows.map((row) => JSON.parse(row.json));
     }
 
     // Awards

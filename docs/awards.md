@@ -105,4 +105,4 @@ A watch counts only if it matches every field in the filter.
 Times and days use the time zone in Settings.
 Plex history gives the end of a watch, not the start.
 Laurels calculates the start from the running time.
-With play tracking (the session recorder or Tautulli), Laurels uses the real start time and the real time watched.
+If you connect Tautulli, Laurels uses the real start time and the real time watched.

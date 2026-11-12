@@ -1,7 +1,6 @@
 export * from './Achievement.ts';
 export * from './Award.ts';
 export * from './Item.ts';
-export * from './LiveSession.ts';
 export * from './Play.ts';
 export * from './Progress.ts';
 export * from './Session.ts';

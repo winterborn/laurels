@@ -20,7 +20,6 @@ const ENV_NAMES: Record<Exclude<SettingName, 'clientId' | 'ownerId'>, string> = 
     plexToken: 'PLEX_TOKEN',
     tautulliUrl: 'TAUTULLI_URL',
     tautulliApiKey: 'TAUTULLI_API_KEY',
-    recordSessions: 'RECORD_SESSIONS',
     pollMinutes: 'POLL_MINUTES',
     timeZone: 'TZ',
     discordWebhookUrl: 'DISCORD_WEBHOOK_URL',
@@ -112,8 +111,7 @@ export class SettingsStore {
         if (NUMBER_FIELDS.includes(name)) {
             return this.cleanNumber(name, value);
         }
-        const isSwitch = name === 'lanGuests' || name === 'recordSessions';
-        if (isSwitch) {
+        if (name === 'lanGuests') {
             return value === true || value === 'true' || value === 'on';
         }
         if (name === 'authMode') {
@@ -143,7 +141,6 @@ export class SettingsStore {
             clientId: '',
             tautulliUrl: '',
             tautulliApiKey: '',
-            recordSessions: true,
             pollMinutes: 5,
             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             discordWebhookUrl: '',

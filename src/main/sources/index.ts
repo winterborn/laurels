@@ -2,8 +2,6 @@ export * from './PlayLinker.ts';
 export * from './PlexAccount.ts';
 export * from './PlexClient.ts';
 export * from './PlexMapper.ts';
-export * from './PlexSessionReader.ts';
 export * from './PlexSource.ts';
-export * from './RecorderSource.ts';
 export * from './TautulliClient.ts';
 export * from './TautulliSource.ts';

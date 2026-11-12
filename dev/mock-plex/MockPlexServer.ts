@@ -85,8 +85,6 @@ export class MockPlexServer {
             this.sendContainer(response, { Account: ACCOUNTS });
         } else if (path === '/status/sessions/history/all') {
             this.sendHistory(url, response);
-        } else if (path === '/status/sessions') {
-            this.sendContainer(response, { Metadata: [] });
         } else if (path === '/photo/:/transcode') {
             await this.sendPoster(url, response);
         } else if (metadataMatch) {
