@@ -17,6 +17,8 @@ import {
 } from './notify/index.ts';
 import {
     Catalogue,
+    HouseholdWatches,
+    RuleEngine,
     UserHistory,
 } from './rules/index.ts';
 import { Scoreboard } from './scoring/index.ts';
@@ -151,6 +153,32 @@ export class App {
                 ...user,
                 name: aliases.get(user.id) ?? user.name,
             }));
+    }
+
+    // The owner saved awards.json: score again now, and give awards at the next cycle.
+    refreshAwards(): void {
+        this.isUpToDate = false;
+        this.score();
+        this.runInBackground();
+    }
+
+    // Each person's progress on one award, for the awards editor. Nothing is saved.
+    previewAward(achievement: Achievement): Array<Progress & { name: string }> {
+        const engine = new RuleEngine();
+        const users = this.visibleUsers();
+        const shown = new Set(users.map((user) => user.id));
+        const events = this.awardEvents(this.store.events()).filter((event) => shown.has(event.userId));
+        const household = new HouseholdWatches(events);
+        const others = this.achievements.filter((entry) => entry.id !== achievement.id);
+        return users.map((user) => {
+            const history = this.awardHistoryOf(user.id);
+            const all = engine.evaluateAll(history, [...others, achievement], household);
+            const progress = all[all.length - 1];
+            return {
+                ...progress,
+                name: user.name,
+            };
+        });
     }
 
     // All of one person's watches, for the Season review and the Ceremony.

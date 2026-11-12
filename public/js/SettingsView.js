@@ -3,6 +3,7 @@ import {
     formatClock,
     formatDay,
 } from './helpers/index.js';
+import { AwardsEditor } from './AwardsEditor.js';
 import { PlexSignIn } from './PlexSignIn.js';
 
 const ENV_NAMES = {
@@ -40,6 +41,7 @@ export class SettingsView {
         root.innerHTML = this.render();
         root.querySelector('form').addEventListener('submit', (event) => this.onSave(event));
         root.addEventListener('click', (event) => this.onClick(event));
+        new AwardsEditor(this.api).mount(root.querySelector('#awards-editor'));
         if (this.settings.plexTokenSet && !this.status.configured) {
             this.loadServers();
         }
@@ -59,6 +61,7 @@ export class SettingsView {
             + `<span class="message" id="save-message" role="status"></span>`
             + `</div>`
             + `</form>`
+            + `<div id="awards-editor"></div>`
             + `<p class="help disclaimer">Laurels works with Plex Media Server. Laurels is not made or endorsed by Plex, Inc.</p>`;
     }
 

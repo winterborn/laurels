@@ -3,6 +3,21 @@
 You can add awards, change awards and remove awards.
 You do not need to build the image again.
 
+## On the Settings page
+
+1. Open **Settings**, then go to **Your awards**.
+2. Click **Add an award**. To change or remove a built-in award, select it, then click **Change it** or **Remove it**.
+3. Fill in the name, what to watch, the citation, the tier and the category.
+4. In **Start from**, select a rule that is near what you want. Then change the numbers and the filter.
+5. Click **Check**. Laurels shows the problem, or the progress of each person.
+6. Click **Done**, then **Save awards**.
+
+Laurels writes the file `awards.json` for you and counts the awards again at once.
+
+## In the file
+
+You can also edit `awards.json` by hand.
+
 1. Make a file named `awards.json` in the Laurels config folder.
    This is the folder that Docker mounts as `/config`, next to `settings.json`.
 2. Put a list of awards in the file. Use the examples below.

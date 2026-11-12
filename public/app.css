@@ -1658,6 +1658,62 @@ a.button {
     text-align: left;
 }
 
+/* Your awards (the awards editor on the Settings page) */
+
+.awards-editor {
+    margin-top: var(--space-5);
+}
+
+.field textarea {
+    min-height: 220px;
+    padding: var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--bg-deep);
+    color: var(--ink-strong);
+    font-family: var(--mono);
+    font-size: var(--type-s);
+    resize: vertical;
+}
+
+.field.grow {
+    flex: 1 1 260px;
+}
+
+.award-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.award-entry {
+    padding: var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.award-form {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.check-list {
+    margin: 0;
+    padding-left: var(--space-5);
+    color: var(--ink);
+}
+
 .save-bar {
     position: sticky;
     bottom: 0;

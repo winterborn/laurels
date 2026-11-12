@@ -43,7 +43,8 @@ const CONTENT_TYPES: Record<string, string> = {
 type Need = 'none' | 'viewer' | 'owner';
 
 const LATEST_LIMIT = 8;
-const MAX_BODY_BYTES = 64 * 1024;
+// Large enough for a long awards.json from the awards editor.
+const MAX_BODY_BYTES = 512 * 1024;
 
 export class Server {
 
@@ -205,7 +206,7 @@ export class Server {
                 this.sendJson(response, 200, this.settings.status());
                 return;
             case 'api/settings':
-                this.sendJson(response, 200, this.settings.settings());
+                this.sendSettings(parts, response);
                 return;
             case 'api/plex':
                 await this.handlePlexGet(parts, response);
@@ -249,6 +250,15 @@ export class Server {
     }
 
     // /api/plex/servers
+    // GET /api/settings, or GET /api/settings/awards for the awards editor.
+    private sendSettings(parts: string[], response: ServerResponse): void {
+        if (parts[2] === 'awards') {
+            this.sendResult(response, this.settings.customAwards());
+        } else {
+            this.sendJson(response, 200, this.settings.settings());
+        }
+    }
+
     private async handlePlexGet(parts: string[], response: ServerResponse): Promise<void> {
         if (parts[2] !== 'servers') {
             this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });
@@ -270,6 +280,12 @@ export class Server {
                 return;
             case '/api/settings/test-plex':
                 this.sendResult(response, await this.settings.testPlex(body));
+                return;
+            case '/api/settings/awards':
+                this.sendResult(response, this.settings.saveAwards(body));
+                return;
+            case '/api/settings/awards/check':
+                this.sendResult(response, this.settings.checkAward(body));
                 return;
             case '/api/settings/test-tautulli':
                 this.sendResult(response, await this.settings.testTautulli(body));

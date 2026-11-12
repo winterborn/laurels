@@ -1,32 +1,30 @@
 import {
     existsSync,
     readFileSync,
+    renameSync,
     statSync,
+    writeFileSync,
 } from 'node:fs';
+import {
+    ruleProblem,
+    TIER_ORDER,
+} from '../helpers/index.ts';
 import type { Achievement } from '../model/index.ts';
-import { TIER_ORDER } from '../helpers/index.ts';
 
-// Fields that only awards.json uses.
-interface CustomFields {
-    remove: boolean;
+// One entry of awards.json: a whole award, some fields of a built-in award,
+// or a built-in award to remove.
+export type CustomEntry = Partial<Achievement> & {
+    remove?: boolean;
+};
+
+export interface EntryProblem {
+    index: number;
+    id: string;
+    problem: string;
 }
 
-const RULE_TYPES = [
-    'anniversary',
-    'awards',
-    'backwards',
-    'chain',
-    'comeback',
-    'complete',
-    'count',
-    'first',
-    'hours',
-    'outOfOrder',
-    'shared',
-    'streak',
-    'variety',
-    'window',
-];
+// An id has small letters, digits and "_", for example "my_westerns".
+const ID_PATTERN = /^[a-z0-9_]+$/;
 
 const SECTIONS = [
     'film',
@@ -44,6 +42,8 @@ export class Catalogue {
     private readonly path: string;
     private readonly customPath: string;
     private list: Achievement[] = [];
+    // The built-in awards, before awards.json.
+    private base: Achievement[] = [];
     private loadedStamp = '';
 
     static fromFile(path: string, customPath = ''): Catalogue {
@@ -63,6 +63,51 @@ export class Catalogue {
 
     byId(id: string): Achievement | undefined {
         return this.list.find((achievement) => achievement.id === id);
+    }
+
+    builtIn(): Achievement[] {
+        return this.base;
+    }
+
+    // The entries of awards.json, as the owner wrote them. Throws if the file is not valid JSON.
+    customEntries(): CustomEntry[] {
+        return this.hasCustomFile() ? this.readList(this.customPath) : [];
+    }
+
+    // The award that an entry gives: a built-in award with the entry on top.
+    resolve(entry: CustomEntry): Achievement {
+        const builtIn = this.base.find((award) => award.id === entry.id);
+        return {
+            ...builtIn,
+            ...entry,
+        } as Achievement;
+    }
+
+    problemsIn(entries: CustomEntry[]): EntryProblem[] {
+        const seen = new Set<string>();
+        return entries
+            .map((entry, index) => {
+                const problem = this.entryProblem(entry, seen);
+                seen.add(String(entry?.id ?? ''));
+                return {
+                    index,
+                    id: String(entry?.id ?? ''),
+                    problem,
+                };
+            })
+            .filter((entry) => entry.problem !== '');
+    }
+
+    // Writes awards.json, then loads the awards again.
+    // The write goes to a new file first, so a crash never leaves half a file.
+    saveCustom(entries: CustomEntry[]): void {
+        if (!this.customPath) {
+            throw new Error('Laurels has no place for awards.json.');
+        }
+        const draft = `${this.customPath}.new`;
+        writeFileSync(draft, `${JSON.stringify(entries, null, 4)}\n`);
+        renameSync(draft, this.customPath);
+        this.load();
     }
 
     // Called each cycle. Returns true if the list changed.
@@ -85,9 +130,10 @@ export class Catalogue {
 
     private load(): void {
         const stamp = this.stampNow();
-        const base = this.readList(this.path).filter((entry) => this.isValid(entry));
+        const base = this.readList(this.path).filter((entry) => this.isValid(entry)) as Achievement[];
         const custom = this.hasCustomFile() ? this.readList(this.customPath) : [];
-        this.list = this.merge(base as Achievement[], custom);
+        this.list = this.merge(base, custom);
+        this.base = base;
         this.loadedStamp = stamp;
     }
 
@@ -101,7 +147,7 @@ export class Catalogue {
         return this.customPath !== '' && existsSync(this.customPath);
     }
 
-    private readList(path: string): Partial<Achievement & CustomFields>[] {
+    private readList(path: string): CustomEntry[] {
         const entries = JSON.parse(readFileSync(path, 'utf8'));
         if (!Array.isArray(entries)) {
             throw new Error(`${path} must hold a list of achievements`);
@@ -109,7 +155,7 @@ export class Catalogue {
         return entries;
     }
 
-    private merge(base: Achievement[], custom: Partial<Achievement & CustomFields>[]): Achievement[] {
+    private merge(base: Achievement[], custom: CustomEntry[]): Achievement[] {
         const byId = new Map(base.map((achievement) => [achievement.id, achievement]));
         for (const entry of custom) {
             this.applyCustom(byId, entry);
@@ -119,7 +165,7 @@ export class Catalogue {
 
     private applyCustom(
         byId: Map<string, Achievement>,
-        entry: Partial<Achievement & CustomFields>,
+        entry: CustomEntry,
     ): void {
         if (!entry.id) {
             console.warn('Skipped an entry in awards.json: it needs an id', entry);
@@ -139,30 +185,46 @@ export class Catalogue {
     }
 
     private isValid(entry: unknown): boolean {
-        const problem = this.problemWith(entry as Partial<Achievement>);
+        const award = entry as Partial<Achievement>;
+        const problem = this.problemWith(award);
         if (problem) {
-            console.warn(`Skipped achievement: ${problem}`, entry);
+            console.warn(`Skipped achievement ${award.id ?? '(no id)'}: ${problem}`);
         }
         return !problem;
     }
 
     private problemWith(entry: Partial<Achievement>): string {
         if (!entry.id || !entry.title || !entry.description) {
-            return 'needs id, title and description';
+            return 'needs an id, a title and a description';
         }
         if (!entry.tier || !TIER_ORDER.includes(entry.tier)) {
-            return `${entry.id}: unknown tier "${entry.tier}"`;
+            return `unknown tier "${entry.tier}"`;
         }
         if (!entry.section || !SECTIONS.includes(entry.section)) {
-            return `${entry.id}: unknown section "${entry.section}"`;
+            return `unknown section "${entry.section}"`;
         }
-        if (!entry.rule || !RULE_TYPES.includes(entry.rule.type)) {
-            return `${entry.id}: unknown rule type`;
+        return ruleProblem(entry.rule as unknown as Record<string, unknown>);
+    }
+
+    // The problem of one editor entry, as Laurels would load it.
+    private entryProblem(entry: CustomEntry, seen: Set<string>): string {
+        if (!entry || typeof entry !== 'object' || !entry.id) {
+            return 'needs an id';
         }
-        if (!(entry.rule.target > 0)) {
-            return `${entry.id}: target must be above 0`;
+        if (!ID_PATTERN.test(entry.id)) {
+            return 'the id can have only small letters, digits and _';
         }
-        return '';
+        if (seen.has(entry.id)) {
+            return 'another entry has the same id';
+        }
+        const builtIn = this.base.find((award) => award.id === entry.id);
+        if (entry.remove) {
+            return builtIn ? '' : 'there is no built-in award with this id to remove';
+        }
+        return this.problemWith({
+            ...builtIn,
+            ...entry,
+        });
     }
 
 }

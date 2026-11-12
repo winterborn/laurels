@@ -1,6 +1,8 @@
 import type { App } from '../App.ts';
-import type { Settings } from '../model/index.ts';
 import { DemoWatch } from '../demo/index.ts';
+import { unitOf } from '../helpers/index.ts';
+import type { Settings } from '../model/index.ts';
+import type { CustomEntry } from '../rules/index.ts';
 import { DiscordNotifier } from '../notify/index.ts';
 import {
     PlexAccount,
@@ -65,6 +67,74 @@ export class SettingsRoutes {
         } catch (error) {
             return this.fail(this.messageOf(error));
         }
+    }
+
+    // Your awards: the entries of awards.json and the built-in awards.
+    customAwards(): RouteResult {
+        const catalogue = this.app.catalogue;
+        const builtIn = catalogue.builtIn();
+        try {
+            return this.ok({
+                entries: catalogue.customEntries(),
+                builtIn,
+                fileError: '',
+            });
+        } catch (error) {
+            return this.ok({
+                entries: [],
+                builtIn,
+                fileError: `awards.json is not valid JSON: ${this.messageOf(error)}. Fix the file, or save here to replace it.`,
+            });
+        }
+    }
+
+    saveAwards(body: Json): RouteResult {
+        const entries = Array.isArray(body.entries) ? body.entries as CustomEntry[] : null;
+        if (!entries) {
+            return this.fail('Send a list of awards.');
+        }
+        const problems = this.app.catalogue.problemsIn(entries);
+        if (problems.length) {
+            return {
+                status: 400,
+                body: {
+                    error: 'Some awards have a problem. Fix them, then save again.',
+                    problems,
+                },
+            };
+        }
+        try {
+            this.app.catalogue.saveCustom(entries);
+        } catch (error) {
+            return this.fail(`Laurels cannot write awards.json: ${this.messageOf(error)}`);
+        }
+        this.app.refreshAwards();
+        return this.customAwards();
+    }
+
+    // Checks one award and shows each person's progress. Nothing is saved.
+    checkAward(body: Json): RouteResult {
+        const entry = body.entry as CustomEntry | undefined;
+        if (!entry) {
+            return this.fail('Send one award to check.');
+        }
+        const [problem] = this.app.catalogue.problemsIn([entry]);
+        if (problem) {
+            return this.fail(problem.problem);
+        }
+        if (entry.remove) {
+            return this.ok({ people: [] });
+        }
+        const achievement = this.app.catalogue.resolve(entry);
+        const unit = unitOf(achievement.rule);
+        const people = this.app.previewAward(achievement).map((progress) => ({
+            name: progress.name,
+            value: progress.value,
+            target: progress.target,
+            earned: progress.earned,
+            unit: progress.target === 1 ? unit.one : unit.many,
+        }));
+        return this.ok({ people });
     }
 
     // Tests the address in the form, with the typed key or the saved one.
