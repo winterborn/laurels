@@ -10,4 +10,6 @@ export interface Progress {
     posterKey?: string;
     // Short note, for example "Harbour Lights".
     note?: string;
+    // The rule threw an error. Laurels then keeps any saved award.
+    failed?: boolean;
 }

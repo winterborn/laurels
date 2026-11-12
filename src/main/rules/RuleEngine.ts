@@ -72,6 +72,7 @@ export class RuleEngine {
                 earned: false,
                 value: 0,
                 target: 1,
+                failed: true,
             };
         }
     }

@@ -41,6 +41,10 @@ By default, only watches from setup win awards, so everyone starts with no award
 To give awards for past watches too, open **Settings**, then **Household**, and select **All watches**.
 Laurels then dates each award to the watch that won it.
 
+Awards follow the rules.
+If the rules no longer give an award, Laurels removes it.
+For example, Laurels removes the awards for past watches when you change back to **Only watches from setup**.
+
 The full guide is [docs/install.md](docs/install.md).
 It tells you how to connect Laurels to Plex when Plex also runs in Docker.
 

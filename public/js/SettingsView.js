@@ -225,7 +225,8 @@ export class SettingsView {
         const current = this.settings.values.awardsFrom ?? 'setup';
         const lock = this.lockAttr('awardsFrom');
         const choices = [
-            ['setup', 'Only watches from setup', 'Everyone starts with no awards. Each award needs new watches.'],
+            ['setup', 'Only watches from setup', 'Everyone starts with no awards. Each award needs new watches. '
+                + 'If you change to this, Laurels removes the awards for past watches.'],
             ['all', 'All watches, also from before setup', 'Laurels gives awards for your past watches, with the date of the watch.'],
         ];
         const options = choices.map(([value, label, help]) => {

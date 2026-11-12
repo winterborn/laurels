@@ -81,11 +81,6 @@ export class SettingsStore {
         return Object.keys(this.envValues) as SettingName[];
     }
 
-    // True if settings.json has this field. Defaults do not count.
-    hasSaved(name: SettingName): boolean {
-        return name in this.saved;
-    }
-
     // Internal fields that no form or variable may set.
     saveOwner(ownerId: string): void {
         this.merged = null;

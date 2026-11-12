@@ -393,6 +393,15 @@ export class Store {
         return changes.reduce((sum, count) => sum + count, 0);
     }
 
+    deleteAwards(awards: Award[]): void {
+        const remove = this.db.prepare('DELETE FROM awards WHERE user_id = ? AND achievement_id = ?');
+        this.transaction(() => {
+            for (const award of awards) {
+                remove.run(award.userId, award.achievementId);
+            }
+        });
+    }
+
     awards(): Award[] {
         const rows = this.db.prepare('SELECT * FROM awards ORDER BY awarded_at DESC').all() as Row[];
         return rows.map((row) => ({

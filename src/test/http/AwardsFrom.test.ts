@@ -11,6 +11,15 @@ import { MockPlexServer } from '../../../dev/mock-plex/MockPlexServer.ts';
 
 const folders: string[] = [];
 const mocks: HttpServer[] = [];
+const apps: App[] = [];
+
+// updateSettings starts a cycle in the background. This waits for it to end.
+async function settle(app: App): Promise<void> {
+    while (app.isSyncing) {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    await app.runCycle();
+}
 
 async function newApp(settings: Record<string, unknown> = {}): Promise<{ app: App; mockUrl: string }> {
     const dataDir = mkdtempSync(join(tmpdir(), 'laurels-awards-from-'));
@@ -25,6 +34,7 @@ async function newApp(settings: Record<string, unknown> = {}): Promise<{ app: Ap
         PLEX_TOKEN: 'mock-token',
         TZ: 'UTC',
     }));
+    apps.push(app);
     return {
         app,
         mockUrl,
@@ -47,6 +57,10 @@ async function watchFilm(app: App, mockUrl: string): Promise<void> {
 describe('awards from setup or from all watches', () => {
 
     after(() => {
+        apps.forEach((app) => {
+            app.stop();
+            app.store.close();
+        });
         mocks.forEach((mock) => {
             mock.closeAllConnections();
             mock.close();
@@ -66,16 +80,33 @@ describe('awards from setup or from all watches', () => {
         await app.runCycle();
         const won = app.store.awards().map((award) => award.achievementId);
         assert.ok(won.includes('film_first'));
-        app.stop();
-        app.store.close();
     });
 
     it('gives awards for past watches when the owner chooses all', async () => {
         const { app } = await newApp({ awardsFrom: 'all' });
         await app.runCycle();
         assert.ok(app.store.awards().length > 0);
-        app.stop();
-        app.store.close();
+    });
+
+
+    it('removes awards for past watches when the owner switches to setup', async () => {
+        const { app } = await newApp({ awardsFrom: 'all' });
+        await app.runCycle();
+        assert.ok(app.store.awards().length > 0);
+        app.updateSettings({ awardsFrom: 'setup' });
+        await settle(app);
+        assert.equal(app.store.awards().length, 0);
+    });
+
+    it('keeps the awards of people hidden in Settings', async () => {
+        const { app } = await newApp({ awardsFrom: 'all' });
+        await app.runCycle();
+        const samAwards = app.store.awards().filter((award) => award.userId === '2').length;
+        assert.ok(samAwards > 0);
+        app.updateSettings({ allowedUsers: '1' });
+        await settle(app);
+        const kept = app.store.awards().filter((award) => award.userId === '2').length;
+        assert.equal(kept, samAwards);
     });
 
 });

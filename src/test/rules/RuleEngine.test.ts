@@ -189,3 +189,17 @@ describe('complete', () => {
     });
 
 });
+
+describe('a rule that fails', () => {
+
+    it('marks the progress as failed, so a saved award stays', () => {
+        const history = new HistoryBuilder().build();
+        const progress = engine.evaluate(history, achievement({
+            type: 'awards',
+            target: 1,
+        }));
+        assert.equal(progress.earned, false);
+        assert.equal(progress.failed, true);
+    });
+
+});

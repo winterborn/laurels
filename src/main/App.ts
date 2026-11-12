@@ -65,7 +65,6 @@ export class App {
         this.store = new Store(config.databasePath);
         this.catalogue = Catalogue.fromFile(config.achievementsPath, config.customAwardsPath);
         this.settingsStore = new SettingsStore(config.settingsPath, config.env);
-        this.keepPastAwards();
         this.scoreboard = new Scoreboard(this.settings.timeZone);
         this.notifier = new DiscordNotifier('', '');
         this.rebuild();
@@ -294,16 +293,6 @@ export class App {
         return now;
     }
 
-    // An install from before this setting already gave awards for past watches.
-    // It keeps doing so, unless the owner changes the setting.
-    private keepPastAwards(): void {
-        const hasChoice = this.settingsStore.hasSaved('awardsFrom');
-        const hasWatches = this.store.events().length > 0;
-        if (!hasChoice && hasWatches) {
-            this.settingsStore.save({ awardsFrom: 'all' });
-        }
-    }
-
     // Saved awards keep the date, watch and poster of the current rules.
     private async grantAwards(): Promise<void> {
         const earned = this.scoreboard
@@ -312,13 +301,34 @@ export class App {
         const fresh = this.store.transaction(() => earned.filter((award) => this.store.saveAward(award)));
         const dated = earned.filter((award) => award.eventId !== '');
         const changed = this.store.updateAwards(dated);
+        const removed = this.removeStaleAwards(earned);
         if (fresh.length) {
             console.log(`New awards: ${fresh.length}`);
         }
         if (changed) {
             console.log(`Updated awards: ${changed}`);
         }
+        if (removed) {
+            console.log(`Removed awards: ${removed}`);
+        }
         await this.notify(fresh);
+    }
+
+    // Awards follow the rules: Laurels removes a saved award that the rules no longer give.
+    // It keeps the awards of people that it did not score (people hidden in Settings)
+    // and the awards of rules that threw an error.
+    private removeStaleAwards(earned: Award[]): number {
+        const keyOf = (award: Award) => `${award.userId}|${award.achievementId}`;
+        const kept = new Set(earned.map(keyOf));
+        const scored = this.scoreboard.userIds();
+        const failed = this.scoreboard.failedKeys();
+        const stale = this.store.awards().filter((award) => {
+            const key = keyOf(award);
+            const isScored = scored.has(award.userId);
+            return isScored && !kept.has(key) && !failed.has(key);
+        });
+        this.store.deleteAwards(stale);
+        return stale.length;
     }
 
     private awardFrom(progress: Progress & { userId: string }): Award {

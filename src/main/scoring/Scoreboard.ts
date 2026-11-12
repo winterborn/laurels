@@ -48,6 +48,22 @@ export class Scoreboard {
         return this.progressByUser.get(userId) ?? [];
     }
 
+    // The people that the last refresh scored.
+    userIds(): Set<string> {
+        return new Set(this.progressByUser.keys());
+    }
+
+    // "userId|achievementId" for each rule that threw an error.
+    failedKeys(): Set<string> {
+        const entries = [...this.progressByUser.entries()];
+        const keys = entries.flatMap(([userId, progress]) => {
+            return progress
+                .filter((entry) => entry.failed)
+                .map((entry) => `${userId}|${entry.achievementId}`);
+        });
+        return new Set(keys);
+    }
+
     earned(): Array<Progress & { userId: string }> {
         const entries = [...this.progressByUser.entries()];
         return entries.flatMap(([userId, progress]) => {

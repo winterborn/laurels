@@ -57,6 +57,10 @@ The first sync reads all of your Plex history.
 By default, only watches from setup win awards, so everyone starts with no awards.
 To give awards for past watches too, open **Settings**, then **Household**, and select **All watches**.
 Laurels then dates each award to the watch that won it.
+
+Awards follow the rules.
+If the rules no longer give an award, Laurels removes it.
+For example, Laurels removes the awards for past watches when you change back to **Only watches from setup**.
 Laurels does not send these old awards to Discord.
 
 ## Plex address
