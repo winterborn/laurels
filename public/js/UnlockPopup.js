@@ -78,14 +78,21 @@ export class UnlockPopup {
         return `${shown.slice(0, -1).join(', ')} and ${shown[shown.length - 1]}.`;
     }
 
+    // A modal dialog: Tab stays inside, Escape closes, focus goes back.
     open(html) {
+        const opener = document.activeElement;
+        const listening = new AbortController();
         const overlay = document.createElement('div');
         overlay.className = 'overlay';
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-labelledby', 'unlock-title');
         overlay.innerHTML = html;
-        const close = () => overlay.remove();
+        const close = () => {
+            listening.abort();
+            overlay.remove();
+            opener?.focus?.();
+        };
         overlay.addEventListener('click', (event) => {
             const isBackdrop = event.target === overlay;
             const isClose = event.target.closest('[data-close]');
@@ -93,16 +100,45 @@ export class UnlockPopup {
                 close();
             }
         });
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                close();
-            }
-        }, { once: true });
+        document.addEventListener('keydown', (event) => this.onKey(event, overlay, close), {
+            signal: listening.signal,
+        });
         document.body.appendChild(overlay);
         dissolveIn(overlay);
         irisIn(overlay.querySelector('.unlock'));
         developPrint(overlay.querySelector('.unlock-poster'));
         overlay.querySelector('[data-close]')?.focus();
+    }
+
+    onKey(event, overlay, close) {
+        switch (event.key) {
+            case 'Escape':
+                close();
+                return;
+            case 'Tab':
+                this.keepFocusIn(overlay, event);
+                return;
+        }
+    }
+
+    // Tab from the last control goes to the first, Shift+Tab the other way.
+    keepFocusIn(overlay, event) {
+        const controls = [...overlay.querySelectorAll('a[href], button')];
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (!first) {
+            return;
+        }
+        const isOutside = !overlay.contains(document.activeElement);
+        const wrapsBack = event.shiftKey && document.activeElement === first;
+        const wrapsForward = !event.shiftKey && document.activeElement === last;
+        if (isOutside || wrapsForward) {
+            event.preventDefault();
+            first.focus();
+        } else if (wrapsBack) {
+            event.preventDefault();
+            last.focus();
+        }
     }
 
     // Local storage can be blocked. Then the popup never shows.

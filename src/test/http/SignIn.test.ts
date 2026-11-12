@@ -46,6 +46,7 @@ describe('sign in with Plex', () => {
         context.laurels?.close();
         context.mock?.closeAllConnections();
         context.mock?.close();
+        context.app?.stop();
         context.app?.store.close();
         rmSync(dataDir, {
             recursive: true,

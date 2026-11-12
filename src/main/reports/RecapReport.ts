@@ -39,16 +39,16 @@ export class RecapReport {
                 year: null,
             };
         }
-        const events = history.events.filter((event) => this.yearOf(event) === year);
+        const events = history.events.filter((event) => this.yearOf(history, event) === year);
         return {
             user: this.person(user),
             years,
             year,
-            isCurrentYear: year === this.yearOf({ watchedAt: Date.now() / 1000 }),
+            isCurrentYear: year === this.yearAt(Date.now() / 1000),
             totals: this.totals(history, events, user.id, year),
-            months: this.months(events),
-            filmMonths: this.months(events.filter((event) => event.kind === 'movie')),
-            tvMonths: this.months(events.filter((event) => event.kind === 'episode')),
+            months: this.months(history, events),
+            filmMonths: this.months(history, events.filter((event) => event.kind === 'movie')),
+            tvMonths: this.months(history, events.filter((event) => event.kind === 'episode')),
             genres: this.genres(history, events),
             moments: this.moments(history, events, user),
             won: this.won(user.id, year),
@@ -63,17 +63,22 @@ export class RecapReport {
     }
 
     private yearsOf(history: UserHistory): string[] {
-        const years = new Set(history.events.map((event) => this.yearOf(event)));
+        const years = new Set(history.events.map((event) => this.yearOf(history, event)));
         return [...years].sort();
     }
 
-    private yearOf(event: { watchedAt: number }): string {
-        return localParts(event.watchedAt, this.app.settings.timeZone).day.slice(0, 4);
+    // A watch belongs to the day it started, the same day the rules use.
+    private yearOf(history: UserHistory, event: WatchEvent): string {
+        return history.localStart(event).day.slice(0, 4);
     }
 
-    private monthOf(event: WatchEvent): number {
-        const day = localParts(event.watchedAt, this.app.settings.timeZone).day;
+    private monthOf(history: UserHistory, event: WatchEvent): number {
+        const day = history.localStart(event).day;
         return Number(day.slice(5, 7)) - 1;
+    }
+
+    private yearAt(epochSeconds: number): string {
+        return localParts(epochSeconds, this.app.settings.timeZone).day.slice(0, 4);
     }
 
     private totals(history: UserHistory, events: WatchEvent[], userId: string, year: string): Json {
@@ -87,10 +92,10 @@ export class RecapReport {
     }
 
     // Watches in each month, January first.
-    private months(events: WatchEvent[]): number[] {
+    private months(history: UserHistory, events: WatchEvent[]): number[] {
         const counts = Array.from({ length: 12 }, () => 0);
         for (const event of events) {
-            counts[this.monthOf(event)] += 1;
+            counts[this.monthOf(history, event)] += 1;
         }
         return counts;
     }
@@ -228,7 +233,7 @@ export class RecapReport {
         return this.app.store.awards().filter((award) => {
             const isOwn = award.userId === userId;
             const isKnown = this.app.catalogue.byId(award.achievementId) !== undefined;
-            return isOwn && isKnown && this.yearOf({ watchedAt: award.awardedAt }) === year;
+            return isOwn && isKnown && this.yearAt(award.awardedAt) === year;
         });
     }
 

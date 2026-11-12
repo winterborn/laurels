@@ -28,6 +28,7 @@ export class AwardsView {
         this.definitions = definitions;
         this.cabinet = cabinet;
         this.user = user;
+        this.wonIds = new Set(cabinet.awards.map((award) => award.achievementId));
     }
 
     render() {
@@ -228,7 +229,7 @@ export class AwardsView {
         if (!hasAny) {
             return '';
         }
-        const notYet = this.cabinet.progress.filter((progress) => !progress.earned).length;
+        const notYet = this.openProgress().length;
         return `<section class="block" aria-labelledby="nominations">`
             + `<div class="block-head">`
             + `<h2 class="section-head" id="nominations">Nominations · nearest to a win</h2>`
@@ -277,9 +278,15 @@ export class AwardsView {
     }
 
     // Not won and not secret: the nearest first.
+    // Awards that are not won and not saved as won.
+    openProgress() {
+        return this.cabinet.progress.filter((progress) => {
+            return !progress.earned && !this.wonIds.has(progress.achievementId);
+        });
+    }
+
     nearestIn(section, count) {
-        return this.cabinet.progress
-            .filter((progress) => !progress.earned)
+        return this.openProgress()
             .filter((progress) => {
                 const definition = this.definitions.get(progress.achievementId);
                 return definition.section === section && !definition.secret;

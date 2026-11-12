@@ -248,7 +248,9 @@ export class Dashboard {
         const isFirstSetup = location.hash !== '#/settings';
         if (isFirstSetup && status.configured) {
             await this.show();
+            return;
         }
+        window.dispatchEvent(new CustomEvent('laurels:synced', { detail: status }));
     }
 
     renderHousehold(users, currentId) {

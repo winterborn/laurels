@@ -18,6 +18,10 @@ const MAX_ACTORS = 10;
 // Raise this when PlexMapper reads a new field, so old items are read again.
 export const META_VERSION = 2;
 
+// Plex keeps the history row of an item that left the library, but drops its key.
+// Laurels gives such a row a key of its own, from the history id.
+const GONE_PREFIX = 'gone:';
+
 // Turns Plex JSON into our model. No network here.
 export class PlexMapper {
 
@@ -38,7 +42,7 @@ export class PlexMapper {
     event(row: PlexJson): WatchEvent | null {
         const kind = row.type;
         const isVideo = kind === 'movie' || kind === 'episode';
-        const ratingKey = this.ratingKeyOf(row);
+        const ratingKey = this.ratingKeyOf(row) ?? this.goneKeyOf(row);
         if (!isVideo || !ratingKey || !row.viewedAt) {
             return null;
         }
@@ -47,7 +51,7 @@ export class PlexMapper {
             userId: String(row.accountID),
             ratingKey,
             kind,
-            showKey: this.keyFrom(row.grandparentKey),
+            showKey: this.showKeyOf(row),
             seasonKey: this.keyFrom(row.parentKey),
             watchedAt: Number(row.viewedAt),
             source: 'plex',
@@ -67,6 +71,31 @@ export class PlexMapper {
             collections: [],
             thumb: row.thumb || undefined,
             stub: true,
+        };
+    }
+
+    isGone(ratingKey: string): boolean {
+        return ratingKey.startsWith(GONE_PREFIX);
+    }
+
+    // A film or episode that left the library. Only the history row knows it.
+    removed(row: PlexJson, ratingKey: string, showKey: string | undefined): Item {
+        return {
+            ...this.stub(row, ratingKey),
+            showKey,
+            index: this.numberOf(row.index),
+            seasonIndex: this.numberOf(row.parentIndex),
+            stub: false,
+            missing: true,
+        };
+    }
+
+    // The show of a removed episode, named from the history row.
+    removedShow(row: PlexJson, showKey: string): Item {
+        return {
+            ...this.missing(showKey),
+            kind: 'show',
+            title: row.grandparentTitle ?? 'Unknown show',
         };
     }
 
@@ -103,7 +132,7 @@ export class PlexMapper {
             countries: this.tags(row.Country),
             contentRating: row.contentRating || undefined,
             releasedAt: row.originallyAvailableAt || undefined,
-            showKey: this.showKeyOf(row, kind),
+            showKey: this.itemShowKey(row, kind),
             seasonKey: kind === 'episode' ? this.stringOf(row.parentRatingKey) : undefined,
             index: this.numberOf(row.index),
             seasonIndex: this.numberOf(row.parentIndex),
@@ -115,7 +144,25 @@ export class PlexMapper {
         };
     }
 
-    private showKeyOf(row: PlexJson, kind: ItemKind): string | undefined {
+    // A removed episode has no show key, so its show title groups it.
+    private showKeyOf(row: PlexJson): string | undefined {
+        const key = this.keyFrom(row.grandparentKey);
+        const title = this.stringOf(row.grandparentTitle);
+        if (key || !title) {
+            return key;
+        }
+        return `${GONE_PREFIX}show:${title}`;
+    }
+
+    private goneKeyOf(row: PlexJson): string | undefined {
+        const historyId = this.keyFrom(row.historyKey);
+        if (!historyId) {
+            return undefined;
+        }
+        return `${GONE_PREFIX}${historyId}`;
+    }
+
+    private itemShowKey(row: PlexJson, kind: ItemKind): string | undefined {
         switch (kind) {
             case 'episode':
                 return this.stringOf(row.grandparentRatingKey);

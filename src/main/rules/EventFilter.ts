@@ -66,7 +66,7 @@ export class EventFilter {
             return false;
         }
         const isLongEnough = spec.durationMin === undefined || minutes >= spec.durationMin;
-        const isShortEnough = spec.durationMax === undefined || minutes <= spec.durationMax;
+        const isShortEnough = spec.durationMax === undefined || minutes < spec.durationMax;
         return isLongEnough && isShortEnough;
     }
 

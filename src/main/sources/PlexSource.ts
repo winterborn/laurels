@@ -1,3 +1,4 @@
+import { chunksOf } from '../helpers/index.ts';
 import type {
     Item,
     WatchEvent,
@@ -20,6 +21,12 @@ export interface SyncReport {
 
 const HISTORY_PAGE = 500;
 const CURSOR = 'plex.viewedAt';
+// Raise this when PlexMapper keeps history rows that it skipped before.
+// The next sync then reads all the history again.
+const HISTORY_VERSION = '2';
+const HISTORY_VERSION_KEY = 'plex.historyVersion';
+// Metadata requests sent to Plex at the same time.
+const METADATA_BATCH = 4;
 
 export class PlexSource {
 
@@ -57,7 +64,7 @@ export class PlexSource {
 
     // First run reads everything. Later runs read from the last viewedAt.
     private async syncHistory(): Promise<number> {
-        const cursor = this.store.getState(CURSOR) ?? '0';
+        const cursor = this.historyCursor();
         const rows = await this.client.getAllPages('/status/sessions/history/all', {
             'sort': 'viewedAt:asc',
             'viewedAt>': cursor,
@@ -69,7 +76,16 @@ export class PlexSource {
         const added = this.store.saveEvents(events);
         const latest = events.reduce((most, event) => Math.max(most, event.watchedAt), Number(cursor));
         this.store.setState(CURSOR, String(latest));
+        this.store.setState(HISTORY_VERSION_KEY, HISTORY_VERSION);
         return added;
+    }
+
+    private historyCursor(): string {
+        const isCurrent = this.store.getState(HISTORY_VERSION_KEY) === HISTORY_VERSION;
+        if (!isCurrent) {
+            return '0';
+        }
+        return this.store.getState(CURSOR) ?? '0';
     }
 
     // Keeps a title for media that Plex may delete before we fetch it.
@@ -77,21 +93,48 @@ export class PlexSource {
         const known = this.store.items();
         for (const row of rows) {
             const event = this.mapper.event(row);
-            const isKnown = !event || known.has(event.ratingKey);
-            if (isKnown) {
-                continue;
+            if (event) {
+                this.saveStub(row, event, known);
             }
-            const stub = this.mapper.stub(row, event.ratingKey);
-            this.store.saveItem(stub);
-            known.set(stub.ratingKey, stub);
         }
+    }
+
+    private saveStub(row: PlexJson, event: WatchEvent, known: Map<string, Item>): void {
+        const items = this.isGone(event)
+            ? this.removedItems(row, event)
+            : [this.mapper.stub(row, event.ratingKey)];
+        for (const item of items) {
+            if (!known.has(item.ratingKey)) {
+                this.store.saveItem(item);
+                known.set(item.ratingKey, item);
+            }
+        }
+    }
+
+    private isGone(event: WatchEvent): boolean {
+        return this.mapper.isGone(event.ratingKey);
+    }
+
+    // A removed watch, and its removed show if it is an episode.
+    private removedItems(row: PlexJson, event: WatchEvent): Item[] {
+        const watched = this.mapper.removed(row, event.ratingKey, event.showKey);
+        const showKey = event.showKey;
+        const hasRemovedShow = showKey !== undefined && this.mapper.isGone(showKey);
+        if (!hasRemovedShow) {
+            return [watched];
+        }
+        return [
+            watched,
+            this.mapper.removedShow(row, showKey),
+        ];
     }
 
     private async syncMetadata(): Promise<number> {
         const items = this.store.items();
         const wanted = this.wantedKeys(this.store.events(), items);
-        for (const ratingKey of wanted) {
-            await this.fetchItem(ratingKey, items.get(ratingKey));
+        for (const batch of chunksOf(wanted, METADATA_BATCH)) {
+            const fetches = batch.map((ratingKey) => this.fetchItem(ratingKey, items.get(ratingKey)));
+            await Promise.all(fetches);
         }
         return wanted.length;
     }

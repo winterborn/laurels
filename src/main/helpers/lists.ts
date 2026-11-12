@@ -19,3 +19,12 @@ export function groupBy<T>(
     }
     return groups;
 }
+
+// [1, 2, 3, 4, 5] in chunks of 2: [[1, 2], [3, 4], [5]].
+export function chunksOf<T>(items: T[], size: number): T[][] {
+    const count = Math.ceil(items.length / size);
+    return Array.from({ length: count }, (_, index) => {
+        const start = index * size;
+        return items.slice(start, start + size);
+    });
+}

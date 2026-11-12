@@ -20,6 +20,8 @@ export class PlexClient {
 
     private readonly baseUrl: string;
     private readonly token: string;
+    // Requests sent so far. The sync log shows it.
+    requestCount = 0;
 
     constructor(baseUrl: string, token: string) {
         this.baseUrl = baseUrl.replace(/\/+$/, '');
@@ -125,13 +127,15 @@ export class PlexClient {
         for (const [name, value] of Object.entries(params)) {
             url.searchParams.set(name, value);
         }
+        this.requestCount += 1;
         try {
             return await fetch(url, {
                 headers: this.headers(accept),
                 signal: AbortSignal.timeout(60_000),
             });
         } catch (error) {
-            throw new Error(`Cannot reach Plex at ${this.baseUrl}: ${this.reason(error)}`);
+            throw new Error(`Cannot reach Plex at ${this.baseUrl}: ${this.reason(error)}. `
+                + 'Laurels tries again at the next check.');
         }
     }
 

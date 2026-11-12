@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS sync_state (
 export class Store {
 
     private readonly db: DatabaseSync;
+    // Parsed items, read once. saveItem clears it.
+    private itemCache: Map<string, Item> | null = null;
 
     constructor(path: string) {
         mkdirSync(dirname(path), { recursive: true });
@@ -140,12 +142,18 @@ export class Store {
             .prepare(`INSERT INTO items (rating_key, json, fetched_at) VALUES (?, ?, ?)
                 ON CONFLICT (rating_key) DO UPDATE SET json = excluded.json, fetched_at = excluded.fetched_at`)
             .run(item.ratingKey, JSON.stringify(item), Math.floor(Date.now() / 1000));
+        this.itemCache = null;
     }
 
+    // A copy, so a caller cannot change the cache.
     items(): Map<string, Item> {
-        const rows = this.db.prepare('SELECT json FROM items').all() as Row[];
-        const items = rows.map((row) => JSON.parse(row.json) as Item);
-        return new Map(items.map((item) => [item.ratingKey, item]));
+        this.itemCache ??= this.readItems();
+        return new Map(this.itemCache);
+    }
+
+    item(ratingKey: string): Item | undefined {
+        this.itemCache ??= this.readItems();
+        return this.itemCache.get(ratingKey);
     }
 
     // Awards
@@ -171,6 +179,25 @@ export class Store {
         this.db
             .prepare('UPDATE awards SET notified_at = ? WHERE user_id = ? AND achievement_id = ?')
             .run(at, award.userId, award.achievementId);
+    }
+
+    // Gives saved awards the details in the list. Returns how many changed.
+    updateAwards(awards: Award[]): number {
+        const update = this.db.prepare(`UPDATE awards
+            SET awarded_at = ?, event_id = ?, poster_key = ?, note = ?
+            WHERE user_id = ? AND achievement_id = ?
+            AND (awarded_at != ? OR event_id != ? OR poster_key != ? OR note != ?)`);
+        const changes = awards.map((award) => {
+            const details = [
+                award.awardedAt,
+                award.eventId,
+                award.posterKey,
+                award.note,
+            ];
+            const result = update.run(...details, award.userId, award.achievementId, ...details);
+            return Number(result.changes);
+        });
+        return changes.reduce((sum, count) => sum + count, 0);
     }
 
     awards(): Award[] {
@@ -250,6 +277,12 @@ export class Store {
 
     close(): void {
         this.db.close();
+    }
+
+    private readItems(): Map<string, Item> {
+        const rows = this.db.prepare('SELECT json FROM items').all() as Row[];
+        const items = rows.map((row) => JSON.parse(row.json) as Item);
+        return new Map(items.map((item) => [item.ratingKey, item]));
     }
 
     private eventFrom(row: Row): WatchEvent {

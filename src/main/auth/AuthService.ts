@@ -89,7 +89,8 @@ export class AuthService {
         if (!role) {
             return {
                 status: 'refused',
-                message: `${user.name} has no access to this Plex server.`,
+                message: `${user.name} has no access to this Plex server. `
+                    + 'To set up Laurels, sign in with the account that owns the server.',
             };
         }
         if (role === 'owner') {
@@ -110,17 +111,42 @@ export class AuthService {
         }
     }
 
-    // First sign-in on a new install makes that account the owner.
+    // First sign-in on a new install makes that account the owner,
+    // but only if the account owns the Plex server.
     async roleFor(user: PlexUser, token: string): Promise<Role | null> {
         const ownerId = await this.ownerId();
         if (!ownerId) {
-            return 'owner';
+            const isServerOwner = await this.ownsServer(token);
+            return isServerOwner ? 'owner' : null;
         }
         if (user.id === ownerId) {
             return 'owner';
         }
         const isMember = await this.isMember(token);
         return isMember ? 'member' : null;
+    }
+
+    // The server at the Plex address, or any server if Laurels has no address yet.
+    private async ownsServer(token: string): Promise<boolean> {
+        const servers = await this.account().servers(token);
+        const owned = servers.filter((server) => server.owned);
+        const machineId = await this.configuredMachineId();
+        if (!machineId) {
+            return owned.length > 0;
+        }
+        return owned.some((server) => server.machineId === machineId);
+    }
+
+    private async configuredMachineId(): Promise<string> {
+        const plex = this.app.plex;
+        if (!plex) {
+            return '';
+        }
+        try {
+            return await plex.machineId();
+        } catch {
+            return '';
+        }
     }
 
     private async isMember(token: string): Promise<boolean> {

@@ -19,6 +19,7 @@ export interface PlexUser {
 
 export interface ServerChoice {
     name: string;
+    machineId: string;
     owned: boolean;
     connections: ServerConnection[];
 }
@@ -100,6 +101,7 @@ export class PlexAccount {
         }));
         return {
             name: String(resource.name ?? 'Plex server'),
+            machineId: String(resource.clientIdentifier ?? ''),
             owned: Boolean(resource.owned),
             connections: mapped.sort((a, b) => this.connectionRank(a) - this.connectionRank(b)),
         };

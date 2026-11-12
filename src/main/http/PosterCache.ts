@@ -33,7 +33,7 @@ export class PosterCache {
         if (cached) {
             return cached;
         }
-        const item = this.app.store.items().get(ratingKey);
+        const item = this.app.store.item(ratingKey);
         const path = kind === 'art' ? item?.art : item?.thumb;
         const plex = this.app.plex;
         if (!path || !plex) {

@@ -289,7 +289,19 @@ export class SettingsView {
         }
         this.settings = result.body;
         this.say('save-message', 'Saved. Reading your watch history…', true);
+        window.addEventListener('laurels:synced', (synced) => this.onSynced(synced.detail), { once: true });
         window.dispatchEvent(new CustomEvent('laurels:saved'));
+    }
+
+    // Replaces "Reading your watch history…" with the result of the sync.
+    onSynced(status) {
+        this.status = status;
+        const isOk = status.lastSync?.ok ?? true;
+        this.say('save-message', this.syncLine(), isOk);
+        const lede = this.root.querySelector('.lede');
+        if (lede) {
+            lede.textContent = this.syncLine();
+        }
     }
 
     // Only editable fields; an empty token field keeps the saved token.

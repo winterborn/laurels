@@ -9,6 +9,7 @@ export interface EventFilterSpec {
     genre?: string;
     yearBefore?: number;
     yearAfter?: number;
+    // Minutes. durationMin is inclusive, durationMax is exclusive.
     durationMin?: number;
     durationMax?: number;
     // Local hour the watch started, 0-23. hourTo is exclusive.

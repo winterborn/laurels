@@ -23,6 +23,7 @@ import { SettingsStore } from './settings/index.ts';
 import {
     PlexClient,
     PlexSource,
+    type SyncReport,
 } from './sources/index.ts';
 import { Store } from './store/index.ts';
 
@@ -49,6 +50,8 @@ export class App {
     private notifier: DiscordNotifier;
     private timer: NodeJS.Timeout | undefined;
     private isRunning = false;
+    // False until a cycle scores and gives awards with the current settings.
+    private isUpToDate = false;
     private watcherIds = new Set<string>();
 
     constructor(config: Config) {
@@ -86,8 +89,14 @@ export class App {
         this.runInBackground();
     }
 
+    // Ends the poll timer, so the process can exit.
+    stop(): void {
+        clearInterval(this.timer);
+    }
+
     updateSettings(patch: Partial<Settings>): Settings {
         const settings = this.settingsStore.save(patch);
+        this.isUpToDate = false;
         this.rebuild();
         this.schedule();
         this.runInBackground();
@@ -100,13 +109,28 @@ export class App {
         }
         this.isRunning = true;
         try {
-            this.catalogue.reloadIfChanged();
-            await this.syncPlex();
-            this.score();
-            await this.grantAwards();
+            await this.syncAndScore();
         } finally {
             this.isRunning = false;
         }
+    }
+
+    // A failed sync can leave metadata half read, so it gives no awards.
+    // A sync with no new data gives the same result, so it skips the work.
+    private async syncAndScore(): Promise<void> {
+        const hasNewRules = this.catalogue.reloadIfChanged();
+        const report = await this.syncPlex();
+        if (!report) {
+            return;
+        }
+        const hasNewData = report.newEvents > 0 || report.newItems > 0;
+        const canSkip = this.isUpToDate && !hasNewRules && !hasNewData;
+        if (canSkip) {
+            return;
+        }
+        this.score();
+        await this.grantAwards();
+        this.isUpToDate = true;
     }
 
     // Users with at least one watch, renamed by the aliases setting.
@@ -154,18 +178,29 @@ export class App {
         return allowed.includes(user.id) || allowed.includes(user.name);
     }
 
-    private async syncPlex(): Promise<void> {
-        if (!this.source) {
-            return;
+    private async syncPlex(): Promise<SyncReport | null> {
+        if (!this.source || !this.plex) {
+            return null;
         }
+        const startedAt = Date.now();
+        const requestsBefore = this.plex.requestCount;
         try {
             const report = await this.source.sync();
-            const message = `${report.users} users, ${report.newEvents} new watches, ${report.newItems} items`;
-            this.recordSync(true, message);
+            const counts = `${report.users} users, ${report.newEvents} new watches, ${report.newItems} items`;
+            this.recordSync(true, `${counts}${this.costOf(startedAt, requestsBefore)}`);
+            return report;
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            this.recordSync(false, message);
+            this.recordSync(false, `${message}${this.costOf(startedAt, requestsBefore)}`);
+            return null;
         }
+    }
+
+    // " in 12.3 s, 45 Plex requests"
+    private costOf(startedAt: number, requestsBefore: number): string {
+        const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
+        const requests = (this.plex?.requestCount ?? 0) - requestsBefore;
+        return ` in ${seconds} s, ${requests} Plex requests`;
     }
 
     private recordSync(ok: boolean, message: string): void {
@@ -189,13 +224,19 @@ export class App {
         );
     }
 
+    // Saved awards keep the date, watch and poster of the current rules.
     private async grantAwards(): Promise<void> {
-        const earned = this.scoreboard.earned();
-        const fresh = earned
-            .map((progress) => this.awardFrom(progress))
-            .filter((award) => this.store.saveAward(award));
+        const earned = this.scoreboard
+            .earned()
+            .map((progress) => this.awardFrom(progress));
+        const fresh = earned.filter((award) => this.store.saveAward(award));
+        const dated = earned.filter((award) => award.eventId !== '');
+        const changed = this.store.updateAwards(dated);
         if (fresh.length) {
             console.log(`New awards: ${fresh.length}`);
+        }
+        if (changed) {
+            console.log(`Updated awards: ${changed}`);
         }
         await this.notify(fresh);
     }
@@ -242,7 +283,7 @@ export class App {
             award,
             achievement,
             user,
-            earnedWith: this.store.items().get(award.posterKey)?.title ?? '',
+            earnedWith: this.store.item(award.posterKey)?.title ?? '',
         };
     }
 
