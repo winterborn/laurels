@@ -1,0 +1,41 @@
+# Laurels: trophies for what your household watches on Plex.
+#
+# 1. Run: docker compose up -d
+# 2. Open http://<server>:8484 and do the steps on "Set up Laurels".
+#
+# Laurels keeps its settings in ./config/settings.json.
+# A variable in this file has priority over the Settings page,
+# and the Settings page locks that field.
+# Guide: docs/install.md
+
+services:
+  laurels:
+    image: ghcr.io/winterborn/laurels:latest
+    build: .                 # used only when the image is not available
+    container_name: laurels
+    restart: unless-stopped
+    ports:
+      - "8484:8484"
+    environment:
+      - PUID=1000            # use the same values as your Plex container
+      - PGID=1000
+      - TZ=Europe/London     # used for times of day, days and streaks
+      # - PLEX_URL=http://plex:32400
+      # - PLEX_TOKEN=
+      # - POLL_MINUTES=5
+      # - DISCORD_WEBHOOK_URL=
+      # - PUBLIC_URL=
+      # - USER_ALIASES=1:Mum,2:Dad
+      # - ALLOWED_USERS=
+      # - AUTH=plex
+      # - LAN_GUESTS=false
+    volumes:
+      - ./config:/config
+    # To use http://plex:32400, connect Laurels to the network of your
+    # Plex container. Remove the comment marks below and set the name.
+    # networks:
+    #   - media
+
+# networks:
+#   media:
+#     external: true

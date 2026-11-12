@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Laurels</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;1,8..60,400&family=League+Gothic&family=IBM+Plex+Mono:wght@500&display=swap">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+    <nav class="nav" aria-label="Main">
+        <div class="nav-inner">
+            <a class="brand" href="#/">Laurels</a>
+            <div class="nav-links">
+                <a href="#/" data-page="awards">Awards</a>
+                <a href="#/ballot" data-page="ballot">Ballot</a>
+                <a href="#/ceremony" data-page="ceremony">Ceremony</a>
+                <a href="#/press-room" data-page="press-room">Press room</a>
+                <a href="#/season" data-page="season">Season review</a>
+                <a href="#/settings" data-page="settings">Settings</a>
+            </div>
+            <div class="household" role="group" aria-label="Choose a person"></div>
+            <div class="account"></div>
+        </div>
+    </nav>
+    <main class="page" id="page" aria-live="polite">
+        <p class="loading">Loading the programme…</p>
+    </main>
+    <script type="module" src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+.git
+.env
+.claude
+data
+data-demo
+config
+spike
+spike-output
+dev
+src/test
+art
+*.md
+!README.md

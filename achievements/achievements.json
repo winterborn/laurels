@@ -1,0 +1,580 @@
+[
+    {
+        "id": "film_first",
+        "title": "Fade in",
+        "description": "Your first film.",
+        "flavorText": "For the first time the lights went down.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_10",
+        "title": "Regular",
+        "description": "Watch 10 films.",
+        "flavorText": "For ten films and a usual seat.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "film_50",
+        "title": "Season ticket",
+        "description": "Watch 50 films.",
+        "flavorText": "For fifty films, one at a time.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 50
+        }
+    },
+    {
+        "id": "film_100",
+        "title": "That's a wrap",
+        "description": "Watch 100 films.",
+        "flavorText": "For a hundred films seen to the end.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 100
+        }
+    },
+    {
+        "id": "film_250",
+        "title": "Projectionist",
+        "description": "Watch 250 films.",
+        "flavorText": "For two hundred and fifty reels, threaded right.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 250
+        }
+    },
+    {
+        "id": "film_1000",
+        "title": "Fade out",
+        "description": "Watch 1,000 films.",
+        "flavorText": "For a thousand films. Roll credits.",
+        "tier": "Legendary",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 1000
+        }
+    },
+    {
+        "id": "film_double",
+        "title": "Double feature",
+        "description": "Watch 2 films in one evening.",
+        "flavorText": "For staying on for the second picture.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "filter": {
+                "kind": "movie",
+                "hourFrom": 17
+            },
+            "target": 2
+        }
+    },
+    {
+        "id": "film_marathon",
+        "title": "Marathon",
+        "description": "Watch 4 films in one day.",
+        "flavorText": "For four films between breakfast and bed.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 4
+        }
+    },
+    {
+        "id": "film_dailies",
+        "title": "Dailies",
+        "description": "Watch a film every day for 7 days.",
+        "flavorText": "For a film a day, seven days running.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "streak",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 7
+        }
+    },
+    {
+        "id": "film_matinee",
+        "title": "Matinee idol",
+        "description": "Start 10 films before noon.",
+        "flavorText": "For ten films before lunch.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "hourFrom": 5,
+                "hourTo": 12
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "film_long",
+        "title": "Director's cut",
+        "description": "Watch a film over 3 hours.",
+        "flavorText": "For every minute of the long version.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "durationMin": 180
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_short",
+        "title": "Short and sweet",
+        "description": "Watch 10 films under 90 minutes.",
+        "flavorText": "For ten films under ninety minutes.",
+        "tier": "Common",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "durationMax": 89
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "film_again",
+        "title": "Again",
+        "description": "Watch the same film 3 times.",
+        "flavorText": "For loving one film three times over.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "groupBy": "item",
+            "target": 3
+        }
+    },
+    {
+        "id": "film_auteur",
+        "title": "Auteur theory",
+        "description": "Watch 5 films by one director.",
+        "flavorText": "For knowing a director by their fifth film.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "distinct": "item",
+            "groupBy": "director",
+            "target": 5
+        }
+    },
+    {
+        "id": "film_typecast",
+        "title": "Typecast",
+        "description": "Watch 10 films with the same actor.",
+        "flavorText": "For following one face through ten films.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "distinct": "item",
+            "groupBy": "actor",
+            "target": 10
+        }
+    },
+    {
+        "id": "film_silent",
+        "title": "Silent era",
+        "description": "Watch a film from before 1930.",
+        "flavorText": "For listening to a film with no sound.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "yearBefore": 1930
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "film_horror",
+        "title": "Night shift",
+        "description": "Watch 25 horror films.",
+        "flavorText": "For leaving the lights on, 25 times.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "genre": "Horror"
+            },
+            "distinct": "item",
+            "target": 25
+        }
+    },
+    {
+        "id": "film_comedy",
+        "title": "Laugh riot",
+        "description": "Watch 25 comedies.",
+        "flavorText": "For laughing through twenty-five comedies.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie",
+                "genre": "Comedy"
+            },
+            "distinct": "item",
+            "target": 25
+        }
+    },
+    {
+        "id": "tv_first",
+        "title": "Pilot",
+        "description": "Your first episode.",
+        "flavorText": "For pressing play on a first episode.",
+        "tier": "Common",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_100",
+        "title": "Season pass",
+        "description": "Watch 100 episodes.",
+        "flavorText": "For a hundred episodes, week in, week out.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 100
+        }
+    },
+    {
+        "id": "tv_boxset",
+        "title": "Box set",
+        "description": "Finish a whole show.",
+        "flavorText": "For every episode, without a gap.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "target": 1
+        }
+    },
+    {
+        "id": "tv_seasons",
+        "title": "Season finale",
+        "description": "Finish 5 seasons.",
+        "flavorText": "For seeing five seasons through to the end.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "season",
+            "target": 5
+        }
+    },
+    {
+        "id": "tv_binge",
+        "title": "Binge mode",
+        "description": "Watch 6 episodes of one show in 24 hours.",
+        "flavorText": "For six episodes of one show in a day and a night.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "window",
+            "span": "24h",
+            "groupBy": "show",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 6
+        }
+    },
+    {
+        "id": "tv_couch",
+        "title": "Couch potato",
+        "description": "Watch 12 episodes in one day.",
+        "flavorText": "For twelve episodes in a single day.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "window",
+            "span": "day",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 12
+        }
+    },
+    {
+        "id": "tv_graveyard",
+        "title": "Graveyard slot",
+        "description": "Watch 10 episodes after 2am.",
+        "flavorText": "For the hours when nobody else is up.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "secret": true,
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "hourFrom": 2,
+                "hourTo": 5
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_500",
+        "title": "Long runner",
+        "description": "Watch 500 episodes.",
+        "flavorText": "For five hundred episodes and counting.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 500
+        }
+    },
+    {
+        "id": "tv_1000",
+        "title": "Network veteran",
+        "description": "Watch 1,000 episodes.",
+        "flavorText": "For a thousand episodes on the schedule.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 1000
+        }
+    },
+    {
+        "id": "tv_5000",
+        "title": "Test card",
+        "description": "Watch 5,000 episodes.",
+        "flavorText": "For five thousand episodes, past closedown.",
+        "tier": "Legendary",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 5000
+        }
+    },
+    {
+        "id": "tv_showrunner",
+        "title": "Showrunner",
+        "description": "Finish 10 shows.",
+        "flavorText": "For ten shows, first episode to last.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_syndication",
+        "title": "Syndication deal",
+        "description": "Watch 100 episodes of one show.",
+        "flavorText": "For a hundred episodes of one show.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode"
+            },
+            "groupBy": "show",
+            "target": 100
+        }
+    },
+    {
+        "id": "tv_pilot_season",
+        "title": "Pilot season",
+        "description": "Watch episode 1 of 10 different shows.",
+        "flavorText": "For trying ten new shows.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "episodeIndex": 1
+            },
+            "distinct": "show",
+            "target": 10
+        }
+    },
+    {
+        "id": "tv_prime_time",
+        "title": "Prime time",
+        "description": "Start 50 episodes between 20:00 and 22:00.",
+        "flavorText": "For fifty episodes in the evening slot.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "episode",
+                "hourFrom": 20,
+                "hourTo": 22
+            },
+            "target": 50
+        }
+    },
+    {
+        "id": "both_nightowl",
+        "title": "Night owl",
+        "description": "Make 10 watches after 1am.",
+        "flavorText": "For ten late starts after one in the morning.",
+        "tier": "Common",
+        "section": "both",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "hourFrom": 1,
+                "hourTo": 5
+            },
+            "target": 10
+        }
+    },
+    {
+        "id": "both_week",
+        "title": "Weeklong run",
+        "description": "Watch something 7 days in a row.",
+        "flavorText": "For something on screen every night for a week.",
+        "tier": "Common",
+        "section": "both",
+        "rule": {
+            "type": "streak",
+            "target": 7
+        }
+    },
+    {
+        "id": "both_month",
+        "title": "Held over",
+        "description": "Watch something 30 days in a row.",
+        "flavorText": "For thirty nights in a row.",
+        "tier": "Rare",
+        "section": "both",
+        "rule": {
+            "type": "streak",
+            "target": 30
+        }
+    },
+    {
+        "id": "both_100h",
+        "title": "Running time",
+        "description": "Watch for 100 hours.",
+        "flavorText": "For a hundred hours in the dark.",
+        "tier": "Uncommon",
+        "section": "both",
+        "rule": {
+            "type": "hours",
+            "target": 100
+        }
+    },
+    {
+        "id": "both_500h",
+        "title": "Blockbuster",
+        "description": "Watch for 500 hours.",
+        "flavorText": "For five hundred hours on the sofa and in the stalls.",
+        "tier": "Rare",
+        "section": "both",
+        "rule": {
+            "type": "hours",
+            "target": 500
+        }
+    },
+    {
+        "id": "both_1000h",
+        "title": "Screen legend",
+        "description": "Watch for 1,000 hours.",
+        "flavorText": "For a thousand hours of screen.",
+        "tier": "Epic",
+        "section": "both",
+        "rule": {
+            "type": "hours",
+            "target": 1000
+        }
+    }
+]

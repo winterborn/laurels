@@ -1,0 +1,16 @@
+{
+    "name": "laurels",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Achievements and trophies for films and TV watched on Plex.",
+    "type": "module",
+    "engines": {
+        "node": ">=24"
+    },
+    "scripts": {
+        "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/main/main.ts",
+        "demo": "node --disable-warning=ExperimentalWarning dev/demo.ts",
+        "mock": "node dev/mock-plex/main.ts",
+        "test": "node --disable-warning=ExperimentalWarning --test 'src/test/**/*.test.ts'"
+    }
+}

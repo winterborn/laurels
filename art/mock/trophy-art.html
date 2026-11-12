@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trophy art</title>
+<style>
+    :root {
+        --page: #0b0f17;
+        --text: #e9ebf0;
+        --muted: #8b93a3;
+        --line: #1e2633;
+    }
+    body {
+        margin: 0;
+        padding: 32px 16px 64px;
+        background: var(--page);
+        color: var(--text);
+        font: 15px/1.5 system-ui, sans-serif;
+    }
+    main {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    h1 {
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0 0 4px;
+    }
+    h2 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 40px 0 12px;
+    }
+    p.note {
+        color: var(--muted);
+        margin: 0 0 14px;
+        font-size: 13px;
+        max-width: 760px;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 28px 20px;
+    }
+    .card .art {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+    .card h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 10px 0 0;
+    }
+    .card p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 2px 0 0;
+        line-height: 1.4;
+    }
+    svg {
+        display: block;
+    }
+    .list {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        max-width: 620px;
+    }
+    .item {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        padding: 10px 12px;
+    }
+    .item + .item {
+        border-top: 1px solid var(--line);
+    }
+    .item .body {
+        flex: 1;
+    }
+    .item .desc {
+        color: var(--muted);
+        font-size: 13px;
+    }
+</style>
+</head>
+<body>
+<main>
+    <h1>Trophy art</h1>
+    <p class="note">Line icons on navy, one gold accent, one visual idea each.
+        Built on a 256 grid with 10px strokes and round ends. The frame colour is the tier.</p>
+
+    <h2>The set</h2>
+    <div class="grid" id="set"></div>
+
+    <h2>Count ladder and states</h2>
+    <div class="grid" id="extra"></div>
+
+    <h2>In a list at 64px</h2>
+    <div class="list" id="list"></div>
+</main>
+
+<script>
+const BG = '#0f1a2b';
+const INK = '#f1ead8';
+const GOLD = '#e3b04b';
+const SANS = "Futura, 'Century Gothic', 'Avenir Next', sans-serif";
+
+const TIERS = {
+    common: {
+        label: 'Common',
+        color: '#5f6e82',
+    },
+    uncommon: {
+        label: 'Uncommon',
+        color: '#3fa39a',
+    },
+    rare: {
+        label: 'Rare',
+        color: GOLD,
+    },
+    epic: {
+        label: 'Epic',
+        color: '#d0554c',
+    },
+    legendary: {
+        label: 'Legendary',
+        color: INK,
+    },
+};
+
+class Pen {
+    static path(d, color = INK, width = 10) {
+        return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"
+            stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+
+    static ring(cx, cy, r, color = INK, width = 10) {
+        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${width}"/>`;
+    }
+
+    static dot(cx, cy, r, color = INK) {
+        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+    }
+
+    static box(x, y, w, h, radius, color = INK, width = 10, fill = 'none') {
+        return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${radius}" fill="${fill}"
+            stroke="${color}" stroke-width="${width}" stroke-linejoin="round"/>`;
+    }
+
+    static play(cx, cy, size, color = GOLD) {
+        const half = size / 2;
+        return `<path d="M${cx - half * 0.8} ${cy - half} L${cx + half} ${cy} L${cx - half * 0.8} ${cy + half} Z"
+            fill="${color}" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`;
+    }
+
+    static label(x, y, text, size, color = GOLD) {
+        return `<text x="${x}" y="${y}" fill="${color}" font-family="${SANS}" font-weight="700"
+            font-size="${size}" text-anchor="middle">${text}</text>`;
+    }
+}
+
+class Art {
+    static nightOwl() {
+        const reel = (cx, cy) => Pen.ring(cx, cy, 27)
+            + Pen.dot(cx, cy - 13, 5) + Pen.dot(cx + 13, cy, 5)
+            + Pen.dot(cx, cy + 13, 5) + Pen.dot(cx - 13, cy, 5)
+            + Pen.dot(cx, cy, 3);
+        return Pen.path('M64 62 L94 90 Q128 80 162 90 L192 62 L196 140 Q194 198 128 206 Q62 198 60 140 Z')
+            + reel(100, 136) + reel(156, 136)
+            + `<path d="M119 166 H137 L128 182 Z" fill="${GOLD}" stroke="${GOLD}" stroke-width="4" stroke-linejoin="round"/>`;
+    }
+
+    static bingeMode() {
+        const pile = [
+            [104, 186], [120, 186], [136, 186], [152, 186],
+            [112, 170], [128, 170], [144, 170],
+            [120, 154], [136, 154],
+        ];
+        const triangles = pile.map(([x, y]) => Pen.play(x, y, 12)).join('');
+        return Pen.path('M78 50 H178 M78 206 H178', INK, 10)
+            + Pen.path('M92 58 C92 104 122 112 122 128 C122 144 92 152 92 198', INK, 8)
+            + Pen.path('M164 58 C164 104 134 112 134 128 C134 144 164 152 164 198', INK, 8)
+            + Pen.path('M120 82 L136 92 L120 102 Z', INK, 5)
+            + Pen.play(128, 134, 8) + triangles;
+    }
+
+    static doubleFeature() {
+        const bucket = `<path d="M-27 -18 L-19 46 H19 L27 -18 Z" fill="${BG}" stroke="${INK}"
+                stroke-width="10" stroke-linejoin="round"/>
+            ${Pen.path('M-9 -14 L-6 42 M9 -14 L6 42', INK, 5)}
+            ${Pen.path('M-30 -18 A10 10 0 0 1 -13 -31 A11 11 0 0 1 8 -34 A10 10 0 0 1 30 -18', INK, 9)}`;
+        return `<g transform="translate(94 146) rotate(-14)">${bucket}</g>`
+            + `<g transform="translate(162 146) rotate(14)">${bucket}</g>`
+            + Pen.path('M128 74 V56 M110 80 L98 66 M146 80 L158 66', GOLD, 8);
+    }
+
+    static auteur() {
+        return Pen.path('M56 94 V60 H90 M166 60 H200 V94 M56 162 V196 H90 M200 162 V196 H166')
+            + Pen.path('M78 128 Q128 84 178 128 Q128 172 78 128 Z')
+            + Pen.dot(128, 128, 17, GOLD) + Pen.dot(128, 128, 7, BG)
+            + Pen.dot(186, 46, 6, INK);
+    }
+
+    static openingWeek() {
+        const star = 'M128 38 L134 54 L151 54 L137 64 L142 81 L128 71 L114 81 L119 64 L105 54 L122 54 Z';
+        const beam = '#1f3150';
+        return `<path d="M82 190 L134 50 L186 74 Z" fill="${beam}"/>`
+            + `<path d="M174 190 L122 50 L70 74 Z" fill="${beam}"/>`
+            + Pen.path('M82 190 L134 50 M82 190 L186 74', INK, 5)
+            + Pen.path('M174 190 L122 50 M174 190 L70 74', INK, 5)
+            + Pen.path('M60 206 H196', INK, 8)
+            + `<path d="M64 206 A18 18 0 0 1 100 206 Z" fill="${BG}" stroke="${INK}" stroke-width="8" stroke-linejoin="round"/>`
+            + `<path d="M156 206 A18 18 0 0 1 192 206 Z" fill="${BG}" stroke="${INK}" stroke-width="8" stroke-linejoin="round"/>`
+            + `<path d="${star}" fill="${GOLD}" stroke="${GOLD}" stroke-width="4" stroke-linejoin="round"/>`;
+    }
+
+    static nightShift() {
+        const finger = (x) => Pen.path(`M${x} 118 V138`, BG, 18) + Pen.path(`M${x} 118 V138`, INK, 9);
+        return Pen.path('M88 132 A40 40 0 0 1 168 132')
+            + Pen.ring(114, 110, 10, INK, 6) + Pen.ring(142, 110, 10, INK, 6)
+            + Pen.dot(118, 112, 5, GOLD) + Pen.dot(146, 112, 5, GOLD)
+            + Pen.box(48, 130, 160, 84, 30, INK, 10, BG)
+            + `<rect x="64" y="146" width="128" height="52" rx="18" fill="none" stroke="${INK}"
+                stroke-width="4" stroke-dasharray="1 10" stroke-linecap="round"/>`
+            + finger(76) + finger(90) + finger(166) + finger(180);
+    }
+
+    static rewatch() {
+        const loop = 'M190 112 A64 64 0 1 1 158 72';
+        return Pen.path(loop, INK, 30)
+            + `<path d="${loop}" fill="none" stroke="${BG}" stroke-width="6" stroke-dasharray="7 9"/>`
+            + `<path d="M148 50 L190 66 L158 98 Z" fill="${INK}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`
+            + Pen.label(128, 150, '3', 56);
+    }
+
+    static boxSet() {
+        const tally = [96, 116, 136, 156].map((x) => Pen.path(`M${x} 96 V164`, INK, 9)).join('');
+        return Pen.path('M104 46 L128 66 L152 46', INK, 7)
+            + Pen.box(50, 66, 156, 118, 16)
+            + tally
+            + `<path d="M82 156 L174 104" stroke="${BG}" stroke-width="20" stroke-linecap="round"/>`
+            + Pen.path('M82 156 L174 104', GOLD, 10)
+            + Pen.path('M100 184 L92 204 M156 184 L164 204', INK, 8);
+    }
+
+    static sharedScreen() {
+        const person = (cx) => Pen.ring(cx, 160, 22)
+            + Pen.path(`M${cx - 38} 222 Q${cx - 38} 192 ${cx} 192 Q${cx + 38} 192 ${cx + 38} 222`);
+        return Pen.box(48, 40, 160, 82, 6)
+            + Pen.play(130, 81, 26)
+            + `<rect x="110" y="138" width="90" height="100" fill="${BG}"/>`
+            + person(98)
+            + `<circle cx="156" cy="160" r="30" fill="${BG}"/>`
+            + `<path d="M114 240 V222 Q114 186 156 186 Q198 186 198 222 V240 Z" fill="${BG}"/>`
+            + person(156);
+    }
+
+    static filmCan(text, color = GOLD) {
+        const size = text.length > 3 ? 30 : 38;
+        const holes = [0, 60, 120, 180, 240, 300].map((deg) => {
+            const rad = deg * Math.PI / 180;
+            const x = 128 + Math.cos(rad) * 50;
+            const y = 128 + Math.sin(rad) * 50;
+            return Pen.ring(x.toFixed(1), y.toFixed(1), 9, INK, 5);
+        });
+        return Pen.ring(128, 128, 82)
+            + Pen.ring(128, 128, 70, INK, 3)
+            + holes.join('')
+            + `<rect x="62" y="104" width="132" height="48" rx="6" fill="${color}"/>`
+            + Pen.label(128, 128 + size * 0.36, text, size, BG);
+    }
+}
+
+class Trophy {
+    static frame(tier) {
+        const color = TIERS[tier].color;
+        const outer = `<rect x="9" y="9" width="238" height="238" rx="22" fill="none" stroke="${color}" stroke-width="5"/>`;
+        const inner = `<rect x="19" y="19" width="218" height="218" rx="15" fill="none" stroke="${color}" stroke-width="2"/>`;
+        return tier === 'legendary' ? outer + inner : outer;
+    }
+
+    static draw(item) {
+        const art = item.can ? Art.filmCan(item.can, item.canColor) : Art[item.art]();
+        const isLocked = item.state === 'locked';
+        const body = isLocked ? art.replaceAll(GOLD, INK) : art;
+        const opacity = isLocked ? '0.32' : '1';
+        return `<svg viewBox="0 0 256 256" role="img" aria-label="${item.title}">
+            <rect width="256" height="256" rx="26" fill="${BG}"/>
+            <g opacity="${opacity}">${body}</g>
+            ${Trophy.frame(item.tier)}
+        </svg>`;
+    }
+}
+
+function sized(svg, size) {
+    return svg.replace('<svg ', `<svg width="${size}" height="${size}" `);
+}
+
+function card(item) {
+    const svg = Trophy.draw(item);
+    return `<div class="card">
+        <div class="art">${sized(svg, 160)}${sized(svg, 64)}</div>
+        <h3>${item.title} <span style="color: var(--muted); font-weight: 400">· ${TIERS[item.tier].label}</span></h3>
+        <p>${item.rule}</p>
+        <p>Idea: ${item.idea}</p>
+    </div>`;
+}
+
+const SET = [
+    {
+        art: 'nightOwl',
+        tier: 'common',
+        title: 'Night owl',
+        rule: '10 watches after 1am.',
+        idea: 'an owl whose eyes are film reels.',
+    },
+    {
+        art: 'bingeMode',
+        tier: 'epic',
+        title: 'Binge mode',
+        rule: '6 episodes of one show in 24 hours.',
+        idea: 'an hourglass filling with episodes, one left up top.',
+    },
+    {
+        art: 'doubleFeature',
+        tier: 'uncommon',
+        title: 'Double feature',
+        rule: 'Two films in one evening.',
+        idea: 'two popcorn buckets clinking.',
+    },
+    {
+        art: 'auteur',
+        tier: 'uncommon',
+        title: 'Auteur',
+        rule: '5 films by one director.',
+        idea: "the director's eye through a viewfinder.",
+    },
+    {
+        art: 'openingWeek',
+        tier: 'rare',
+        title: 'Opening week',
+        rule: 'A film within 7 days of release.',
+        idea: 'premiere searchlights crossing under a star.',
+    },
+    {
+        art: 'nightShift',
+        tier: 'rare',
+        title: 'Night shift',
+        rule: '25 horror films.',
+        idea: 'peeking over a cushion.',
+    },
+    {
+        art: 'rewatch',
+        tier: 'uncommon',
+        title: 'Again',
+        rule: 'Same film 3 times.',
+        idea: 'a film strip looped into a replay arrow.',
+    },
+    {
+        art: 'boxSet',
+        tier: 'rare',
+        title: 'Box set',
+        rule: 'Finish a whole show.',
+        idea: 'tally marks on a TV, struck through.',
+    },
+    {
+        art: 'sharedScreen',
+        tier: 'uncommon',
+        title: 'Shared screen',
+        rule: 'Same film as a friend within a week.',
+        idea: 'two heads in front of one screen.',
+    },
+];
+
+const EXTRA = [
+    {
+        can: '10',
+        tier: 'common',
+        title: 'Regular',
+        rule: '10 films.',
+        idea: 'film can, count on the label.',
+    },
+    {
+        can: '100',
+        tier: 'rare',
+        title: 'Collector',
+        rule: '100 films.',
+        idea: 'same can, bigger number.',
+    },
+    {
+        can: '1000',
+        tier: 'legendary',
+        title: 'Archivist',
+        rule: '1,000 films.',
+        idea: 'same can, double frame.',
+    },
+    {
+        art: 'nightShift',
+        tier: 'rare',
+        state: 'locked',
+        title: 'Locked',
+        rule: 'Faded, gold turned to cream.',
+        idea: 'same art, no reveal of colour.',
+    },
+    {
+        can: '?',
+        canColor: INK,
+        tier: 'epic',
+        title: 'Secret',
+        rule: 'Hidden until earned.',
+        idea: 'an unlabelled can.',
+    },
+];
+
+function renderList() {
+    const rows = [
+        [SET[1], 80, 21],
+        [SET[5], 40, 34],
+        [EXTRA[2], 300, 4],
+        [SET[0], 10, 72],
+        [SET[3], 20, 51],
+    ];
+    const html = rows.map(([item, points, percent]) => `<div class="item">
+        ${sized(Trophy.draw(item), 64)}
+        <div class="body"><div>${item.title}</div>
+            <div class="desc">${item.rule} ${percent}% of users have this.</div></div>
+        <div>${points}</div>
+    </div>`);
+    document.getElementById('list').innerHTML = html.join('');
+}
+
+document.getElementById('set').innerHTML = SET.map(card).join('');
+document.getElementById('extra').innerHTML = EXTRA.map(card).join('');
+renderList();
+</script>
+</body>
+</html>
