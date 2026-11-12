@@ -106,6 +106,7 @@ The environment variable has priority, and the Settings page locks that field.
 |---|---|---|
 | Plex address | `PLEX_URL` | none |
 | Plex token | `PLEX_TOKEN` | none (use **Sign in with Plex**) |
+| Record plays (the session recorder) | `RECORD_SESSIONS` | `true` |
 | Tautulli address | `TAUTULLI_URL` | none |
 | Tautulli API key | `TAUTULLI_API_KEY` | none |
 | Time between checks of Plex (minutes) | `POLL_MINUTES` | `5` |
@@ -155,27 +156,51 @@ docker compose up -d laurels
 
 The update keeps your settings and awards, because they are in `/config`.
 
-## Tautulli (optional)
+## Play tracking
 
 Plex history gives only the end of each watch.
-Laurels then calculates the start from the running time, and counts the full running time as time watched.
+Without play tracking, Laurels calculates the start from the running time.
+It also counts the full running time as time watched.
+
+Play tracking gives the real start time, the real time on screen and the device.
+Laurels gets them in one of two ways.
+
+### The session recorder (default)
+
+Laurels follows each play on Plex, with the same rules as Tautulli:
+
+- Laurels listens to the Plex notifications for each play: playing, paused and stopped.
+- A pause adds to the paused time. The time on screen does not include it.
+- A stop within 10 seconds of the end counts as a stop at the end.
+- A play with no notification for 5 minutes stops at its last update.
+- Laurels does not keep a play shorter than 2 minutes.
+- A resumed play joins the play before it, if that play was not watched.
+- A play is watched at 85% of the running time, or at the start of the credits.
+- Laurels does not record live TV.
+
+The recorder records plays from the time that you start it.
+To stop it, clear **Record plays** on the **Settings** page, or set `RECORD_SESSIONS=false`.
+
+### Tautulli
 
 If you use Tautulli, connect it on the **Settings** page.
-Laurels then reads Tautulli history with the same rules as Tautulli:
+Then Laurels reads the plays from Tautulli, and the session recorder stops.
+Tautulli has your plays from the time that you installed it.
+
+Laurels reads Tautulli history with the same rules as Tautulli:
 
 - A play is one row in Tautulli history, with its resumed parts joined.
-  Tautulli does not keep plays shorter than its ignore interval (2 minutes by default).
 - A play is watched when Tautulli shows it as watched.
-  By default, this is 85% of the running time, or the start of the credits.
-- The time on screen is the time between start and stop, without pauses.
+  This uses your Tautulli settings for the watched percent and the credits.
+- Laurels reads the plays of archived users and libraries too.
 - Laurels does not read live TV, or plays that are still running.
 
-Laurels then uses these rules:
+### How Laurels uses the plays
 
-- A Plex watch inside a Tautulli play gets the start time, the time on screen and the device of that play.
+- A Plex watch inside a play gets the start time, the time on screen and the device of that play.
 - A watched play with no Plex watch becomes a watch.
 - A play that is not watched adds time on screen. It does not count as a watch.
-- Watches from before you installed Tautulli keep the times that Laurels calculates.
+- Watches from before the first play keep the times that Laurels calculates.
 
 ## Your own awards
 

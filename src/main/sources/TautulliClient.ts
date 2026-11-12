@@ -21,10 +21,12 @@ export class TautulliClient {
 
     // One page of grouped history: one row for each play, with resumed parts joined.
     // include_activity 0: no play that is still running.
+    // include_archived 1: also the plays of archived users and libraries.
     async history(after: string, start: number, length: number): Promise<TautulliPage> {
         const data = await this.call('get_history', {
             grouping: '1',
             include_activity: '0',
+            include_archived: '1',
             order_column: 'started',
             order_dir: 'asc',
             after,

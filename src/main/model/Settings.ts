@@ -7,6 +7,8 @@ export interface Settings {
     // Optional. Tautulli gives the real start time and play time of each watch.
     tautulliUrl: string;
     tautulliApiKey: string;
+    // Follow Plex playback like Tautulli does. Off while Tautulli is connected.
+    recordSessions: boolean;
     pollMinutes: number;
     timeZone: string;
     discordWebhookUrl: string;

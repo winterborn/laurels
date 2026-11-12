@@ -4,7 +4,9 @@ import { DatabaseSync } from 'node:sqlite';
 import type {
     Award,
     Item,
+    LiveSession,
     Play,
+    RecordedPlay,
     Session,
     User,
     WatchEvent,
@@ -62,7 +64,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     created_at INTEGER NOT NULL,
     expires_at INTEGER NOT NULL
 );
-CREATE TABLE IF NOT EXISTS tautulli_plays (
+CREATE TABLE IF NOT EXISTS plays (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     json TEXT NOT NULL,
@@ -71,6 +73,18 @@ CREATE TABLE IF NOT EXISTS tautulli_plays (
     watched INTEGER NOT NULL,
     event_id TEXT
 );
+CREATE TABLE IF NOT EXISTS live_sessions (
+    session_key TEXT PRIMARY KEY,
+    json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS recorded_plays (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reference_id INTEGER,
+    user_id TEXT NOT NULL,
+    rating_key TEXT NOT NULL,
+    json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS recorded_plays_item ON recorded_plays (user_id, rating_key);
 CREATE TABLE IF NOT EXISTS sync_state (
     name TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -102,6 +116,43 @@ export class Store {
         if (!this.hasColumn('events', 'partial')) {
             this.db.exec('ALTER TABLE events ADD COLUMN partial INTEGER NOT NULL DEFAULT 0');
         }
+        if (this.hasTable('tautulli_plays')) {
+            this.movePlays();
+        }
+    }
+
+    // Version 10eea91 kept Tautulli plays without a source in the id.
+    private movePlays(): void {
+        const rows = this.db.prepare('SELECT * FROM tautulli_plays').all() as Row[];
+        const insert = this.db.prepare(`INSERT OR IGNORE INTO plays
+            (id, user_id, json, stopped, play_seconds, watched, event_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`);
+        this.transaction(() => {
+            for (const row of rows) {
+                const id = `tautulli:${row.id}`;
+                const play = {
+                    ...JSON.parse(row.json),
+                    id,
+                };
+                insert.run(
+                    id,
+                    row.user_id,
+                    JSON.stringify(play),
+                    row.stopped,
+                    row.play_seconds,
+                    row.watched,
+                    row.event_id,
+                );
+            }
+            this.db.exec('DROP TABLE tautulli_plays');
+        });
+    }
+
+    private hasTable(name: string): boolean {
+        const row = this.db
+            .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?")
+            .get(name);
+        return row !== undefined;
     }
 
     private hasColumn(table: string, column: string): boolean {
@@ -237,12 +288,12 @@ export class Store {
         return this.itemCache.get(ratingKey);
     }
 
-    // Plays (Tautulli)
+    // Plays (Tautulli and the session recorder)
 
     // Saves new plays, and plays that changed since the last read
     // (a play grows when someone resumes it). Returns those plays.
     savePlays(plays: Play[]): Play[] {
-        const upsert = this.db.prepare(`INSERT INTO tautulli_plays
+        const upsert = this.db.prepare(`INSERT INTO plays
             (id, user_id, json, stopped, play_seconds, watched)
             VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
@@ -250,9 +301,9 @@ export class Store {
                 stopped = excluded.stopped,
                 play_seconds = excluded.play_seconds,
                 watched = excluded.watched
-            WHERE tautulli_plays.stopped != excluded.stopped
-                OR tautulli_plays.play_seconds != excluded.play_seconds
-                OR tautulli_plays.watched != excluded.watched`);
+            WHERE plays.stopped != excluded.stopped
+                OR plays.play_seconds != excluded.play_seconds
+                OR plays.watched != excluded.watched`);
         return this.transaction(() => plays.filter((play) => {
             const result = upsert.run(
                 play.id,
@@ -267,7 +318,7 @@ export class Store {
     }
 
     plays(): Play[] {
-        const rows = this.db.prepare('SELECT json, event_id FROM tautulli_plays').all() as Row[];
+        const rows = this.db.prepare('SELECT json, event_id FROM plays').all() as Row[];
         return rows.map((row) => ({
             ...JSON.parse(row.json),
             eventId: row.event_id ?? undefined,
@@ -276,7 +327,7 @@ export class Store {
 
     linkPlay(playId: string, eventId: string): void {
         this.db
-            .prepare('UPDATE tautulli_plays SET event_id = ? WHERE id = ?')
+            .prepare('UPDATE plays SET event_id = ? WHERE id = ?')
             .run(eventId, playId);
     }
 
@@ -288,6 +339,69 @@ export class Store {
                 WHERE id = ?`)
             .run(play.started, play.playSeconds, play.pausedSeconds, play.platform ?? null, eventId);
         this.eventCache = null;
+    }
+
+    // Live sessions (the session recorder)
+
+    liveSessions(): LiveSession[] {
+        const rows = this.db.prepare('SELECT json FROM live_sessions').all() as Row[];
+        return rows.map((row) => JSON.parse(row.json));
+    }
+
+    liveSession(sessionKey: string): LiveSession | undefined {
+        const row = this.db
+            .prepare('SELECT json FROM live_sessions WHERE session_key = ?')
+            .get(sessionKey) as Row | undefined;
+        return row ? JSON.parse(row.json) : undefined;
+    }
+
+    saveLiveSession(session: LiveSession): void {
+        this.db
+            .prepare('INSERT OR REPLACE INTO live_sessions (session_key, json) VALUES (?, ?)')
+            .run(session.sessionKey, JSON.stringify(session));
+    }
+
+    deleteLiveSession(sessionKey: string): void {
+        this.db.prepare('DELETE FROM live_sessions WHERE session_key = ?').run(sessionKey);
+    }
+
+    // Recorded plays (the session recorder)
+
+    // Saves a finished session as its own group. Returns the saved play.
+    addRecordedPlay(session: LiveSession, stopped: number): RecordedPlay {
+        const result = this.db
+            .prepare('INSERT INTO recorded_plays (user_id, rating_key, json) VALUES (?, ?, ?)')
+            .run(session.userId, session.ratingKey, '{}');
+        const id = Number(result.lastInsertRowid);
+        const play: RecordedPlay = {
+            ...session,
+            id,
+            referenceId: id,
+            stopped,
+        };
+        this.saveRecordedPlay(play);
+        return play;
+    }
+
+    saveRecordedPlay(play: RecordedPlay): void {
+        this.db
+            .prepare('UPDATE recorded_plays SET reference_id = ?, json = ? WHERE id = ?')
+            .run(play.referenceId, JSON.stringify(play), play.id);
+    }
+
+    // The last plays of one item by one person, newest first.
+    lastRecordedPlays(userId: string, ratingKey: string, count: number): RecordedPlay[] {
+        const rows = this.db
+            .prepare(`SELECT json FROM recorded_plays
+                WHERE user_id = ? AND rating_key = ?
+                ORDER BY id DESC LIMIT ?`)
+            .all(userId, ratingKey, count) as Row[];
+        return rows.map((row) => JSON.parse(row.json));
+    }
+
+    recordedPlays(): RecordedPlay[] {
+        const rows = this.db.prepare('SELECT json FROM recorded_plays ORDER BY id').all() as Row[];
+        return rows.map((row) => JSON.parse(row.json));
     }
 
     // Awards

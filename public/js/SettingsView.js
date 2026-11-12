@@ -9,6 +9,7 @@ const ENV_NAMES = {
     plexUrl: 'PLEX_URL',
     tautulliUrl: 'TAUTULLI_URL',
     tautulliApiKey: 'TAUTULLI_API_KEY',
+    recordSessions: 'RECORD_SESSIONS',
     pollMinutes: 'POLL_MINUTES',
     timeZone: 'TZ',
     discordWebhookUrl: 'DISCORD_WEBHOOK_URL',
@@ -164,16 +165,23 @@ export class SettingsView {
             + `</fieldset>`;
     }
 
-    // Tautulli
+    // Play tracking
 
     tautulliSection() {
         const keyHint = this.settings.tautulliKeySet ? 'Saved. Paste to replace.' : '';
         const keyHelp = 'In Tautulli, open Settings, then Web Interface. Copy the API key.';
+        const recordChecked = this.settings.values.recordSessions ? ' checked' : '';
+        const recordHelp = 'Laurels follows each play on Plex like Tautulli does: start, pauses, stop and watched. '
+            + 'It records plays from now on. If you connect Tautulli, Laurels uses Tautulli and does not record.';
         return `<fieldset class="panel">`
-            + `<legend>Tautulli (optional)</legend>`
+            + `<legend>Play tracking</legend>`
             + `<p class="help">Plex history gives only the end of each watch. `
-            + `Tautulli gives the real start time and the time on screen. `
+            + `Play tracking gives the real start time and the time on screen. `
             + `Laurels then uses them for times of day, days and hours.</p>`
+            + `<label class="choice"><input type="checkbox" name="recordSessions" value="true"`
+            + `${recordChecked}${this.lockAttr('recordSessions')}>`
+            + `<span><span class="label">Record plays</span><br>`
+            + `<span class="help">${this.helpFor('recordSessions', recordHelp)}</span></span></label>`
             + this.textField('tautulliUrl', 'Tautulli address', 'http://tautulli:8181',
                 'If Tautulli is on the same Docker network, use http://tautulli:8181.')
             + `<label class="field"><span class="label">Tautulli API key</span>`
@@ -346,6 +354,9 @@ export class SettingsView {
         const values = Object.fromEntries(entries);
         if (!this.isLocked('lanGuests')) {
             values.lanGuests = data.has('lanGuests');
+        }
+        if (!this.isLocked('recordSessions')) {
+            values.recordSessions = data.has('recordSessions');
         }
         return values;
     }
