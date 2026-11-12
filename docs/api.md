@@ -15,16 +15,14 @@ A route that changes settings needs the owner.
 | `GET /api/awards?user=:id` | The awards of one person |
 | `GET /api/progress` | Progress of each person on each award |
 | `GET /api/progress?user=:id` | Progress of one person |
-| `GET /api/trades` | The 8 newest awards in the household |
+| `GET /api/latest` | The 8 newest awards in the household |
+| `GET /api/award/:id?user=:id` | One award for one person: credits, household and related awards |
+| `GET /api/ceremony?range=all\|year\|month` | The household standings |
+| `GET /api/season/:id?year=:year` | One person's season review |
 | `GET /api/poster/:ratingKey` | The Plex poster for an item |
 
 `/api/awards` and `/api/progress` use the same names as the
 Audiobookshelf achievement engine, so tools for that project can also read Laurels.
-
-Some route names are older than the page names.
-`/api/box-office` gives the Ceremony, `/api/trades` the Press room,
-`/api/recap/:id` the Season review and `/api/trophy/:id` the Award page.
-The routes keep their names, so tools that use them do not break.
 
 `category` is `Film`, `Television` or `Screen`.
 `holderIds` lists the people who hold the award, oldest win first.

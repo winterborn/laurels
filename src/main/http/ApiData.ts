@@ -109,7 +109,7 @@ export class ApiData {
     }
 
     // Latest awards across the household.
-    trades(limit: number): Json[] {
+    latest(limit: number): Json[] {
         const names = new Map(this.app.visibleUsers().map((user) => [user.id, user.name]));
         const items = this.app.store.items();
         return this.knownAwards()

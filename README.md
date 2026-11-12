@@ -71,6 +71,4 @@ The "Just announced" popup opens on the page you are on.
 npm test
 ```
 
-- [PLAN.md](PLAN.md): the design and the build phases.
-- [SPIKE.md](SPIKE.md): a read-only check of what your Plex server sends.
 - [docs/api.md](docs/api.md): the routes of the Laurels API.

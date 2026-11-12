@@ -41,9 +41,3 @@ export function ordinal(rank) {
     };
     return `${rank}${suffixes[rank % 10] ?? 'th'}`;
 }
-
-// "an Alex production", "a Sam production"
-export function articleFor(name) {
-    const startsWithVowel = /^[aeiou]/i.test(name);
-    return startsWithVowel ? 'an' : 'a';
-}

@@ -5,5 +5,3 @@
 /data/
 /data-demo/
 node_modules/
-spike-output/
-spike/.env

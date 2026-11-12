@@ -1,4 +1,4 @@
-# Laurels: trophies for what your household watches on Plex.
+# Laurels: awards for the films and TV that your household watches on Plex.
 #
 # 1. Run: docker compose up -d
 # 2. Open http://<server>:8484 and do the steps on "Set up Laurels".

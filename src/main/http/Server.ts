@@ -42,7 +42,7 @@ const CONTENT_TYPES: Record<string, string> = {
 // none: anyone. viewer: signed in, or a home-network guest. owner: settings.
 type Need = 'none' | 'viewer' | 'owner';
 
-const TRADES_LIMIT = 8;
+const LATEST_LIMIT = 8;
 const MAX_BODY_BYTES = 64 * 1024;
 
 export class Server {
@@ -222,20 +222,20 @@ export class Server {
             case 'api/progress':
                 this.sendJson(response, 200, this.data.progress(userId));
                 return;
-            case 'api/trophy':
+            case 'api/award':
                 this.sendReport(response, this.trophyReport.build(parts[2] ?? '', userId ?? ''));
                 return;
-            case 'api/box-office':
+            case 'api/ceremony':
                 this.sendJson(response, 200, this.boxOffice.build(this.rangeOf(url)));
                 return;
-            case 'api/recap':
+            case 'api/season':
                 this.sendReport(response, this.recap.build(parts[2] ?? '', url.searchParams.get('year') ?? undefined));
                 return;
             case 'api/premieres':
                 this.sendJson(response, 200, this.data.premieres(userId ?? '', Number(url.searchParams.get('since') ?? '0')));
                 return;
-            case 'api/trades':
-                this.sendJson(response, 200, this.data.trades(TRADES_LIMIT));
+            case 'api/latest':
+                this.sendJson(response, 200, this.data.latest(LATEST_LIMIT));
                 return;
             case 'api/poster':
                 await this.sendPoster(parts[2] ?? '', 'poster', response);

@@ -17,18 +17,6 @@ import {
     wireFallbacks,
 } from './helpers/index.js';
 
-// Old route names and the page that replaced each one.
-const OLD_ROUTES = {
-    user: 'awards',
-    filmography: 'awards',
-    programme: 'ballot',
-    trophy: 'award',
-    'box-office': 'ceremony',
-    trades: 'press-room',
-    recap: 'season',
-    'year-in-film': 'season',
-};
-
 // Routes (one for each page, named like its menu label):
 //   #/ or #/awards/<id>         one person's awards (your own when signed in)
 //   #/ballot/<id>               every award, as a ballot
@@ -37,7 +25,6 @@ const OLD_ROUTES = {
 //   #/press-room                new awards, week by week
 //   #/season/<id>[/<year>]      one person's season
 //   #/settings                  owner only
-// The old routes in OLD_ROUTES redirect.
 export class Dashboard {
 
     constructor(page, household, account) {
@@ -107,9 +94,6 @@ export class Dashboard {
             return;
         }
         const parts = route.split('/').map((part) => decodeURIComponent(part));
-        if (this.redirectOld(parts)) {
-            return;
-        }
         const [users, definitionList] = await Promise.all([
             this.api.users(),
             this.api.definitions(),
@@ -142,18 +126,6 @@ export class Dashboard {
         }
     }
 
-    // Keeps old links working. #/programme/<section>/<id> loses its section.
-    redirectOld(parts) {
-        const newName = OLD_ROUTES[parts[0]];
-        if (!newName) {
-            return false;
-        }
-        const rest = parts[0] === 'programme' ? parts.slice(2) : parts.slice(1);
-        const path = [newName, ...rest.map((part) => encodeURIComponent(part))].join('/');
-        location.replace(`#/${path}`);
-        return true;
-    }
-
     // Your own id if you watch on this server, else the top of the standings.
     ownIdIn(users, accountId) {
         const isListed = users.some((user) => user.id === accountId);
@@ -180,14 +152,14 @@ export class Dashboard {
     }
 
     async showAward(users, definitions, achievementId, userId) {
-        const report = await this.api.trophy(achievementId, userId);
+        const report = await this.api.award(achievementId, userId);
         this.renderHousehold(users, userId);
         this.setPage('award', definitions.get(achievementId)?.title ?? 'Award');
         this.page.innerHTML = new AwardView(this.api, definitions, report).render();
     }
 
     async showCeremony(definitions, range) {
-        const report = await this.api.boxOffice(range);
+        const report = await this.api.ceremony(range);
         this.renderHousehold([], '');
         this.setPage('ceremony', 'Ceremony');
         this.page.innerHTML = new CeremonyView(this.api, definitions, report).render();
@@ -201,7 +173,7 @@ export class Dashboard {
     }
 
     async showSeason(users, definitions, userId, year) {
-        const report = await this.api.recap(userId, year);
+        const report = await this.api.season(userId, year);
         this.renderHousehold(users, userId);
         this.setPage('season', `${report.user.name}'s season`);
         this.page.innerHTML = new SeasonView(this.api, definitions, report).render();

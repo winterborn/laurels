@@ -13,17 +13,17 @@ export class Api {
         return this.get(`/api/users/${encodeURIComponent(userId)}`);
     }
 
-    async trophy(achievementId, userId) {
-        return this.get(`/api/trophy/${encodeURIComponent(achievementId)}?user=${encodeURIComponent(userId)}`);
+    async award(achievementId, userId) {
+        return this.get(`/api/award/${encodeURIComponent(achievementId)}?user=${encodeURIComponent(userId)}`);
     }
 
-    async boxOffice(range) {
-        return this.get(`/api/box-office?range=${encodeURIComponent(range)}`);
+    async ceremony(range) {
+        return this.get(`/api/ceremony?range=${encodeURIComponent(range)}`);
     }
 
-    async recap(userId, year) {
+    async season(userId, year) {
         const query = year ? `?year=${encodeURIComponent(year)}` : '';
-        return this.get(`/api/recap/${encodeURIComponent(userId)}${query}`);
+        return this.get(`/api/season/${encodeURIComponent(userId)}${query}`);
     }
 
     async premieres(userId, since) {
@@ -32,10 +32,6 @@ export class Api {
 
     async awards() {
         return this.get('/api/awards');
-    }
-
-    async trades() {
-        return this.get('/api/trades');
     }
 
     async me() {
