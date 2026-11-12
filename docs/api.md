@@ -21,9 +21,6 @@ A route that changes settings needs the owner.
 | `GET /api/season/:id?year=:year` | One person's season review |
 | `GET /api/poster/:ratingKey` | The Plex poster for an item |
 
-`/api/awards` and `/api/progress` use the same names as the
-Audiobookshelf achievement engine, so tools for that project can also read Laurels.
-
 `category` is `Film`, `Television` or `Screen`.
 `holderIds` lists the people who hold the award, oldest win first.
 

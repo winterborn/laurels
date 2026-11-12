@@ -7,6 +7,8 @@ import { PlexSignIn } from './PlexSignIn.js';
 
 const ENV_NAMES = {
     plexUrl: 'PLEX_URL',
+    tautulliUrl: 'TAUTULLI_URL',
+    tautulliApiKey: 'TAUTULLI_API_KEY',
     pollMinutes: 'POLL_MINUTES',
     timeZone: 'TZ',
     discordWebhookUrl: 'DISCORD_WEBHOOK_URL',
@@ -47,6 +49,7 @@ export class SettingsView {
             + `<form class="settings" novalidate>`
             + this.plexSection()
             + this.scheduleSection()
+            + this.tautulliSection()
             + this.discordSection()
             + this.householdSection()
             + this.securitySection()
@@ -161,6 +164,30 @@ export class SettingsView {
             + `</fieldset>`;
     }
 
+    // Tautulli
+
+    tautulliSection() {
+        const keyHint = this.settings.tautulliKeySet ? 'Saved. Paste to replace.' : '';
+        const keyHelp = 'In Tautulli, open Settings, then Web Interface. Copy the API key.';
+        return `<fieldset class="panel">`
+            + `<legend>Tautulli (optional)</legend>`
+            + `<p class="help">Plex history gives only the end of each watch. `
+            + `Tautulli gives the real start time and the time on screen. `
+            + `Laurels then uses them for times of day, days and hours.</p>`
+            + this.textField('tautulliUrl', 'Tautulli address', 'http://tautulli:8181',
+                'If Tautulli is on the same Docker network, use http://tautulli:8181.')
+            + `<label class="field"><span class="label">Tautulli API key</span>`
+            + `<input type="password" name="tautulliApiKey" autocomplete="off" `
+            + `placeholder="${keyHint}"${this.lockAttr('tautulliApiKey')}>`
+            + `<span class="help">${this.helpFor('tautulliApiKey', keyHelp)}</span>`
+            + `</label>`
+            + `<div class="row">`
+            + `<button type="button" class="button" data-action="test-tautulli">Test Tautulli</button>`
+            + `<span class="message" id="tautulli-message" role="status"></span>`
+            + `</div>`
+            + `</fieldset>`;
+    }
+
     // Discord
 
     discordSection() {
@@ -262,6 +289,9 @@ export class SettingsView {
             case 'test-plex':
                 this.testPlex();
                 return;
+            case 'test-tautulli':
+                this.testTautulli();
+                return;
             case 'test-discord':
                 this.testDiscord();
                 return;
@@ -309,7 +339,8 @@ export class SettingsView {
         const form = this.root.querySelector('form');
         const data = new FormData(form);
         const entries = [...data.entries()].filter(([name, value]) => {
-            const isEmptyToken = name === 'plexToken' && !value;
+            const isSecret = name === 'plexToken' || name === 'tautulliApiKey';
+            const isEmptyToken = isSecret && !value;
             return !isEmptyToken && !this.isLocked(name);
         });
         const values = Object.fromEntries(entries);
@@ -356,6 +387,17 @@ export class SettingsView {
         const count = result.body.trophies.length;
         this.say('demo-message', `Added: ${result.body.title}. It wins ${count} ${count === 1 ? 'award' : 'awards'}.`, true);
         window.dispatchEvent(new CustomEvent('laurels:check-premieres'));
+    }
+
+    async testTautulli() {
+        this.say('tautulli-message', 'Testing…', true);
+        const values = this.formValues();
+        const result = await this.api.post('/api/settings/test-tautulli', {
+            tautulliUrl: values.tautulliUrl ?? '',
+            tautulliApiKey: values.tautulliApiKey ?? '',
+        });
+        const message = result.ok ? `Connected to ${result.body.name}.` : result.body.error;
+        this.say('tautulli-message', message, result.ok);
     }
 
     async testDiscord() {

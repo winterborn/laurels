@@ -27,6 +27,8 @@ const HISTORY_VERSION = '2';
 const HISTORY_VERSION_KEY = 'plex.historyVersion';
 // Metadata requests sent to Plex at the same time.
 const METADATA_BATCH = 4;
+// Items saved in one transaction.
+const SAVE_BATCH = 100;
 
 export class PlexSource {
 
@@ -91,12 +93,14 @@ export class PlexSource {
     // Keeps a title for media that Plex may delete before we fetch it.
     private saveStubs(rows: PlexJson[]): void {
         const known = this.store.items();
-        for (const row of rows) {
-            const event = this.mapper.event(row);
-            if (event) {
-                this.saveStub(row, event, known);
+        this.store.transaction(() => {
+            for (const row of rows) {
+                const event = this.mapper.event(row);
+                if (event) {
+                    this.saveStub(row, event, known);
+                }
             }
-        }
+        });
     }
 
     private saveStub(row: PlexJson, event: WatchEvent, known: Map<string, Item>): void {
@@ -131,12 +135,23 @@ export class PlexSource {
 
     private async syncMetadata(): Promise<number> {
         const items = this.store.items();
-        const wanted = this.wantedKeys(this.store.events(), items);
-        for (const batch of chunksOf(wanted, METADATA_BATCH)) {
-            const fetches = batch.map((ratingKey) => this.fetchItem(ratingKey, items.get(ratingKey)));
-            await Promise.all(fetches);
+        const events = [...this.store.events(), ...this.store.partialPlays()];
+        const wanted = this.wantedKeys(events, items);
+        for (const group of chunksOf(wanted, SAVE_BATCH)) {
+            const fetched = await this.fetchAll(group, items);
+            this.store.transaction(() => fetched.forEach((item) => this.store.saveItem(item)));
         }
         return wanted.length;
+    }
+
+    // METADATA_BATCH requests at a time.
+    private async fetchAll(keys: string[], items: Map<string, Item>): Promise<Item[]> {
+        const fetched: Item[] = [];
+        for (const batch of chunksOf(keys, METADATA_BATCH)) {
+            const results = await Promise.all(batch.map((key) => this.fetchItem(key, items.get(key))));
+            fetched.push(...results);
+        }
+        return fetched;
     }
 
     private wantedKeys(events: WatchEvent[], items: Map<string, Item>): string[] {
@@ -164,20 +179,20 @@ export class PlexSource {
         }
     }
 
-    private async fetchItem(ratingKey: string, known: Item | undefined): Promise<void> {
+    // The item from Plex, or the known item marked as removed from Plex.
+    private async fetchItem(ratingKey: string, known: Item | undefined): Promise<Item> {
         const container = await this.client.getJson(`/library/metadata/${ratingKey}`);
         const row = container?.Metadata?.[0];
         const item = row ? this.mapper.item(row) : null;
         if (item) {
-            this.store.saveItem(item);
-        } else {
-            const thin = known ?? this.mapper.missing(ratingKey);
-            this.store.saveItem({
-                ...thin,
-                stub: false,
-                missing: true,
-            });
+            return item;
         }
+        const thin = known ?? this.mapper.missing(ratingKey);
+        return {
+            ...thin,
+            stub: false,
+            missing: true,
+        };
     }
 
 }

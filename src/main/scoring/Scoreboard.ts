@@ -7,6 +7,7 @@ import type {
 } from '../model/index.ts';
 import { groupBy } from '../helpers/index.ts';
 import {
+    HouseholdWatches,
     RuleEngine,
     UserHistory,
 } from '../rules/index.ts';
@@ -27,12 +28,17 @@ export class Scoreboard {
         events: WatchEvent[],
         items: Map<string, Item>,
         achievements: Achievement[],
+        partialPlays: WatchEvent[] = [],
     ): void {
         const eventsByUser = groupBy(events, (event) => event.userId);
+        const partialByUser = groupBy(partialPlays, (event) => event.userId);
+        const shown = new Set(users.map((user) => user.id));
+        const household = new HouseholdWatches(events.filter((event) => shown.has(event.userId)));
         const entries = users.map((user) => {
             const userEvents = eventsByUser.get(user.id) ?? [];
-            const history = new UserHistory(user.id, userEvents, items, this.timeZone);
-            const progress = this.engine.evaluateAll(history, achievements);
+            const partial = partialByUser.get(user.id) ?? [];
+            const history = new UserHistory(user.id, userEvents, items, this.timeZone, partial);
+            const progress = this.engine.evaluateAll(history, achievements, household);
             return [user.id, progress] as [string, Progress[]];
         });
         this.progressByUser = new Map(entries);

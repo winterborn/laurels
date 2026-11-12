@@ -12,6 +12,7 @@ import { Catalogue } from '../../main/rules/index.ts';
 
 const folder = mkdtempSync(join(tmpdir(), 'laurels-catalogue-'));
 const path = join(folder, 'achievements.json');
+const customPath = join(folder, 'awards.json');
 
 function achievement(id: string) {
     return {
@@ -28,9 +29,9 @@ function achievement(id: string) {
 }
 
 // Changes the file and moves its time forward, so the change is seen.
-function writeList(list: unknown, seconds: number): void {
-    writeFileSync(path, typeof list === 'string' ? list : JSON.stringify(list));
-    utimesSync(path, seconds, seconds);
+function writeList(list: unknown, seconds: number, file = path): void {
+    writeFileSync(file, typeof list === 'string' ? list : JSON.stringify(list));
+    utimesSync(file, seconds, seconds);
 }
 
 describe('Catalogue', () => {
@@ -56,6 +57,49 @@ describe('Catalogue', () => {
         writeList('{ not json', 4000);
         assert.equal(catalogue.reloadIfChanged(), false);
         assert.equal(catalogue.achievements.length, 1);
+    });
+
+    it('adds, changes and removes awards from awards.json', () => {
+        writeList([achievement('a'), achievement('b')], 5000);
+        writeList([
+            achievement('c'),
+            {
+                id: 'a',
+                title: 'New title',
+            },
+            {
+                id: 'b',
+                remove: true,
+            },
+        ], 5000, customPath);
+        const catalogue = Catalogue.fromFile(path, customPath);
+        const ids = catalogue.achievements.map((entry) => entry.id);
+        assert.deepEqual(ids, ['a', 'c']);
+        assert.equal(catalogue.byId('a')?.title, 'New title');
+        assert.equal(catalogue.byId('a')?.rule.type, 'count');
+    });
+
+    it('loads again when only awards.json changes', () => {
+        writeList([achievement('a')], 6000);
+        writeList([], 6000, customPath);
+        const catalogue = Catalogue.fromFile(path, customPath);
+        writeList([achievement('d')], 7000, customPath);
+        assert.equal(catalogue.reloadIfChanged(), true);
+        assert.equal(catalogue.achievements.length, 2);
+    });
+
+    it('skips a bad entry in awards.json and keeps the rest', () => {
+        writeList([achievement('a')], 8000);
+        writeList([
+            {
+                id: 'bad',
+                title: 'No rule',
+            },
+            achievement('e'),
+        ], 8000, customPath);
+        const catalogue = Catalogue.fromFile(path, customPath);
+        const ids = catalogue.achievements.map((entry) => entry.id);
+        assert.deepEqual(ids, ['a', 'e']);
     });
 
 });

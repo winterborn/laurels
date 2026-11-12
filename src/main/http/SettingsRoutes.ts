@@ -5,6 +5,7 @@ import { DiscordNotifier } from '../notify/index.ts';
 import {
     PlexAccount,
     PlexClient,
+    TautulliClient,
 } from '../sources/index.ts';
 
 type Json = Record<string, unknown>;
@@ -35,10 +36,11 @@ export class SettingsRoutes {
     }
 
     settings(): Json {
-        const { plexToken, clientId, ownerId, ...shown } = this.app.settings;
+        const { plexToken, tautulliApiKey, clientId, ownerId, ...shown } = this.app.settings;
         return {
             values: shown,
             plexTokenSet: plexToken !== '',
+            tautulliKeySet: tautulliApiKey !== '',
             locked: this.app.settingsStore.locked,
             timeZones: Intl.supportedValuesOf('timeZone'),
             demo: this.app.config.demoMockUrl !== '',
@@ -60,6 +62,21 @@ export class SettingsRoutes {
         try {
             const info = await new PlexClient(url, token).serverInfo();
             return this.ok(info);
+        } catch (error) {
+            return this.fail(this.messageOf(error));
+        }
+    }
+
+    // Tests the address in the form, with the typed key or the saved one.
+    async testTautulli(body: Json): Promise<RouteResult> {
+        const url = String(body.tautulliUrl ?? this.app.settings.tautulliUrl).trim();
+        const key = String(body.tautulliApiKey || this.app.settings.tautulliApiKey);
+        if (!url || !key) {
+            return this.fail('Add the Tautulli address and the API key first.');
+        }
+        try {
+            const name = await new TautulliClient(url, key).serverName();
+            return this.ok({ name });
         } catch (error) {
             return this.fail(this.messageOf(error));
         }

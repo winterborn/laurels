@@ -16,4 +16,6 @@ export interface WatchEvent {
     pausedSeconds?: number;
     platform?: string;
     source: WatchSource;
+    // A Tautulli play that was not watched to the end. It adds time on screen only.
+    partial?: boolean;
 }

@@ -37,6 +37,8 @@ export interface HoursRule {
 export interface CompleteRule {
     type: 'complete';
     set: 'show' | 'season';
+    // Only count a set when its first and last watch are this many days apart or less.
+    withinDays?: number;
     target: number;
 }
 
@@ -49,12 +51,36 @@ export interface StreakRule {
 export interface WindowRule {
     type: 'window';
     filter?: EventFilterSpec;
-    span: 'day' | '24h';
+    // A local calendar day, month or year, or any 24 hours.
+    span: 'day' | '24h' | 'month' | 'year';
     groupBy?: 'show';
+    // Count each local day once, for example "20 days in one month".
+    distinct?: 'day';
     target: number;
 }
 
-export type Rule = CountRule | HoursRule | CompleteRule | StreakRule | WindowRule;
+// Watches of an item that another person also watched within withinDays.
+export interface SharedRule {
+    type: 'shared';
+    filter?: EventFilterSpec;
+    withinDays: number;
+    target: number;
+}
+
+// A number of other awards won.
+export interface AwardsRule {
+    type: 'awards';
+    target: number;
+}
+
+export type Rule =
+    | AwardsRule
+    | CompleteRule
+    | CountRule
+    | HoursRule
+    | SharedRule
+    | StreakRule
+    | WindowRule;
 
 export interface Achievement {
     id: string;

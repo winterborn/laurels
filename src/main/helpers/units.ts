@@ -9,6 +9,10 @@ export interface Unit {
 }
 
 const UNITS: Record<string, Unit> = {
+    awards: {
+        one: 'award',
+        many: 'awards',
+    },
     days: {
         one: 'day',
         many: 'days',
@@ -42,16 +46,20 @@ const UNITS: Record<string, Unit> = {
 // What the progress of a rule counts, for "8 of 10 films".
 export function unitOf(rule: Rule): Unit {
     switch (rule.type) {
-        case 'hours':
-            return UNITS.hours;
-        case 'streak':
-            return UNITS.days;
+        case 'awards':
+            return UNITS.awards;
         case 'complete':
             return completeUnit(rule.set, rule.target);
-        case 'window':
-            return kindUnit(rule.filter);
         case 'count':
             return countUnit(rule.distinct, rule.groupBy, rule.filter);
+        case 'hours':
+            return UNITS.hours;
+        case 'shared':
+            return kindUnit(rule.filter);
+        case 'streak':
+            return UNITS.days;
+        case 'window':
+            return rule.distinct === 'day' ? UNITS.days : kindUnit(rule.filter);
     }
 }
 

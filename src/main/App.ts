@@ -24,6 +24,8 @@ import {
     PlexClient,
     PlexSource,
     type SyncReport,
+    TautulliClient,
+    TautulliSource,
 } from './sources/index.ts';
 import { Store } from './store/index.ts';
 
@@ -47,6 +49,7 @@ export class App {
     scoreboard: Scoreboard;
     lastSync: SyncStatus | null = null;
     private source: PlexSource | null = null;
+    private tautulli: TautulliSource | null = null;
     private notifier: DiscordNotifier;
     private timer: NodeJS.Timeout | undefined;
     private isRunning = false;
@@ -57,7 +60,7 @@ export class App {
     constructor(config: Config) {
         this.config = config;
         this.store = new Store(config.databasePath);
-        this.catalogue = Catalogue.fromFile(config.achievementsPath);
+        this.catalogue = Catalogue.fromFile(config.achievementsPath, config.customAwardsPath);
         this.settingsStore = new SettingsStore(config.settingsPath, config.env);
         this.scoreboard = new Scoreboard(this.settings.timeZone);
         this.notifier = new DiscordNotifier('', '');
@@ -123,7 +126,8 @@ export class App {
         if (!report) {
             return;
         }
-        const hasNewData = report.newEvents > 0 || report.newItems > 0;
+        const changedWatches = await this.syncTautulli();
+        const hasNewData = report.newEvents > 0 || report.newItems > 0 || changedWatches > 0;
         const canSkip = this.isUpToDate && !hasNewRules && !hasNewData;
         if (canSkip) {
             return;
@@ -148,13 +152,15 @@ export class App {
 
     historyOf(userId: string): UserHistory {
         const events = this.store.events().filter((event) => event.userId === userId);
-        return new UserHistory(userId, events, this.store.items(), this.settings.timeZone);
+        const partial = this.store.partialPlays().filter((event) => event.userId === userId);
+        return new UserHistory(userId, events, this.store.items(), this.settings.timeZone, partial);
     }
 
     private rebuild(): void {
         const settings = this.settings;
         this.plex = this.isConfigured ? new PlexClient(settings.plexUrl, settings.plexToken) : null;
         this.source = this.plex ? new PlexSource(this.plex, this.store) : null;
+        this.tautulli = this.tautulliFor(settings);
         this.notifier = new DiscordNotifier(settings.discordWebhookUrl, settings.publicUrl);
         this.scoreboard = new Scoreboard(settings.timeZone);
         this.score();
@@ -196,6 +202,32 @@ export class App {
         }
     }
 
+    // Optional. A failure is logged and never stops the cycle.
+    // Returns how many watches changed.
+    private async syncTautulli(): Promise<number> {
+        if (!this.tautulli) {
+            return 0;
+        }
+        try {
+            const report = await this.tautulli.sync();
+            console.log(`Tautulli: ${report.newPlays} new or changed plays, ${report.changedWatches} watches changed`);
+            return report.changedWatches;
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`Tautulli failed: ${message}`);
+            return 0;
+        }
+    }
+
+    private tautulliFor(settings: Settings): TautulliSource | null {
+        const isSet = settings.tautulliUrl !== '' && settings.tautulliApiKey !== '';
+        if (!isSet) {
+            return null;
+        }
+        const client = new TautulliClient(settings.tautulliUrl, settings.tautulliApiKey);
+        return new TautulliSource(client, this.store);
+    }
+
     // " in 12.3 s, 45 Plex requests"
     private costOf(startedAt: number, requestsBefore: number): string {
         const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
@@ -221,6 +253,7 @@ export class App {
             events,
             this.store.items(),
             this.achievements,
+            this.store.partialPlays(),
         );
     }
 
@@ -229,7 +262,7 @@ export class App {
         const earned = this.scoreboard
             .earned()
             .map((progress) => this.awardFrom(progress));
-        const fresh = earned.filter((award) => this.store.saveAward(award));
+        const fresh = this.store.transaction(() => earned.filter((award) => this.store.saveAward(award)));
         const dated = earned.filter((award) => award.eventId !== '');
         const changed = this.store.updateAwards(dated);
         if (fresh.length) {

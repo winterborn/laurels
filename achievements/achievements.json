@@ -287,6 +287,22 @@
         }
     },
     {
+        "id": "film_year_100",
+        "title": "Festival circuit",
+        "description": "Watch 100 films in one calendar year.",
+        "flavorText": "For a hundred films between one January and the next.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "window",
+            "span": "year",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 100
+        }
+    },
+    {
         "id": "tv_first",
         "title": "Pilot",
         "description": "Watch your first episode.",
@@ -503,6 +519,20 @@
         }
     },
     {
+        "id": "tv_box_week",
+        "title": "Premiere week",
+        "description": "Watch every episode of one show within 7 days.",
+        "flavorText": "For a whole show, start to finish, in one week.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "withinDays": 7,
+            "target": 1
+        }
+    },
+    {
         "id": "both_nightowl",
         "title": "Night owl",
         "description": "Start 10 films or episodes between 1am and 5am.",
@@ -576,6 +606,45 @@
         "rule": {
             "type": "hours",
             "target": 1000
+        }
+    },
+    {
+        "id": "both_watch_party",
+        "title": "Watch party",
+        "description": "Watch a film or episode within 7 days of another person.",
+        "flavorText": "For seeing it the same week as someone else in the house.",
+        "tier": "Uncommon",
+        "section": "both",
+        "rule": {
+            "type": "shared",
+            "withinDays": 7,
+            "target": 1
+        }
+    },
+    {
+        "id": "both_repertory",
+        "title": "Repertory",
+        "description": "Watch something on 20 days in one calendar month.",
+        "flavorText": "For a seat at the pictures most nights of the month.",
+        "tier": "Rare",
+        "section": "both",
+        "rule": {
+            "type": "window",
+            "span": "month",
+            "distinct": "day",
+            "target": 20
+        }
+    },
+    {
+        "id": "both_retrospective",
+        "title": "Retrospective",
+        "description": "Win 25 other awards.",
+        "flavorText": "For a body of work that earns a retrospective.",
+        "tier": "Epic",
+        "section": "both",
+        "rule": {
+            "type": "awards",
+            "target": 25
         }
     }
 ]

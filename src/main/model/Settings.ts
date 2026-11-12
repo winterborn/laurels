@@ -4,6 +4,9 @@ export interface Settings {
     plexToken: string;
     // Identifies this install to Plex. Made once, never changes.
     clientId: string;
+    // Optional. Tautulli gives the real start time and play time of each watch.
+    tautulliUrl: string;
+    tautulliApiKey: string;
     pollMinutes: number;
     timeZone: string;
     discordWebhookUrl: string;

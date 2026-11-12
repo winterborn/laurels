@@ -82,7 +82,8 @@ export class RecapReport {
     }
 
     private totals(history: UserHistory, events: WatchEvent[], userId: string, year: string): Json {
-        const seconds = events.reduce((sum, event) => sum + history.secondsOf(event), 0);
+        const partial = history.partialPlays.filter((event) => this.yearOf(history, event) === year);
+        const seconds = [...events, ...partial].reduce((sum, event) => sum + history.secondsOf(event), 0);
         return {
             films: events.filter((event) => event.kind === 'movie').length,
             episodes: events.filter((event) => event.kind === 'episode').length,

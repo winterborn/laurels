@@ -23,6 +23,8 @@ services:
       # - PLEX_URL=http://plex:32400
       # - PLEX_TOKEN=
       # - POLL_MINUTES=5
+      # - TAUTULLI_URL=http://tautulli:8181
+      # - TAUTULLI_API_KEY=
       # - DISCORD_WEBHOOK_URL=
       # - PUBLIC_URL=
       # - USER_ALIASES=1:Mum,2:Dad

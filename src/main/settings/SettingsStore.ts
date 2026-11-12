@@ -18,6 +18,8 @@ import type {
 const ENV_NAMES: Record<Exclude<SettingName, 'clientId' | 'ownerId'>, string> = {
     plexUrl: 'PLEX_URL',
     plexToken: 'PLEX_TOKEN',
+    tautulliUrl: 'TAUTULLI_URL',
+    tautulliApiKey: 'TAUTULLI_API_KEY',
     pollMinutes: 'POLL_MINUTES',
     timeZone: 'TZ',
     discordWebhookUrl: 'DISCORD_WEBHOOK_URL',
@@ -46,29 +48,36 @@ export class SettingsStore {
     private readonly path: string;
     private readonly env: Env;
     private saved: Partial<Settings>;
+    // Environment values never change while Laurels runs.
+    private readonly envValues: Partial<Settings>;
+    // The merged settings. A save clears it.
+    private merged: Settings | null = null;
 
     constructor(path: string, env: Env) {
         this.path = path;
         this.env = env;
+        this.envValues = this.fromEnv();
         this.saved = this.readFile();
         this.ensureClientId();
     }
 
     // File values, then environment values on top.
     get current(): Settings {
-        return {
+        this.merged ??= {
             ...this.defaults(),
             ...this.saved,
-            ...this.fromEnv(),
+            ...this.envValues,
         };
+        return this.merged;
     }
 
     get locked(): SettingName[] {
-        return Object.keys(this.fromEnv()) as SettingName[];
+        return Object.keys(this.envValues) as SettingName[];
     }
 
     // Internal fields that no form or variable may set.
     saveOwner(ownerId: string): void {
+        this.merged = null;
         this.saved = {
             ...this.saved,
             ownerId,
@@ -79,6 +88,7 @@ export class SettingsStore {
     // Ignores locked and unknown fields. Returns the new settings.
     save(patch: Partial<Settings>): Settings {
         const allowed = this.allowedPatch(patch);
+        this.merged = null;
         this.saved = {
             ...this.saved,
             ...allowed,
@@ -109,7 +119,8 @@ export class SettingsStore {
             return AUTH_MODES.includes(mode) ? mode : 'plex';
         }
         const text = String(value ?? '').trim();
-        if (name === 'plexUrl' || name === 'publicUrl') {
+        const isAddress = name === 'plexUrl' || name === 'publicUrl' || name === 'tautulliUrl';
+        if (isAddress) {
             return text.replace(/\/+$/, '');
         }
         return text;
@@ -128,6 +139,8 @@ export class SettingsStore {
             plexUrl: '',
             plexToken: '',
             clientId: '',
+            tautulliUrl: '',
+            tautulliApiKey: '',
             pollMinutes: 5,
             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             discordWebhookUrl: '',
@@ -152,6 +165,7 @@ export class SettingsStore {
         if (this.saved.clientId) {
             return;
         }
+        this.merged = null;
         this.saved = {
             ...this.saved,
             clientId: `laurels-${randomUUID()}`,

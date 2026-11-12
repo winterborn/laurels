@@ -39,6 +39,11 @@ export class Config {
         return join(this.dataDir, 'trophies.db');
     }
 
+    // The owner's own awards, next to the settings.
+    get customAwardsPath(): string {
+        return join(this.dataDir, 'awards.json');
+    }
+
     get settingsPath(): string {
         return join(this.dataDir, 'settings.json');
     }

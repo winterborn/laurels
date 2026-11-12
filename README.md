@@ -42,6 +42,11 @@ Laurels then dates each award to the watch that won it.
 The full guide is [docs/install.md](docs/install.md).
 It tells you how to connect Laurels to Plex when Plex also runs in Docker.
 
+Optional:
+
+- Connect Tautulli for real start times and real time watched.
+- Add your own awards in `/config/awards.json`. See [docs/awards.md](docs/awards.md).
+
 ## Run without Docker
 
 Use Node.js 24.
@@ -75,3 +80,4 @@ npm test
 ```
 
 - [docs/api.md](docs/api.md): the routes of the Laurels API.
+- [docs/awards.md](docs/awards.md): how to add your own awards.

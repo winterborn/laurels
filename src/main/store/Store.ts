@@ -4,12 +4,18 @@ import { DatabaseSync } from 'node:sqlite';
 import type {
     Award,
     Item,
+    Play,
     Session,
     User,
     WatchEvent,
 } from '../model/index.ts';
 
 type Row = Record<string, any>;
+
+interface EventCache {
+    watches: WatchEvent[];
+    partial: WatchEvent[];
+}
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS events (
@@ -24,7 +30,8 @@ CREATE TABLE IF NOT EXISTS events (
     play_seconds INTEGER,
     paused_seconds INTEGER,
     platform TEXT,
-    source TEXT NOT NULL
+    source TEXT NOT NULL,
+    partial INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS events_user ON events (user_id, watched_at);
 CREATE TABLE IF NOT EXISTS items (
@@ -55,6 +62,15 @@ CREATE TABLE IF NOT EXISTS sessions (
     created_at INTEGER NOT NULL,
     expires_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS tautulli_plays (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    json TEXT NOT NULL,
+    stopped INTEGER NOT NULL,
+    play_seconds INTEGER NOT NULL,
+    watched INTEGER NOT NULL,
+    event_id TEXT
+);
 CREATE TABLE IF NOT EXISTS sync_state (
     name TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -64,8 +80,10 @@ CREATE TABLE IF NOT EXISTS sync_state (
 export class Store {
 
     private readonly db: DatabaseSync;
-    // Parsed items, read once. saveItem clears it.
+    // Parsed items and events, read once. A write updates or clears them.
     private itemCache: Map<string, Item> | null = null;
+    private eventCache: EventCache | null = null;
+    private isInTransaction = false;
 
     constructor(path: string) {
         mkdirSync(dirname(path), { recursive: true });
@@ -77,11 +95,37 @@ export class Store {
 
     // Columns added after the first release.
     private migrate(): void {
-        const columns = this.db.prepare('PRAGMA table_info(awards)').all() as Row[];
-        const hasGrantedAt = columns.some((column) => column.name === 'granted_at');
-        if (!hasGrantedAt) {
+        if (!this.hasColumn('awards', 'granted_at')) {
             this.db.exec('ALTER TABLE awards ADD COLUMN granted_at INTEGER');
             this.db.exec('UPDATE awards SET granted_at = awarded_at');
+        }
+        if (!this.hasColumn('events', 'partial')) {
+            this.db.exec('ALTER TABLE events ADD COLUMN partial INTEGER NOT NULL DEFAULT 0');
+        }
+    }
+
+    private hasColumn(table: string, column: string): boolean {
+        const columns = this.db.prepare(`PRAGMA table_info(${table})`).all() as Row[];
+        return columns.some((entry) => entry.name === column);
+    }
+
+    // Runs `run` in one transaction: one commit for many writes.
+    // `run` must not await, so no other write joins the transaction.
+    transaction<T>(run: () => T): T {
+        if (this.isInTransaction) {
+            return run();
+        }
+        this.db.exec('BEGIN');
+        this.isInTransaction = true;
+        try {
+            const result = run();
+            this.db.exec('COMMIT');
+            return result;
+        } catch (error) {
+            this.db.exec('ROLLBACK');
+            throw error;
+        } finally {
+            this.isInTransaction = false;
         }
     }
 
@@ -105,13 +149,39 @@ export class Store {
 
     // Events
 
+    // Adds new events. A saved event stays as it is. Returns how many were new.
     saveEvents(events: WatchEvent[]): number {
-        const insert = this.db.prepare(`INSERT OR IGNORE INTO events
+        return this.writeEvents(events, 'INSERT OR IGNORE');
+    }
+
+    // Adds events, or replaces saved events with the same id.
+    replaceEvents(events: WatchEvent[]): number {
+        return this.writeEvents(events, 'INSERT OR REPLACE');
+    }
+
+    deleteEvent(id: string): void {
+        this.db.prepare('DELETE FROM events WHERE id = ?').run(id);
+        this.eventCache = null;
+    }
+
+    // Watches, oldest first. Partial plays are not watches.
+    // The list is shared: callers must not change it.
+    events(): WatchEvent[] {
+        return this.cachedEvents().watches;
+    }
+
+    // Partial plays: they count for time on screen only.
+    partialPlays(): WatchEvent[] {
+        return this.cachedEvents().partial;
+    }
+
+    private writeEvents(events: WatchEvent[], verb: string): number {
+        const write = this.db.prepare(`${verb} INTO events
             (id, user_id, rating_key, kind, show_key, season_key, watched_at,
-             started_at, play_seconds, paused_seconds, platform, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-        const changes = events.map((event) => {
-            const result = insert.run(
+             started_at, play_seconds, paused_seconds, platform, source, partial)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+        const changes = this.transaction(() => events.map((event) => {
+            const result = write.run(
                 event.id,
                 event.userId,
                 event.ratingKey,
@@ -124,15 +194,26 @@ export class Store {
                 event.pausedSeconds ?? null,
                 event.platform ?? null,
                 event.source,
+                event.partial ? 1 : 0,
             );
             return Number(result.changes);
-        });
+        }));
+        this.eventCache = null;
         return changes.reduce((sum, change) => sum + change, 0);
     }
 
-    events(): WatchEvent[] {
+    private cachedEvents(): EventCache {
+        this.eventCache ??= this.readEvents();
+        return this.eventCache;
+    }
+
+    private readEvents(): EventCache {
         const rows = this.db.prepare('SELECT * FROM events ORDER BY watched_at').all() as Row[];
-        return rows.map((row) => this.eventFrom(row));
+        const all = rows.map((row) => this.eventFrom(row));
+        return {
+            watches: all.filter((event) => !event.partial),
+            partial: all.filter((event) => event.partial),
+        };
     }
 
     // Items
@@ -142,7 +223,7 @@ export class Store {
             .prepare(`INSERT INTO items (rating_key, json, fetched_at) VALUES (?, ?, ?)
                 ON CONFLICT (rating_key) DO UPDATE SET json = excluded.json, fetched_at = excluded.fetched_at`)
             .run(item.ratingKey, JSON.stringify(item), Math.floor(Date.now() / 1000));
-        this.itemCache = null;
+        this.itemCache?.set(item.ratingKey, item);
     }
 
     // A copy, so a caller cannot change the cache.
@@ -154,6 +235,59 @@ export class Store {
     item(ratingKey: string): Item | undefined {
         this.itemCache ??= this.readItems();
         return this.itemCache.get(ratingKey);
+    }
+
+    // Plays (Tautulli)
+
+    // Saves new plays, and plays that changed since the last read
+    // (a play grows when someone resumes it). Returns those plays.
+    savePlays(plays: Play[]): Play[] {
+        const upsert = this.db.prepare(`INSERT INTO tautulli_plays
+            (id, user_id, json, stopped, play_seconds, watched)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                json = excluded.json,
+                stopped = excluded.stopped,
+                play_seconds = excluded.play_seconds,
+                watched = excluded.watched
+            WHERE tautulli_plays.stopped != excluded.stopped
+                OR tautulli_plays.play_seconds != excluded.play_seconds
+                OR tautulli_plays.watched != excluded.watched`);
+        return this.transaction(() => plays.filter((play) => {
+            const result = upsert.run(
+                play.id,
+                play.userId,
+                JSON.stringify(play),
+                play.stopped,
+                play.playSeconds,
+                play.watched ? 1 : 0,
+            );
+            return Number(result.changes) > 0;
+        }));
+    }
+
+    plays(): Play[] {
+        const rows = this.db.prepare('SELECT json, event_id FROM tautulli_plays').all() as Row[];
+        return rows.map((row) => ({
+            ...JSON.parse(row.json),
+            eventId: row.event_id ?? undefined,
+        }));
+    }
+
+    linkPlay(playId: string, eventId: string): void {
+        this.db
+            .prepare('UPDATE tautulli_plays SET event_id = ? WHERE id = ?')
+            .run(eventId, playId);
+    }
+
+    // Gives a watch the start, time on screen and device of a play.
+    saveTiming(eventId: string, play: Play): void {
+        this.db
+            .prepare(`UPDATE events
+                SET started_at = ?, play_seconds = ?, paused_seconds = ?, platform = ?
+                WHERE id = ?`)
+            .run(play.started, play.playSeconds, play.pausedSeconds, play.platform ?? null, eventId);
+        this.eventCache = null;
     }
 
     // Awards
@@ -187,7 +321,7 @@ export class Store {
             SET awarded_at = ?, event_id = ?, poster_key = ?, note = ?
             WHERE user_id = ? AND achievement_id = ?
             AND (awarded_at != ? OR event_id != ? OR poster_key != ? OR note != ?)`);
-        const changes = awards.map((award) => {
+        const changes = this.transaction(() => awards.map((award) => {
             const details = [
                 award.awardedAt,
                 award.eventId,
@@ -196,7 +330,7 @@ export class Store {
             ];
             const result = update.run(...details, award.userId, award.achievementId, ...details);
             return Number(result.changes);
-        });
+        }));
         return changes.reduce((sum, count) => sum + count, 0);
     }
 
@@ -299,6 +433,7 @@ export class Store {
             pausedSeconds: row.paused_seconds ?? undefined,
             platform: row.platform ?? undefined,
             source: row.source,
+            partial: row.partial === 1 || undefined,
         };
     }
 

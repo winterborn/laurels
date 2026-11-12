@@ -5,6 +5,7 @@ import type {
 import {
     groupBy,
     lastOf,
+    periodOfDay,
 } from '../../helpers/index.ts';
 import { Tally } from '../Tally.ts';
 import type { UserHistory } from '../UserHistory.ts';
@@ -20,37 +21,48 @@ interface WindowHit {
     count: number;
 }
 
-// N matching watches inside one local day, or any 24 hours.
+// N matching watches inside one local day, month or year, or any 24 hours.
 export class WindowEvaluator implements Evaluator<WindowRule> {
 
     evaluate(history: UserHistory, rule: WindowRule): RuleResult {
         const events = history.select(rule.filter);
         switch (rule.span) {
             case 'day':
-                return this.byDay(history, rule, events);
+            case 'month':
+            case 'year':
+                return this.byPeriod(history, rule, events);
             case '24h':
                 return this.bySlidingDay(history, rule, events);
         }
     }
 
-    private byDay(
+    private byPeriod(
         history: UserHistory,
         rule: WindowRule,
         events: WatchEvent[],
     ): RuleResult {
         const tally = new Tally(rule.target);
         for (const event of events) {
-            tally.add(this.dayGroupOf(history, rule, event), event.id, event);
+            tally.add(this.periodGroupOf(history, rule, event), this.memberOf(history, rule, event), event);
         }
         const leader = tally.leader;
-        const busiest = events.filter((event) => this.dayGroupOf(history, rule, event) === leader.group);
+        const busiest = events.filter((event) => this.periodGroupOf(history, rule, event) === leader.group);
         const shown = tally.crossing ?? lastOf(busiest);
         return this.result(history, rule, tally.crossing, leader.size, shown);
     }
 
-    private dayGroupOf(history: UserHistory, rule: WindowRule, event: WatchEvent): string {
+    // "2026-11-12", "2026-11" or "2026", with the show when grouped by show.
+    private periodGroupOf(history: UserHistory, rule: WindowRule, event: WatchEvent): string {
         const day = history.localStart(event).day;
-        return `${day}|${this.showOf(rule, event)}`;
+        return `${periodOfDay(rule.span, day)}|${this.showOf(rule, event)}`;
+    }
+
+    // Each watch counts, or each local day counts once.
+    private memberOf(history: UserHistory, rule: WindowRule, event: WatchEvent): string {
+        if (rule.distinct === 'day') {
+            return history.localStart(event).day;
+        }
+        return event.id;
     }
 
     private bySlidingDay(
@@ -95,6 +107,10 @@ export class WindowEvaluator implements Evaluator<WindowRule> {
                 return 'in a day';
             case '24h':
                 return 'in 24 hours';
+            case 'month':
+                return 'in a month';
+            case 'year':
+                return 'in a year';
         }
     }
 

@@ -8,7 +8,10 @@ import type {
     WatchEvent,
     WindowRule,
 } from '../model/index.ts';
-import { dayNumber } from '../helpers/index.ts';
+import {
+    dayNumber,
+    periodOfDay,
+} from '../helpers/index.ts';
 import type { UserHistory } from './UserHistory.ts';
 
 const DAY_SECONDS = 86_400;
@@ -25,10 +28,14 @@ export class CreditsBuilder {
 
     private countedFor(history: UserHistory, rule: Rule, progress: Progress | undefined): WatchEvent[] {
         switch (rule.type) {
+            case 'awards':
+                return [];
+            case 'shared':
+                return history.events.filter((event) => event.id === progress?.eventId);
             case 'count':
                 return this.forCount(history, rule, progress);
             case 'hours':
-                return history.select(rule.filter);
+                return history.selectTime(rule.filter);
             case 'complete':
                 return this.forComplete(history, rule, progress);
             case 'streak':
@@ -102,7 +109,7 @@ export class CreditsBuilder {
         });
     }
 
-    // The watches in the day or 24 hours that earned it.
+    // The watches in the day, month, year or 24 hours that earned it.
     private forWindow(history: UserHistory, rule: WindowRule, progress: Progress | undefined): WatchEvent[] {
         const events = history.select(rule.filter);
         const anchor = events.find((event) => event.id === progress?.eventId);
@@ -110,9 +117,12 @@ export class CreditsBuilder {
             return events;
         }
         const sameShow = (event: WatchEvent) => !rule.groupBy || event.showKey === anchor.showKey;
-        if (rule.span === 'day') {
-            const day = history.localStart(anchor).day;
-            return events.filter((event) => sameShow(event) && history.localStart(event).day === day);
+        if (rule.span !== '24h') {
+            const period = periodOfDay(rule.span, history.localStart(anchor).day);
+            return events.filter((event) => {
+                const isSamePeriod = periodOfDay(rule.span, history.localStart(event).day) === period;
+                return sameShow(event) && isSamePeriod;
+            });
         }
         const end = history.startOf(anchor);
         return events.filter((event) => {

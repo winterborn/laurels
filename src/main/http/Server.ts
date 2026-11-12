@@ -271,6 +271,9 @@ export class Server {
             case '/api/settings/test-plex':
                 this.sendResult(response, await this.settings.testPlex(body));
                 return;
+            case '/api/settings/test-tautulli':
+                this.sendResult(response, await this.settings.testTautulli(body));
+                return;
             case '/api/settings/test-discord':
                 this.sendResult(response, await this.settings.testDiscord(body));
                 return;
@@ -325,9 +328,11 @@ export class Server {
             this.sendJson(response, 404, { error: 'No poster' });
             return;
         }
+        // A title card is short-lived: Plex may have the poster later.
+        const isTitleCard = poster.contentType === 'image/svg+xml';
         response.writeHead(200, {
             'Content-Type': poster.contentType,
-            'Cache-Control': 'public, max-age=86400',
+            'Cache-Control': isTitleCard ? 'public, max-age=3600' : 'public, max-age=86400',
         });
         response.end(poster.bytes);
     }

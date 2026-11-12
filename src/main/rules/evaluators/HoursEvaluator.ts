@@ -12,7 +12,7 @@ import type {
 export class HoursEvaluator implements Evaluator<HoursRule> {
 
     evaluate(history: UserHistory, rule: HoursRule): RuleResult {
-        const events = history.select(rule.filter);
+        const events = history.selectTime(rule.filter);
         const totals = this.runningTotals(history, events);
         const targetSeconds = rule.target * 3600;
         const crossingIndex = totals.findIndex((total) => total >= targetSeconds);

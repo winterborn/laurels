@@ -106,6 +106,8 @@ The environment variable has priority, and the Settings page locks that field.
 |---|---|---|
 | Plex address | `PLEX_URL` | none |
 | Plex token | `PLEX_TOKEN` | none (use **Sign in with Plex**) |
+| Tautulli address | `TAUTULLI_URL` | none |
+| Tautulli API key | `TAUTULLI_API_KEY` | none |
 | Time between checks of Plex (minutes) | `POLL_MINUTES` | `5` |
 | Time zone | `TZ` | the time zone of the container |
 | Discord webhook | `DISCORD_WEBHOOK_URL` | none |
@@ -153,10 +155,38 @@ docker compose up -d laurels
 
 The update keeps your settings and awards, because they are in `/config`.
 
+## Tautulli (optional)
+
+Plex history gives only the end of each watch.
+Laurels then calculates the start from the running time, and counts the full running time as time watched.
+
+If you use Tautulli, connect it on the **Settings** page.
+Laurels then reads Tautulli history with the same rules as Tautulli:
+
+- A play is one row in Tautulli history, with its resumed parts joined.
+  Tautulli does not keep plays shorter than its ignore interval (2 minutes by default).
+- A play is watched when Tautulli shows it as watched.
+  By default, this is 85% of the running time, or the start of the credits.
+- The time on screen is the time between start and stop, without pauses.
+- Laurels does not read live TV, or plays that are still running.
+
+Laurels then uses these rules:
+
+- A Plex watch inside a Tautulli play gets the start time, the time on screen and the device of that play.
+- A watched play with no Plex watch becomes a watch.
+- A play that is not watched adds time on screen. It does not count as a watch.
+- Watches from before you installed Tautulli keep the times that Laurels calculates.
+
+## Your own awards
+
+You can add, change and remove awards with the file `/config/awards.json`.
+The guide is [docs/awards.md](awards.md).
+
 ## Back up
 
 Stop the container, then copy the `config` folder.
-It has `settings.json` and the database `trophies.db`.
+It has `settings.json`, the database `trophies.db`, your `awards.json` and the poster cache `posters`.
+You can remove the `posters` folder. Laurels gets the posters from Plex again.
 
 ## Problems
 

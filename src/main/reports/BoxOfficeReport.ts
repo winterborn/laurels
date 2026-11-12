@@ -220,7 +220,8 @@ export class BoxOfficeReport {
 
     private statsOf(user: User, history: UserHistory, since: number): PersonStats {
         const events = history.events.filter((event) => event.watchedAt >= since);
-        const seconds = events.reduce((sum, event) => sum + history.secondsOf(event), 0);
+        const timed = history.selectTime().filter((event) => event.watchedAt >= since);
+        const seconds = timed.reduce((sum, event) => sum + history.secondsOf(event), 0);
         const late = events.filter((event) => {
             const hour = history.localStart(event).hour;
             return hour >= 1 && hour < LATE_HOUR_END;

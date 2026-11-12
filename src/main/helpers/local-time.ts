@@ -8,7 +8,37 @@ const SECONDS_PER_DAY = 86_400;
 
 const formatters = new Map<string, Intl.DateTimeFormat>();
 
+// Every time zone offset is a whole number of quarter hours, so the local
+// day and hour are the same for all times in one quarter hour.
+const QUARTER_HOUR = 900;
+// Parts already worked out. Intl formatting is slow, and the rules ask for
+// the same watch many times. The cache starts again when it is this big.
+const MAX_CACHED = 200_000;
+const cachedParts = new Map<string, LocalParts>();
+
 export function localParts(epochSeconds: number, timeZone: string): LocalParts {
+    const quarter = Math.floor(epochSeconds / QUARTER_HOUR);
+    const key = `${timeZone}|${quarter}`;
+    const cached = cachedParts.get(key);
+    if (cached) {
+        return cached;
+    }
+    if (cachedParts.size >= MAX_CACHED) {
+        cachedParts.clear();
+    }
+    const parts = formatParts(quarter * QUARTER_HOUR, timeZone);
+    cachedParts.set(key, parts);
+    return parts;
+}
+
+// Whole days since 1970-01-01 for a YYYY-MM-DD string.
+export function dayNumber(day: string): number {
+    const [year, month, date] = day.split('-').map(Number);
+    const epochMs = Date.UTC(year, month - 1, date);
+    return Math.round(epochMs / 1000 / SECONDS_PER_DAY);
+}
+
+function formatParts(epochSeconds: number, timeZone: string): LocalParts {
     const date = new Date(epochSeconds * 1000);
     const parts = formatterFor(timeZone).formatToParts(date);
     const valueOf = (type: string) => {
@@ -20,13 +50,6 @@ export function localParts(epochSeconds: number, timeZone: string): LocalParts {
         day: `${valueOf('year')}-${valueOf('month')}-${valueOf('day')}`,
         hour,
     };
-}
-
-// Whole days since 1970-01-01 for a YYYY-MM-DD string.
-export function dayNumber(day: string): number {
-    const [year, month, date] = day.split('-').map(Number);
-    const epochMs = Date.UTC(year, month - 1, date);
-    return Math.round(epochMs / 1000 / SECONDS_PER_DAY);
 }
 
 function formatterFor(timeZone: string): Intl.DateTimeFormat {
@@ -44,4 +67,16 @@ function formatterFor(timeZone: string): Intl.DateTimeFormat {
     });
     formatters.set(timeZone, formatter);
     return formatter;
+}
+
+// "2026-11-12" as a period: the day, "2026-11" or "2026".
+export function periodOfDay(span: string, day: string): string {
+    switch (span) {
+        case 'month':
+            return day.slice(0, 7);
+        case 'year':
+            return day.slice(0, 4);
+        default:
+            return day;
+    }
 }

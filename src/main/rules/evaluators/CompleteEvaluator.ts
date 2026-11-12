@@ -13,6 +13,13 @@ interface Completion {
     event: WatchEvent;
 }
 
+interface SetWatches {
+    episodes: Set<string>;
+    firstAt: number;
+}
+
+const DAY_SECONDS = 86_400;
+
 interface PartialSet {
     setKey: string;
     watched: number;
@@ -24,7 +31,7 @@ export class CompleteEvaluator implements Evaluator<CompleteRule> {
 
     evaluate(history: UserHistory, rule: CompleteRule): RuleResult {
         const episodes = history.select({ kind: 'episode' });
-        const watched = new Map<string, Set<string>>();
+        const watched = new Map<string, SetWatches>();
         const completions: Completion[] = [];
         for (const event of episodes) {
             this.addEpisode(history, rule, event, watched, completions);
@@ -43,7 +50,7 @@ export class CompleteEvaluator implements Evaluator<CompleteRule> {
         history: UserHistory,
         rule: CompleteRule,
         event: WatchEvent,
-        watched: Map<string, Set<string>>,
+        watched: Map<string, SetWatches>,
         completions: Completion[],
     ): void {
         const setKey = this.setKeyOf(rule, event);
@@ -51,17 +58,28 @@ export class CompleteEvaluator implements Evaluator<CompleteRule> {
         if (!setKey || !size) {
             return;
         }
-        const members = watched.get(setKey) ?? new Set<string>();
-        const isNewEpisode = !members.has(event.ratingKey);
-        members.add(event.ratingKey);
-        watched.set(setKey, members);
-        const justFinished = isNewEpisode && members.size === size;
-        if (justFinished) {
+        const set = watched.get(setKey) ?? {
+            episodes: new Set<string>(),
+            firstAt: event.watchedAt,
+        };
+        const isNewEpisode = !set.episodes.has(event.ratingKey);
+        set.episodes.add(event.ratingKey);
+        watched.set(setKey, set);
+        const justFinished = isNewEpisode && set.episodes.size === size;
+        if (justFinished && this.isQuickEnough(rule, set, event)) {
             completions.push({
                 setKey,
                 event,
             });
         }
+    }
+
+    // withinDays: the first and the last watch of the set are close enough.
+    private isQuickEnough(rule: CompleteRule, set: SetWatches, event: WatchEvent): boolean {
+        if (rule.withinDays === undefined) {
+            return true;
+        }
+        return event.watchedAt - set.firstAt <= rule.withinDays * DAY_SECONDS;
     }
 
     private setKeyOf(rule: CompleteRule, event: WatchEvent): string | undefined {
@@ -93,14 +111,16 @@ export class CompleteEvaluator implements Evaluator<CompleteRule> {
     private closest(
         history: UserHistory,
         rule: CompleteRule,
-        watched: Map<string, Set<string>>,
+        watched: Map<string, SetWatches>,
     ): RuleResult {
-        const partials = [...watched.entries()].map(([setKey, members]) => ({
+        const partials = [...watched.entries()].map(([setKey, set]) => ({
             setKey,
-            watched: members.size,
+            watched: set.episodes.size,
             size: history.item(setKey)?.leafCount ?? 1,
         }));
-        const best = partials.reduce<PartialSet | undefined>((nearest, partial) => {
+        // A finished set that did not count (too slow) is not a target any more.
+        const open = partials.filter((partial) => partial.watched < partial.size);
+        const best = open.reduce<PartialSet | undefined>((nearest, partial) => {
             const share = partial.watched / partial.size;
             const nearestShare = nearest ? nearest.watched / nearest.size : -1;
             return share > nearestShare ? partial : nearest;

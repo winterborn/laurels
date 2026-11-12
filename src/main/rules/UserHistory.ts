@@ -9,29 +9,51 @@ import type { LocalParts } from '../helpers/index.ts';
 import { EventFilter } from './EventFilter.ts';
 
 // One user's watches, oldest first, with the item cache beside them.
+// Partial plays (from Tautulli) are not watches. They count for time on screen only.
 export class UserHistory {
 
     readonly userId: string;
     readonly events: WatchEvent[];
+    readonly partialPlays: WatchEvent[];
     private readonly items: Map<string, Item>;
     private readonly timeZone: string;
     private readonly filter: EventFilter;
+    // Many rules use the same filter, so each result is kept. Callers must not change it.
+    private readonly selected = new Map<string, WatchEvent[]>();
 
     constructor(
         userId: string,
         events: WatchEvent[],
         items: Map<string, Item>,
         timeZone: string,
+        partialPlays: WatchEvent[] = [],
     ) {
         this.userId = userId;
         this.events = [...events].sort((a, b) => a.watchedAt - b.watchedAt);
+        this.partialPlays = [...partialPlays].sort((a, b) => a.watchedAt - b.watchedAt);
         this.items = items;
         this.timeZone = timeZone;
         this.filter = new EventFilter(this);
     }
 
     select(spec: EventFilterSpec = {}): WatchEvent[] {
-        return this.events.filter((event) => this.filter.matches(event, spec));
+        const key = JSON.stringify(spec);
+        const kept = this.selected.get(key);
+        if (kept) {
+            return kept;
+        }
+        const events = this.events.filter((event) => this.filter.matches(event, spec));
+        this.selected.set(key, events);
+        return events;
+    }
+
+    // Watches and partial plays, oldest first: everything that adds time on screen.
+    selectTime(spec: EventFilterSpec = {}): WatchEvent[] {
+        const partial = this.partialPlays.filter((event) => this.filter.matches(event, spec));
+        if (!partial.length) {
+            return this.select(spec);
+        }
+        return [...this.select(spec), ...partial].sort((a, b) => a.watchedAt - b.watchedAt);
     }
 
     item(ratingKey: string | undefined): Item | undefined {

@@ -40,7 +40,7 @@ export class ApiData {
         });
     }
 
-    // GET /api/awards[?user=id]: newest first. Same idea as the reference project.
+    // GET /api/awards[?user=id]: newest first.
     awards(userId?: string): Json[] {
         const names = new Map(this.app.visibleUsers().map((user) => [user.id, user.name]));
         const items = this.app.store.items();
