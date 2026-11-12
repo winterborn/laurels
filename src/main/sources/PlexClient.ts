@@ -39,7 +39,8 @@ export class PlexClient {
             throw new Error('Plex refused the token (401). Sign in again or check the token.');
         }
         if (!response.ok) {
-            throw new Error(`Plex returned ${response.status} for ${path}`);
+            throw new Error(`Plex returned ${response.status} for ${path}. `
+                + 'Check the server address, then try again.');
         }
         const body = await response.json();
         return body.MediaContainer ?? body;

@@ -37,7 +37,7 @@ Laurels works with Plex Media Server. Laurels is not made or endorsed by Plex, I
 5. Select your server. Click **Test connection**, then **Save settings**.
 
 The first sync reads all of your Plex history.
-Laurels then gives each award with the date of the watch that won it.
+Laurels then dates each award to the watch that won it.
 
 The full guide is [docs/install.md](docs/install.md).
 It tells you how to connect Laurels to Plex when Plex also runs in Docker.

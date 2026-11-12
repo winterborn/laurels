@@ -54,7 +54,7 @@ The first Plex account that signs in becomes the Laurels owner.
 5. Click **Save settings**.
 
 The first sync reads all of your Plex history.
-Laurels then gives each award with the date of the watch that won it.
+Laurels then dates each award to the watch that won it.
 Laurels does not send these old awards to Discord.
 
 ## Plex address

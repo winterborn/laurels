@@ -59,7 +59,7 @@ export class AwardsView {
         const stats = [
             ['Awards', `${user.trophies} of ${this.definitions.size}`],
             ['Points', formatNumber(user.points)],
-            ['Ceremony', ordinal(user.rank)],
+            ['Rank', ordinal(user.rank)],
             ['Films', formatNumber(user.films)],
             ['Episodes', formatNumber(user.episodes)],
         ];
@@ -74,7 +74,7 @@ export class AwardsView {
     winner() {
         const latest = this.cabinet.awards[0];
         if (!latest) {
-            return '<p class="empty">No awards yet. Watch a film or an episode to win the first one.</p>';
+            return '<p class="empty">No awards yet. Watch a film or an episode on Plex to win the first one.</p>';
         }
         const definition = this.definitions.get(latest.achievementId);
         const poster = this.api.posterUrl(latest.posterKey);
@@ -107,7 +107,7 @@ export class AwardsView {
 
     feature(award, definition, poster) {
         const ring = `box-shadow: 0 0 0 4px ${definition.colour}, var(--raised)`;
-        const tier = `${definition.laurel} · ${definition.tier} · ${definition.points} points`;
+        const tier = `${definition.laurel} · ${definition.points} points`;
         const link = awardLink(award.achievementId, this.user.id);
         return `<div class="feature">`
             + `<div class="feature-poster" style="${ring}">`

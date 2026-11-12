@@ -2,7 +2,7 @@
     {
         "id": "film_first",
         "title": "Fade in",
-        "description": "Your first film.",
+        "description": "Watch your first film.",
         "flavorText": "For the first time the lights went down.",
         "tier": "Common",
         "section": "film",
@@ -92,7 +92,7 @@
     {
         "id": "film_double",
         "title": "Double feature",
-        "description": "Watch 2 films in one evening.",
+        "description": "Start 2 films after 5pm on the same day.",
         "flavorText": "For staying on for the second picture.",
         "tier": "Uncommon",
         "section": "film",
@@ -109,7 +109,7 @@
     {
         "id": "film_marathon",
         "title": "Marathon",
-        "description": "Watch 4 films in one day.",
+        "description": "Start 4 films on the same day.",
         "flavorText": "For four films between breakfast and bed.",
         "tier": "Epic",
         "section": "film",
@@ -125,7 +125,7 @@
     {
         "id": "film_dailies",
         "title": "Dailies",
-        "description": "Watch a film every day for 7 days.",
+        "description": "Watch a film on 7 days in a row.",
         "flavorText": "For a film a day, seven days running.",
         "tier": "Rare",
         "section": "film",
@@ -140,7 +140,7 @@
     {
         "id": "film_matinee",
         "title": "Matinee idol",
-        "description": "Start 10 films before noon.",
+        "description": "Start 10 films between 5am and noon.",
         "flavorText": "For ten films before lunch.",
         "tier": "Uncommon",
         "section": "film",
@@ -157,7 +157,7 @@
     {
         "id": "film_long",
         "title": "Director's cut",
-        "description": "Watch a film over 3 hours.",
+        "description": "Watch a film of 3 hours or longer.",
         "flavorText": "For every minute of the long version.",
         "tier": "Rare",
         "section": "film",
@@ -205,7 +205,7 @@
     {
         "id": "film_auteur",
         "title": "Auteur theory",
-        "description": "Watch 5 films by one director.",
+        "description": "Watch 5 different films by one director.",
         "flavorText": "For knowing a director by their fifth film.",
         "tier": "Uncommon",
         "section": "film",
@@ -222,7 +222,7 @@
     {
         "id": "film_typecast",
         "title": "Typecast",
-        "description": "Watch 10 films with the same actor.",
+        "description": "Watch 10 different films with one actor.",
         "flavorText": "For following one face through ten films.",
         "tier": "Uncommon",
         "section": "film",
@@ -240,7 +240,7 @@
         "id": "film_silent",
         "title": "Silent era",
         "description": "Watch a film from before 1930.",
-        "flavorText": "For listening to a film with no sound.",
+        "flavorText": "For a seat at the pictures before the talkies.",
         "tier": "Rare",
         "section": "film",
         "rule": {
@@ -255,8 +255,8 @@
     {
         "id": "film_horror",
         "title": "Night shift",
-        "description": "Watch 25 horror films.",
-        "flavorText": "For leaving the lights on, 25 times.",
+        "description": "Watch 25 different horror films.",
+        "flavorText": "For leaving the lights on, twenty-five times.",
         "tier": "Rare",
         "section": "film",
         "rule": {
@@ -272,7 +272,7 @@
     {
         "id": "film_comedy",
         "title": "Laugh riot",
-        "description": "Watch 25 comedies.",
+        "description": "Watch 25 different comedies.",
         "flavorText": "For laughing through twenty-five comedies.",
         "tier": "Rare",
         "section": "film",
@@ -289,7 +289,7 @@
     {
         "id": "tv_first",
         "title": "Pilot",
-        "description": "Your first episode.",
+        "description": "Watch your first episode.",
         "flavorText": "For pressing play on a first episode.",
         "tier": "Common",
         "section": "tv",
@@ -319,8 +319,8 @@
     {
         "id": "tv_boxset",
         "title": "Box set",
-        "description": "Finish a whole show.",
-        "flavorText": "For every episode, without a gap.",
+        "description": "Watch every episode of one show in your library.",
+        "flavorText": "For staying with one show to the very end.",
         "tier": "Rare",
         "section": "tv",
         "rule": {
@@ -332,7 +332,7 @@
     {
         "id": "tv_seasons",
         "title": "Season finale",
-        "description": "Finish 5 seasons.",
+        "description": "Watch every episode of 5 seasons.",
         "flavorText": "For seeing five seasons through to the end.",
         "tier": "Uncommon",
         "section": "tv",
@@ -362,7 +362,7 @@
     {
         "id": "tv_couch",
         "title": "Couch potato",
-        "description": "Watch 12 episodes in one day.",
+        "description": "Start 12 episodes, of any show, on the same day.",
         "flavorText": "For twelve episodes in a single day.",
         "tier": "Rare",
         "section": "tv",
@@ -378,7 +378,7 @@
     {
         "id": "tv_graveyard",
         "title": "Graveyard slot",
-        "description": "Watch 10 episodes after 2am.",
+        "description": "Start 10 episodes between 2am and 5am.",
         "flavorText": "For the hours when nobody else is up.",
         "tier": "Uncommon",
         "section": "tv",
@@ -441,7 +441,7 @@
     {
         "id": "tv_showrunner",
         "title": "Showrunner",
-        "description": "Finish 10 shows.",
+        "description": "Watch every episode of 10 shows.",
         "flavorText": "For ten shows, first episode to last.",
         "tier": "Epic",
         "section": "tv",
@@ -470,7 +470,7 @@
     {
         "id": "tv_pilot_season",
         "title": "Pilot season",
-        "description": "Watch episode 1 of 10 different shows.",
+        "description": "Watch the first episode of a season in 10 different shows.",
         "flavorText": "For trying ten new shows.",
         "tier": "Uncommon",
         "section": "tv",
@@ -487,7 +487,7 @@
     {
         "id": "tv_prime_time",
         "title": "Prime time",
-        "description": "Start 50 episodes between 20:00 and 22:00.",
+        "description": "Start 50 episodes between 8pm and 10pm.",
         "flavorText": "For fifty episodes in the evening slot.",
         "tier": "Uncommon",
         "section": "tv",
@@ -504,7 +504,7 @@
     {
         "id": "both_nightowl",
         "title": "Night owl",
-        "description": "Make 10 watches after 1am.",
+        "description": "Start 10 films or episodes between 1am and 5am.",
         "flavorText": "For ten late starts after one in the morning.",
         "tier": "Common",
         "section": "both",
@@ -521,7 +521,7 @@
         "id": "both_week",
         "title": "Weeklong run",
         "description": "Watch something 7 days in a row.",
-        "flavorText": "For something on screen every night for a week.",
+        "flavorText": "For something on screen every day for a week.",
         "tier": "Common",
         "section": "both",
         "rule": {
@@ -533,7 +533,7 @@
         "id": "both_month",
         "title": "Held over",
         "description": "Watch something 30 days in a row.",
-        "flavorText": "For thirty nights in a row.",
+        "flavorText": "For thirty days running, like a hit held over.",
         "tier": "Rare",
         "section": "both",
         "rule": {
@@ -544,7 +544,7 @@
     {
         "id": "both_100h",
         "title": "Running time",
-        "description": "Watch for 100 hours.",
+        "description": "Watch 100 hours of films and TV.",
         "flavorText": "For a hundred hours in the dark.",
         "tier": "Uncommon",
         "section": "both",
@@ -556,7 +556,7 @@
     {
         "id": "both_500h",
         "title": "Blockbuster",
-        "description": "Watch for 500 hours.",
+        "description": "Watch 500 hours of films and TV.",
         "flavorText": "For five hundred hours on the sofa and in the stalls.",
         "tier": "Rare",
         "section": "both",
@@ -568,7 +568,7 @@
     {
         "id": "both_1000h",
         "title": "Screen legend",
-        "description": "Watch for 1,000 hours.",
+        "description": "Watch 1,000 hours of films and TV.",
         "flavorText": "For a thousand hours of screen.",
         "tier": "Epic",
         "section": "both",

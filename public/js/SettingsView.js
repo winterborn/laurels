@@ -67,7 +67,7 @@ export class SettingsView {
             + `<ol class="steps">`
             + `<li>Select your server below, or type its address.</li>`
             + `<li>Click Test connection.</li>`
-            + `<li>Click Save settings. Laurels reads your history and gives the first awards.</li>`
+            + `<li>Click Save settings. Laurels reads your watch history and gives the first awards.</li>`
             + `</ol></header>`;
     }
 
@@ -91,8 +91,8 @@ export class SettingsView {
 
     plexSection() {
         const tokenLine = this.settings.plexTokenSet
-            ? 'Laurels is connected.'
-            : 'Laurels is not connected. Click Sign in with Plex.';
+            ? 'Laurels is connected to Plex.'
+            : 'Laurels is not connected to Plex. Click Sign in with Plex.';
         const signInLabel = this.settings.plexTokenSet ? 'Sign in again' : 'Sign in with Plex';
         const findButton = this.settings.plexTokenSet
             ? `<button type="button" class="button" data-action="find-servers">Find my servers</button>`

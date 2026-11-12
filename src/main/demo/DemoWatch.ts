@@ -34,7 +34,7 @@ export class DemoWatch {
     async run(userId: string): Promise<DemoResult> {
         const best = this.bestCandidate(userId);
         if (!best) {
-            throw new Error('No single watch gives this person a new trophy now. Restart the demo to start again.');
+            throw new Error('No single watch gives this person a new award now. Restart the demo to start again.');
         }
         await this.addWatch(userId, best.item.ratingKey);
         await this.app.runCycle();

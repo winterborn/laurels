@@ -22,13 +22,13 @@ export class LoginView {
         const isSetup = !this.me.hasOwner;
         const kicker = isSetup ? 'Set up' : 'Sign in';
         const lede = isSetup
-            ? 'Sign in with the Plex account that owns your server. That account becomes the Laurels owner and can change settings.'
-            : 'Sign in with your Plex account. People who share your server can see the awards. The owner can also change the settings.';
+            ? 'Laurels unlocks awards when your household watches films and TV. Sign in with the Plex account that owns your server. That account becomes the Laurels owner and can change settings.'
+            : 'Laurels unlocks awards when your household watches films and TV. Sign in with your Plex account. People who share your server can see the awards. The owner can also change the settings.';
         return `<section class="title-card" aria-labelledby="title-card-name">`
             + `<span class="title-card-laurel">${Laurel.svg('currentColor', 'Rare')}</span>`
             + `<span class="eyebrow">${kicker}</span>`
             + `<h1 class="title-card-name" id="title-card-name">Laurels</h1>`
-            + `<span class="eyebrow">A household awards season</span>`
+            + `<span class="eyebrow">An achievement system for Plex</span>`
             + `<p class="lede-plain">${escapeHtml(lede)}</p>`
             + `<div class="row">`
             + `<button type="button" class="button primary" data-action="sign-in">Sign in with Plex</button>`

@@ -128,7 +128,7 @@ export class PlexAccount {
             signal: AbortSignal.timeout(15_000),
         });
         if (!response.ok) {
-            throw new Error(`plex.tv returned ${response.status}`);
+            throw new Error(`Plex sign-in returned ${response.status}. Try again in a few minutes.`);
         }
         return response.json();
     }

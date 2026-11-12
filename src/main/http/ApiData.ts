@@ -11,6 +11,7 @@ import {
     TIER_COLOURS,
     TIER_POINTS,
     TIER_WORDS,
+    unitOf,
 } from '../helpers/index.ts';
 
 type Json = Record<string, unknown>;
@@ -132,6 +133,7 @@ export class ApiData {
             category: CATEGORY_NAMES[achievement.section],
             secret: achievement.secret ?? false,
             ruleType: achievement.rule.type,
+            unit: unitOf(achievement.rule),
             points: TIER_POINTS[achievement.tier],
             laurel: TIER_WORDS[achievement.tier],
             colour: TIER_COLOURS[achievement.tier],

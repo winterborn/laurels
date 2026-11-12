@@ -47,6 +47,7 @@ export class CeremonyView {
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(summary)}</span>`
             + `<h1 class="page-title">Ceremony</h1>`
+            + `<p class="help">${escapeHtml(this.pointsText())}</p>`
             + `</div>`
             + this.rangeLinks()
             + `</header>`
@@ -157,8 +158,20 @@ export class CeremonyView {
             + `<p class="caption">${escapeHtml(definition.category)} · ${escapeHtml(definition.title)} · `
             + `${escapeHtml(definition.description)}</p>`
             + rows.join('')
-            + `<p class="caption">The first to finish wins the award.</p>`
+            + `<p class="caption">Everyone who reaches the target wins the award.</p>`
             + `</section>`;
+    }
+
+    // "Each award gives points: Official selection 10, …"
+    pointsText() {
+        const tiers = new Map();
+        for (const definition of this.definitions.values()) {
+            tiers.set(definition.laurel, definition.points);
+        }
+        const parts = [...tiers.entries()]
+            .sort((a, b) => a[1] - b[1])
+            .map(([laurel, points]) => `${laurel} ${points}`);
+        return `Each award gives points: ${parts.join(', ')}.`;
     }
 
     raceRow(entry, definition) {

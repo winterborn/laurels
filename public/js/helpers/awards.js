@@ -21,20 +21,14 @@ export const CATEGORIES = [
 
 // "Winner, Rare, 50 points": the laurel's text for screen readers.
 export function laurelLabel(definition) {
-    return `${definition.laurel}, ${definition.tier}, ${definition.points} points`;
+    return `${definition.laurel}, ${definition.points} points`;
 }
 
-// "8 of 10", "12 of 100 hours", "3 of 30 days".
+// "8 of 10 films", "12 of 100 hours", "3 of 30 days".
 export function progressText(progress, definition) {
     const counted = `${formatNumber(progress.value)} of ${formatNumber(progress.target)}`;
-    switch (definition.ruleType) {
-        case 'hours':
-            return `${counted} hours`;
-        case 'streak':
-            return `${counted} days`;
-        default:
-            return counted;
-    }
+    const unit = progress.target === 1 ? definition.unit.one : definition.unit.many;
+    return `${counted} ${unit}`;
 }
 
 // Share of the target, from 0 to 1.

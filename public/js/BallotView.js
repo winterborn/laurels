@@ -82,6 +82,8 @@ export class BallotView {
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(summary)}</span>`
             + `<h1 class="page-title">${escapeHtml(user.name)}'s ballot</h1>`
+            + `<p class="help">Every award and its rule. A cross marks each award you won.</p>`
+            + `<p class="help">Rewatches count. Times and days use the time zone of the server.</p>`
             + `</div>`
             + this.filters()
             + `</header>`;
@@ -135,7 +137,7 @@ export class BallotView {
         const award = this.awards.get(definition.id);
         const isHidden = definition.secret && !award;
         const title = isHidden ? 'Secret award' : definition.title;
-        const rule = isHidden ? 'Keep watching to find out.' : definition.description;
+        const rule = isHidden ? 'Secret award. Keep watching to find out what it is.' : definition.description;
         const rowClass = award ? 'ballot-row won' : 'ballot-row';
         const mark = award ? '✕' : '';
         const link = awardLink(definition.id, this.cabinet.user.id);

@@ -3,7 +3,6 @@ import {
     awardsLink,
     escapeHtml,
     formatDay,
-    formatNumber,
     initialOf,
     laurelLabel,
     progressText,
@@ -42,10 +41,9 @@ export class AwardView {
         const eyebrow = [
             definition.category,
             definition.laurel,
-            definition.tier,
             `${definition.points} points`,
         ].join(' · ');
-        const rule = this.isHidden ? 'Secret award. Keep watching.' : definition.description;
+        const rule = this.isHidden ? 'Secret award. Keep watching to find out what it is.' : definition.description;
         const hasCitation = !this.isHidden && definition.flavorText;
         const citation = hasCitation ? `<p class="citation">${escapeHtml(definition.flavorText)}</p>` : '';
         return `<section class="detail" aria-labelledby="award-title">`
@@ -79,12 +77,12 @@ export class AwardView {
     slate(title) {
         const progress = this.report.progress;
         const scene = this.isHidden || !progress
-            ? 'Under wraps'
+            ? 'Secret'
             : progressText(progress, this.definition);
         return slateHtml([
             ['Award', title],
             ['Scene', scene],
-            ['Take', this.definition.tier],
+            ['Take', this.definition.laurel],
         ]);
     }
 
@@ -108,7 +106,7 @@ export class AwardView {
         const award = this.report.award;
         const progress = this.report.progress;
         if (this.isHidden) {
-            return ['Progress', 'Under wraps'];
+            return ['Progress', 'Secret'];
         }
         if (award) {
             return ['Won with', award.earnedWith || formatDay(award.awardedAt)];
@@ -199,7 +197,7 @@ export class AwardView {
         if (this.isHidden) {
             return 'Not yet';
         }
-        return `${formatNumber(person.value)} of ${formatNumber(person.target)}`;
+        return progressText(person, this.definition);
     }
 
     related() {
@@ -214,7 +212,7 @@ export class AwardView {
         const definition = this.definitions.get(entry.id);
         const state = entry.earned
             ? 'Won'
-            : `${formatNumber(entry.value)} of ${formatNumber(entry.target)}`;
+            : progressText(entry, definition);
         return `<li><a class="side-row plain" href="${awardLink(entry.id, this.report.user.id)}">`
             + `<span class="dot" style="background: ${definition.colour}" aria-hidden="true"></span>`
             + `<span class="stack"><span class="row-title">${escapeHtml(definition.title)}</span>`

@@ -75,7 +75,7 @@ export class Server {
         const server = createServer((request, response) => {
             this.handle(request, response).catch((error) => {
                 console.error('Request failed:', error);
-                this.sendJson(response, 500, { error: 'Internal error' });
+                this.sendJson(response, 500, { error: 'Laurels had an error. Look at the container log for details.' });
             });
         });
         this.httpServer = server;
@@ -132,7 +132,7 @@ export class Server {
         if (role) {
             this.sendJson(response, 403, { error: 'Only the server owner can do this.' });
         } else {
-            this.sendJson(response, 401, { error: 'Sign in first.' });
+            this.sendJson(response, 401, { error: 'Sign in with Plex first.' });
         }
     }
 
@@ -179,7 +179,7 @@ export class Server {
                 this.sendResult(response, this.authRoutes.signOut(request, response));
                 return;
             default:
-                this.sendJson(response, 404, { error: 'Not found' });
+                this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });
         }
     }
 
@@ -244,14 +244,14 @@ export class Server {
                 await this.sendPoster(parts[2] ?? '', 'art', response);
                 return;
             default:
-                this.sendJson(response, 404, { error: 'Not found' });
+                this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });
         }
     }
 
     // /api/plex/servers
     private async handlePlexGet(parts: string[], response: ServerResponse): Promise<void> {
         if (parts[2] !== 'servers') {
-            this.sendJson(response, 404, { error: 'Not found' });
+            this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });
             return;
         }
         this.sendResult(response, await this.settings.servers());
@@ -281,7 +281,7 @@ export class Server {
                 this.sendResult(response, await this.settings.demoWatch(this.ownAccount(request)));
                 return;
             default:
-                this.sendJson(response, 404, { error: 'Not found' });
+                this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });
         }
     }
 
@@ -309,7 +309,7 @@ export class Server {
         }
         const cabinet = this.data.cabinet(userId);
         if (!cabinet) {
-            this.sendJson(response, 404, { error: 'Unknown user' });
+            this.sendJson(response, 404, { error: 'Laurels does not know this person.' });
             return;
         }
         this.sendJson(response, 200, cabinet);
@@ -345,7 +345,7 @@ export class Server {
             });
             response.end(body);
         } catch {
-            this.sendJson(response, 404, { error: 'Not found' });
+            this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });
         }
     }
 
@@ -357,7 +357,7 @@ export class Server {
 
     private sendReport(response: ServerResponse, report: unknown): void {
         if (!report) {
-            this.sendJson(response, 404, { error: 'Not found' });
+            this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });
             return;
         }
         this.sendJson(response, 200, report);
