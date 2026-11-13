@@ -23,8 +23,16 @@ export class PressRoomView {
         return `<header class="page-head"><div class="page-intro">`
             + `<span class="eyebrow">The latest ${this.awards.length} awards in the household</span>`
             + `<h1 class="page-title">Press room</h1>`
+            + `<p class="help">Every new award in the household, newest week first.</p>`
             + `</div></header>`
-            + `<div class="press-weeks">${sections.join('')}</div>`;
+            + this.body(sections);
+    }
+
+    body(sections) {
+        if (!sections.length) {
+            return '<p class="empty">No awards yet. New awards show here, newest week first.</p>';
+        }
+        return `<div class="press-weeks">${sections.join('')}</div>`;
     }
 
     // Map keeps insertion order, so the newest week comes first.
@@ -55,8 +63,9 @@ export class PressRoomView {
 
     week(label, awards) {
         const rows = awards.map((award) => this.row(award));
+        const count = awards.length === 1 ? '1 award' : `${awards.length} awards`;
         return `<section class="press-week">`
-            + `<h2 class="section-head">${escapeHtml(label)} · ${awards.length}</h2>`
+            + `<h2 class="section-head">${escapeHtml(label)} · ${count}</h2>`
             + `<ol class="side-list">${rows.join('')}</ol>`
             + `</section>`;
     }

@@ -12,6 +12,9 @@
     --bar: #5c6b7a;
     --duotone-light: #f3c48c;
     --duotone-dark: #0f2f3a;
+    --scrim: rgba(14, 17, 20, 0.92);
+    --scrim-soft: rgba(14, 17, 20, 0.86);
+    --page-width: 1180px;
 
     /* The Ballot is printed on paper. */
     --paper: #e8e1d3;
@@ -19,7 +22,7 @@
     --ink-on-paper: #1d1f22;
     --muted-on-paper: #4a4d52;
 
-    /* One raised level, for the popup and the Winner poster only. */
+    /* One raised level, for the popup and the latest award poster only. */
     --raised: 0 12px 28px rgba(0, 0, 0, 0.45);
 
     /* Edit grammar. A cut is the default change. */
@@ -204,11 +207,11 @@ p.caption {
 
 .nav {
     background: var(--bg-deep);
-    border-bottom: 1px solid #242c34;
+    border-bottom: 1px solid var(--line);
 }
 
 .nav-inner {
-    max-width: 1180px;
+    max-width: var(--page-width);
     margin: 0 auto;
     padding: 0 var(--space-5);
     min-height: 64px;
@@ -267,6 +270,27 @@ p.caption {
     color: var(--ink-strong);
 }
 
+/* Skip link: off-screen until it gets focus. */
+.skip-link {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 30;
+    padding: var(--space-2) var(--space-3);
+    background: var(--gold);
+    color: var(--ink-on-paper);
+    transform: translateY(-200%);
+}
+
+.skip-link:focus {
+    transform: none;
+}
+
+.page:focus,
+.page h1:focus {
+    outline: none;
+}
+
 .account {
     display: flex;
     align-items: center;
@@ -290,7 +314,7 @@ p.caption {
 /* Page rhythm: 48 px between sections, 32 px between groups */
 
 .page {
-    max-width: 1180px;
+    max-width: var(--page-width);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5) var(--space-7);
     display: flex;
@@ -505,7 +529,7 @@ p.caption {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: rgba(14, 17, 20, 0.86);
+    background: var(--scrim-soft);
 }
 
 .laurel.small svg {
@@ -559,7 +583,7 @@ p.caption {
     margin-top: calc(var(--space-6) - var(--space-7));
 }
 
-/* Winner: the newest award, widescreen */
+/* Latest award: the newest award, widescreen */
 
 .screen {
     position: relative;
@@ -783,7 +807,7 @@ a.card:hover .poster {
     max-width: 70%;
     padding: var(--space-1) var(--space-2);
     border-bottom-right-radius: 5px;
-    background: rgba(14, 17, 20, 0.92);
+    background: var(--scrim);
     color: var(--ink-strong);
     font-size: var(--type-xs);
     font-weight: 800;
@@ -797,7 +821,7 @@ a.card:hover .poster {
     right: 0;
     bottom: 0;
     padding: var(--space-2);
-    background: rgba(14, 17, 20, 0.92);
+    background: var(--scrim);
     display: flex;
     flex-direction: column;
 }
@@ -934,8 +958,17 @@ a.card:hover .poster {
     text-decoration: none;
 }
 
+.ballot-row:hover {
+    color: var(--ink-on-paper);
+}
+
 .ballot-row:hover .ballot-name {
     text-decoration: underline;
+}
+
+/* The gold ring is too pale on paper. */
+.ballot :focus-visible {
+    outline-color: var(--ink-on-paper);
 }
 
 .ballot-box {
@@ -1354,6 +1387,13 @@ tr:first-child .points-cell .meter-fill {
     gap: var(--space-1);
 }
 
+.bar-track {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+}
+
 .bar {
     width: 100%;
     min-height: 2px;
@@ -1366,6 +1406,7 @@ tr:first-child .points-cell .meter-fill {
 }
 
 .bar-value {
+    min-height: 1.4em;
     font-family: var(--mono);
     font-size: var(--type-s);
     color: var(--ink-strong);
@@ -1730,6 +1771,10 @@ a.button {
     color: var(--ink);
 }
 
+.scroll-hint {
+    display: none;
+}
+
 .save-bar {
     position: sticky;
     bottom: 0;
@@ -1764,6 +1809,10 @@ a.button {
 /* Phone */
 
 @media (max-width: 640px) {
+    .scroll-hint {
+        display: block;
+    }
+
     .nav-inner,
     .page {
         padding-left: var(--space-4);

@@ -19,6 +19,9 @@ export const CATEGORIES = [
     },
 ];
 
+// The rule text of a secret award that the person has not won.
+export const SECRET_RULE = 'Secret award. Its name and rule stay hidden until you win it.';
+
 // "Winner, Rare, 50 points": the laurel's text for screen readers.
 export function laurelLabel(definition) {
     return `${definition.laurel}, ${definition.points} points`;

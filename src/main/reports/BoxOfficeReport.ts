@@ -191,9 +191,9 @@ export class BoxOfficeReport {
     private titles(users: User[], since: number): Json[] {
         const stats = users.map((user) => this.statsOf(user, this.app.historyOf(user.id), since));
         const titles = [
-            this.title('Most films', stats, (entry) => entry.films, (value) => `${value} films`),
-            this.title('Most episodes', stats, (entry) => entry.episodes, (value) => `${value} episodes`),
-            this.title('Most hours', stats, (entry) => entry.hours, (value) => `${value} hours`),
+            this.title('Most film watches', stats, (entry) => entry.films, (value) => `${value} watches`),
+            this.title('Most episode watches', stats, (entry) => entry.episodes, (value) => `${value} watches`),
+            this.title('Most hours watched', stats, (entry) => entry.hours, (value) => `${value} hours`),
             this.title('Household night owl', stats, (entry) => entry.lateWatches, (value) => `${value} watches after 1am`),
             this.title('Longest run', stats, (entry) => entry.longestStreak, (value) => `${value} days in a row`),
         ];

@@ -2,6 +2,11 @@ import { escapeHtml } from './helpers/index.js';
 import { Laurel } from './Laurel.js';
 import { PlexSignIn } from './PlexSignIn.js';
 
+const ABOUT = 'Your household wins awards for the films and TV that it watches.';
+const SIGN_IN_LEDE = `${ABOUT} Sign in with your Plex account to see them.`;
+const SETUP_LEDE = `${ABOUT} Sign in with the Plex account that owns your server. `
+    + 'This account becomes the Laurels owner. Only the owner can change the settings.';
+
 // The page people see before they sign in.
 export class LoginView {
 
@@ -21,9 +26,7 @@ export class LoginView {
     render() {
         const isSetup = !this.me.hasOwner;
         const kicker = isSetup ? 'Set up' : 'Sign in';
-        const lede = isSetup
-            ? 'Laurels unlocks awards when your household watches films and TV. Sign in with the Plex account that owns your server. That account becomes the Laurels owner and can change settings.'
-            : 'Laurels unlocks awards when your household watches films and TV. Sign in with your Plex account. People who share your server can see the awards. The owner can also change the settings.';
+        const lede = isSetup ? SETUP_LEDE : SIGN_IN_LEDE;
         return `<section class="title-card" aria-labelledby="title-card-name">`
             + `<span class="title-card-laurel">${Laurel.svg('currentColor', 'Rare')}</span>`
             + `<span class="eyebrow">${kicker}</span>`

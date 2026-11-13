@@ -34,6 +34,7 @@ export class Dashboard {
         this.api = new Api();
         this.pageKind = 'awards';
         this.premieres = new PremiereWatcher(this.api);
+        this.hasShown = false;
     }
 
     async start() {
@@ -42,6 +43,7 @@ export class Dashboard {
         window.addEventListener('laurels:signed-in', () => this.show());
         this.account.addEventListener('click', (event) => this.onAccount(event));
         this.household.addEventListener('click', (event) => this.onPerson(event));
+        document.querySelector('.skip-link').addEventListener('click', (event) => this.skipToPage(event));
         await this.resumeSignIn();
         await this.show();
     }
@@ -63,6 +65,25 @@ export class Dashboard {
         if (onceThisVisit(location.hash || '#/')) {
             runMeters(this.page);
         }
+        this.focusTitle();
+    }
+
+    // After a page change, focus moves to the new title.
+    // The first page keeps the focus where the browser put it.
+    focusTitle() {
+        if (!this.hasShown) {
+            this.hasShown = true;
+            return;
+        }
+        const title = this.page.querySelector('h1') ?? this.page;
+        title.setAttribute('tabindex', '-1');
+        title.focus({ preventScroll: true });
+    }
+
+    // The skip link moves focus without a change to the route.
+    skipToPage(event) {
+        event.preventDefault();
+        this.page.focus();
     }
 
     // A lost session sends the person back to the sign-in page.
@@ -71,7 +92,8 @@ export class Dashboard {
             await this.show();
             return;
         }
-        this.page.innerHTML = `<p class="empty">Could not load: ${escapeHtml(error.message)}</p>`;
+        this.page.innerHTML = `<p class="empty">Laurels could not show this page. ${escapeHtml(error.message)}</p>`
+            + `<p><a href="#/">Go to your awards</a></p>`;
     }
 
     async showRoute() {
@@ -257,8 +279,9 @@ export class Dashboard {
     renderHousehold(users, currentId) {
         const buttons = users.map((user) => {
             const pressed = user.id === currentId;
+            const name = escapeHtml(user.name);
             return `<button type="button" class="person" data-user="${escapeHtml(user.id)}" `
-                + `aria-pressed="${pressed}" title="${escapeHtml(user.name)}" aria-label="${escapeHtml(user.name)}">`
+                + `aria-pressed="${pressed}" title="${name}" aria-label="${name}">`
                 + `${escapeHtml(initialOf(user.name))}</button>`;
         });
         this.household.innerHTML = buttons.join('');

@@ -17,8 +17,9 @@ import { Laurel } from './Laurel.js';
 
 const SHELF_SIZE = 6;
 const NOMINATIONS_EACH = 2;
+const PAGE_LINE = 'The newest award, the shelves and the awards nearest to a win.';
 
-// One person's Awards page: the Winner (the newest award), a Film shelf
+// One person's Awards page: the latest award (the newest), a Film shelf
 // and a Television shelf side by side, a Screen row, then Nominations.
 // The full list of awards lives on the Ballot only.
 export class AwardsView {
@@ -51,6 +52,7 @@ export class AwardsView {
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(since)}</span>`
             + `<h1 class="page-title">${escapeHtml(user.name)}'s awards</h1>`
+            + `<p class="help">${PAGE_LINE}</p>`
             + `</div></header>`
             + this.stats();
     }
@@ -60,9 +62,9 @@ export class AwardsView {
         const stats = [
             ['Awards', `${user.trophies} of ${this.definitions.size}`],
             ['Points', formatNumber(user.points)],
-            ['Rank', ordinal(user.rank)],
-            ['Films', formatNumber(user.films)],
-            ['Episodes', formatNumber(user.episodes)],
+            ['Household rank', ordinal(user.rank)],
+            ['Film watches', formatNumber(user.films)],
+            ['Episode watches', formatNumber(user.episodes)],
         ];
         const items = stats.map(([label, value]) => {
             return `<div class="stat"><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`;
@@ -70,7 +72,7 @@ export class AwardsView {
         return `<dl class="stat-row">${items.join('')}</dl>`;
     }
 
-    // Winner: the newest award, widescreen.
+    // Latest award: the newest award, widescreen.
 
     winner() {
         const latest = this.cabinet.awards[0];
@@ -80,7 +82,7 @@ export class AwardsView {
         const definition = this.definitions.get(latest.achievementId);
         const poster = this.api.posterUrl(latest.posterKey);
         const label = [
-            'Winner',
+            'Latest award',
             definition.category,
             formatDay(latest.awardedAt),
             formatClock(latest.awardedAt),
@@ -91,7 +93,7 @@ export class AwardsView {
             + this.stillImage(latest, poster)
             + `<div class="screen-tint"></div></div>`
             + `<span class="screen-label left">${escapeHtml(label.toUpperCase())}</span>`
-            + `<span class="screen-label right">2.39 : 1</span>`
+            + `<span class="screen-label right" aria-hidden="true">2.39 : 1</span>`
             + `<span class="screen-quote">${escapeHtml(definition.flavorText)}</span>`
             + `</div>`
             + this.feature(latest, definition, poster)

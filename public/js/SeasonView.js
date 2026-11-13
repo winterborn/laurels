@@ -6,6 +6,10 @@ import {
     seasonLink,
 } from './helpers/index.js';
 
+const PAGE_LINE = 'One person\'s year in films, episodes and awards.';
+const EMPTY_LINE = 'No watches yet. Watch a film or an episode on Plex. '
+    + 'It shows here after the next check.';
+
 const MONTHS = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
@@ -25,13 +29,13 @@ export class SeasonView {
         const report = this.report;
         if (!report.year) {
             return `<h1 class="page-title">${escapeHtml(report.user.name)}'s season</h1>`
-                + '<p class="empty">No watches yet.</p>';
+                + `<p class="empty">${EMPTY_LINE}</p>`;
         }
         return this.header()
             + this.totals()
             + `<div class="chart-pair">`
-            + this.chart('Films by month', 'film', report.filmMonths)
-            + this.chart('Episodes by month', 'tv', report.tvMonths)
+            + this.chart('Film watches by month', 'film', report.filmMonths)
+            + this.chart('Episode watches by month', 'tv', report.tvMonths)
             + `</div>`
             + this.genre()
             + this.moments()
@@ -51,7 +55,8 @@ export class SeasonView {
         });
         return `<header class="page-head">`
             + `<div class="page-intro"><span class="eyebrow">${escapeHtml(span)}</span>`
-            + `<h1 class="page-title">${escapeHtml(report.user.name)}'s ${report.year} season</h1></div>`
+            + `<h1 class="page-title">${escapeHtml(report.user.name)}'s ${report.year} season</h1>`
+            + `<p class="help">${PAGE_LINE}</p></div>`
             + `<nav class="filters" aria-label="Year">${links.join('')}</nav>`
             + `</header>`;
     }
@@ -59,10 +64,10 @@ export class SeasonView {
     totals() {
         const totals = this.report.totals;
         const entries = [
-            ['Films', totals.films],
-            ['Episodes', totals.episodes],
-            ['Hours', totals.hours],
-            ['Awards', totals.trophies],
+            ['Film watches', totals.films],
+            ['Episode watches', totals.episodes],
+            ['Hours watched', totals.hours],
+            ['Awards won', totals.trophies],
         ];
         const items = entries.map(([label, value]) => {
             return `<div class="stat"><dt>${label}</dt><dd>${formatNumber(value)}</dd></div>`;
@@ -70,7 +75,7 @@ export class SeasonView {
         return `<dl class="stat-row big">${items.join('')}</dl>`;
     }
 
-    // One colour. The busiest month is gold, with its value shown.
+    // One colour. The busiest months are gold, with their value shown.
     chart(title, id, counts) {
         const total = counts.reduce((sum, value) => sum + value, 0);
         const headId = `months-${id}`;
@@ -81,11 +86,11 @@ export class SeasonView {
                 + `</section>`;
         }
         const peak = Math.max(...counts);
-        const peakIndex = counts.indexOf(peak);
-        const bars = counts.map((value, index) => this.bar(value, index, peak, peakIndex));
+        const bars = counts.map((value, index) => this.bar(value, index, peak));
         const names = MONTHS.map((month) => `<span>${month.slice(0, 1)}</span>`);
-        const busiest = `${MONTHS[peakIndex]}, ${peak}`;
-        const summary = `Bar chart: ${title.toLowerCase()} in ${this.report.year}. The busiest month is ${busiest}.`;
+        const busiest = this.busiestText(counts, peak);
+        const year = this.report.year;
+        const summary = `Bar chart: ${title.toLowerCase()} in ${year}. Busiest: ${busiest}.`;
         return `<section class="month-chart" aria-labelledby="${headId}">`
             + `<div class="block-head"><h2 class="section-head" id="${headId}">${title} · ${formatNumber(total)}</h2>`
             + `<span class="caption">Busiest: ${escapeHtml(busiest)}</span></div>`
@@ -96,14 +101,26 @@ export class SeasonView {
             + `</section>`;
     }
 
-    bar(value, index, peak, peakIndex) {
-        const isPeak = index === peakIndex;
+    // "February, 3" or "February and June, 3 each".
+    busiestText(counts, peak) {
+        const months = MONTHS.filter((month, index) => counts[index] === peak);
+        if (months.length === 1) {
+            return `${months[0]}, ${peak}`;
+        }
+        const last = months[months.length - 1];
+        const head = months.slice(0, -1).join(', ');
+        return `${head} and ${last}, ${peak} each`;
+    }
+
+    // Every slot keeps room for a label, so equal values draw equal bars.
+    bar(value, index, peak) {
+        const isPeak = value === peak;
         const height = Math.round((value / peak) * 100);
-        const label = isPeak ? `<span class="bar-value">${value}</span>` : '';
+        const label = isPeak ? String(value) : '';
         const barClass = isPeak ? 'bar peak' : 'bar';
         return `<div class="bar-slot" title="${MONTHS[index]}: ${value}">`
-            + label
-            + `<div class="${barClass}" style="height: ${height}%"></div>`
+            + `<span class="bar-value">${label}</span>`
+            + `<div class="bar-track"><div class="${barClass}" style="height: ${height}%"></div></div>`
             + `</div>`;
     }
 
@@ -154,9 +171,9 @@ export class SeasonView {
         const cards = this.report.won.map((award) => this.wonCard(award));
         const body = cards.length
             ? `<div class="grid">${cards.join('')}</div>`
-            : '<p class="empty">No awards this season yet.</p>';
+            : `<p class="empty">No awards won in ${this.report.year} yet.</p>`;
         return `<section class="block" aria-labelledby="won">`
-            + `<h2 class="section-head" id="won">This season's awards · ${cards.length}</h2>`
+            + `<h2 class="section-head" id="won">Awards won in ${this.report.year} · ${cards.length}</h2>`
             + body
             + `</section>`;
     }

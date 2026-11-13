@@ -4,7 +4,10 @@ import {
     escapeHtml,
     formatDay,
     formatNumber,
+    progressText,
 } from './helpers/index.js';
+
+const PAGE_LINE = 'The household, ranked by the points from awards.';
 
 const RANGES = [
     {
@@ -47,6 +50,7 @@ export class CeremonyView {
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(summary)}</span>`
             + `<h1 class="page-title">Ceremony</h1>`
+            + `<p class="help">${PAGE_LINE}</p>`
             + `<p class="help">${escapeHtml(this.pointsText())}</p>`
             + `</div>`
             + this.rangeLinks()
@@ -72,16 +76,17 @@ export class CeremonyView {
             + `<div class="table-wrap"><table class="chart standings">`
             + `<thead><tr>`
             + `<th scope="col">Rank</th>`
-            + `<th scope="col">${this.range.last}</th>`
+            + `<th scope="col">Rank last month</th>`
             + `<th scope="col"><span class="visually-hidden">Movement</span></th>`
             + `<th scope="col">Person</th>`
             + `<th scope="col">Points</th>`
             + `<th scope="col" class="number">Awards</th>`
             + `<th scope="col">Last win</th>`
-            + `<th scope="col">Rarest</th>`
+            + `<th scope="col">Rarest award</th>`
             + `</tr></thead>`
             + `<tbody>${rows.join('')}</tbody>`
             + `</table></div>`
+            + `<p class="caption scroll-hint">Scroll the table sideways to see more.</p>`
             + `<p class="caption">▲ up, ▼ down, = no change since ${this.range.last.toLowerCase()}.</p>`
             + `</section>`;
     }
@@ -178,7 +183,7 @@ export class CeremonyView {
         const percent = Math.round(Math.min(entry.value / entry.target, 1) * 100);
         return `<div class="household-row">`
             + `<div class="household-head"><span class="row-title">${escapeHtml(entry.name)}</span>`
-            + `<span class="figure">${formatNumber(entry.value)} / ${formatNumber(entry.target)}</span></div>`
+            + `<span class="figure">${escapeHtml(progressText(entry, definition))}</span></div>`
             + `<div class="meter" role="progressbar" aria-label="${escapeHtml(entry.name)} progress" `
             + `aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">`
             + `<div class="meter-fill" style="width: ${percent}%; background: ${definition.colour}"></div>`
@@ -193,7 +198,8 @@ export class CeremonyView {
                 + `</span></li>`;
         });
         return `<section aria-labelledby="special">`
-            + `<h2 class="section-head" id="special">Special awards</h2>`
+            + `<h2 class="section-head" id="special">Household records</h2>`
+            + `<p class="caption">Records give no points.</p>`
             + `<ul class="side-list">${rows.join('')}</ul>`
             + `</section>`;
     }

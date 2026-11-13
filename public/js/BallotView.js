@@ -7,6 +7,7 @@ import {
     joinNames,
     laurelLabel,
     progressText,
+    SECRET_RULE,
 } from './helpers/index.js';
 import { Laurel } from './Laurel.js';
 
@@ -78,12 +79,15 @@ export class BallotView {
         const maxPoints = all.reduce((sum, definition) => sum + definition.points, 0);
         const summary = `${won.length} of ${all.length} won · `
             + `${formatNumber(points)} of ${formatNumber(maxPoints)} points`;
+        const name = escapeHtml(user.name);
+        const markLine = `Every award and its rule. A cross marks each award that ${name} won.`;
+        const timeLine = 'Rewatches count. Times and days use the time zone that the owner set in Settings.';
         return `<header class="page-head">`
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(summary)}</span>`
-            + `<h1 class="page-title">${escapeHtml(user.name)}'s ballot</h1>`
-            + `<p class="help">Every award and its rule. A cross marks each award you won.</p>`
-            + `<p class="help">Rewatches count. Times and days use the time zone of the server.</p>`
+            + `<h1 class="page-title">${name}'s ballot</h1>`
+            + `<p class="help">${markLine}</p>`
+            + `<p class="help">${timeLine}</p>`
             + `</div>`
             + this.filters()
             + `</header>`;
@@ -92,17 +96,25 @@ export class BallotView {
     filters() {
         const buttons = SHOWS.map((show) => {
             const pressed = show.id === this.show;
+            const count = this.countFor(show.id);
             return `<button type="button" class="filter" data-show="${show.id}" `
-                + `aria-pressed="${pressed}">${show.label}</button>`;
+                + `aria-pressed="${pressed}">${show.label} ${count}</button>`;
         });
         return `<div class="filters" role="group" aria-label="Show">${buttons.join('')}</div>`;
     }
 
+    // "All 118", "Won 39", "Not yet 79".
+    countFor(showId) {
+        const all = [...this.definitions.values()];
+        return this.filtered(all, showId).length;
+    }
+
     paperHead() {
-        const marked = this.awards.size;
+        const won = this.awards.size;
+        const name = escapeHtml(this.cabinet.user.name);
         return `<div class="ballot-head">`
             + `<h2 class="ballot-title">The Ballot · All time</h2>`
-            + `<span class="ballot-figure">${escapeHtml(this.cabinet.user.name)} · ${marked} of ${this.definitions.size} marked</span>`
+            + `<span class="ballot-figure">${name} · ${won} won</span>`
             + `</div>`;
     }
 
@@ -115,15 +127,25 @@ export class BallotView {
         const rows = this.filtered(definitions).map((definition) => this.row(definition));
         const body = rows.length
             ? `<ol class="ballot-list">${rows.join('')}</ol>`
-            : '<p class="ballot-empty">None.</p>';
+            : `<p class="ballot-empty">${escapeHtml(this.emptyText())}</p>`;
         return `<section class="ballot-column" aria-label="${category.ballot}">`
             + `<h3 class="ballot-category">${category.ballot} · ${won} of ${definitions.length}</h3>`
             + body
             + `</section>`;
     }
 
-    filtered(definitions) {
+    // A column with no rows says why.
+    emptyText() {
         switch (this.show) {
+            case 'won':
+                return 'No won awards here yet.';
+            default:
+                return `${this.cabinet.user.name} won every award here.`;
+        }
+    }
+
+    filtered(definitions, show = this.show) {
+        switch (show) {
             case 'won':
                 return definitions.filter((definition) => this.awards.has(definition.id));
             case 'open':
@@ -137,7 +159,7 @@ export class BallotView {
         const award = this.awards.get(definition.id);
         const isHidden = definition.secret && !award;
         const title = isHidden ? 'Secret award' : definition.title;
-        const rule = isHidden ? 'Secret award. Keep watching to find out what it is.' : definition.description;
+        const rule = isHidden ? SECRET_RULE : definition.description;
         const rowClass = award ? 'ballot-row won' : 'ballot-row';
         const mark = award ? '✕' : '';
         const link = awardLink(definition.id, this.cabinet.user.id);

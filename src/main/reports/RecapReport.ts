@@ -170,19 +170,31 @@ export class RecapReport {
         if (!latest) {
             return null;
         }
-        const when = new Date(history.startOf(latest) * 1000).toLocaleString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            hour: 'numeric',
-            minute: '2-digit',
-            timeZone: this.app.settings.timeZone,
-        });
+        const when = this.dayAndClock(history.startOf(latest));
         return {
             label: 'Late nights',
             headline: `${late.length} ${late.length === 1 ? 'watch' : 'watches'} after 1am`,
             detail: `Most recent: ${when}`,
             posterKey: history.posterKeyOf(latest),
         };
+    }
+
+    // "7 Jun 2026 at 01:10", like the dates on the pages.
+    private dayAndClock(epochSeconds: number): string {
+        const date = new Date(epochSeconds * 1000);
+        const timeZone = this.app.settings.timeZone;
+        const day = date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            timeZone,
+        });
+        const clock = date.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone,
+        });
+        return `${day} at ${clock}`;
     }
 
     // The person who watched the most of the same films within a week.

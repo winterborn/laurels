@@ -1,5 +1,10 @@
 import { escapeHtml } from './helpers/index.js';
 
+const GUIDE_URL = 'https://github.com/winterborn/laurels/blob/main/docs/awards.md';
+const GUIDE_LINK = `<a href="${GUIDE_URL}" target="_blank" rel="noopener">awards guide</a>`;
+const SECRET_HELP = 'Laurels hides the name and the rule until a person wins the award. '
+    + 'The person can choose to read them.';
+
 const TIERS = [
     ['Common', 'Official selection'],
     ['Uncommon', 'Special mention'],
@@ -160,9 +165,11 @@ export class AwardsEditor {
         const fileError = this.fileError
             ? `<p class="message bad">${escapeHtml(this.fileError)}</p>`
             : '';
-        return `<p class="help">Add your own awards, or change and remove the built-in awards. `
+        return `<p class="help">Your awards have their own Save awards button. `
+            + `Save settings does not save them.</p>`
+            + `<p class="help">Add your own awards, or change and remove the built-in awards. `
             + `Laurels keeps them in <code>awards.json</code>. Each change counts after you click Save awards. `
-            + `The rule types and filters are in <code>docs/awards.md</code>.</p>`
+            + `The rule types and filters are in the ${GUIDE_LINK}.</p>`
             + fileError;
     }
 
@@ -179,12 +186,13 @@ export class AwardsEditor {
         const problemText = problem ? `<span class="message bad">${escapeHtml(problem)}</span>` : '';
         const editButton = entry.remove
             ? ''
-            : `<button type="button" class="button" data-action="edit" data-index="${index}">Edit</button>`;
+            : `<button type="button" class="button" data-action="edit" data-index="${index}">Change</button>`;
+        const deleteLabel = this.builtInById(entry.id) ? 'Undo' : 'Delete';
         return `<li class="award-entry">`
             + `<span class="stack"><span class="row-title">${escapeHtml(this.rowTitle(entry))}</span>`
             + `<span class="caption">${escapeHtml(this.rowCaption(entry))}</span>${problemText}</span>`
             + `<span class="row">${editButton}`
-            + `<button type="button" class="button" data-action="delete" data-index="${index}">Delete</button></span>`
+            + `<button type="button" class="button" data-action="delete" data-index="${index}">${deleteLabel}</button></span>`
             + `</li>`;
     }
 
@@ -202,7 +210,7 @@ export class AwardsEditor {
 
     rowCaption(entry) {
         if (entry.remove) {
-            return 'This built-in award is gone.';
+            return 'Laurels does not use this built-in award.';
         }
         const merged = {
             ...this.builtInById(entry.id),
@@ -279,17 +287,21 @@ export class AwardsEditor {
         const checked = isSecret ? ' checked' : '';
         return `<label class="choice"><input type="checkbox" name="secret" value="true"${checked}>`
             + `<span><span class="label">Secret</span><br>`
-            + `<span class="help">People see the rule only after they win the award.</span></span></label>`;
+            + `<span class="help">${SECRET_HELP}</span></span></label>`;
     }
 
+    // A new award starts from the first template. A changed award can keep its rule.
     ruleInput(rule) {
+        const isNew = !rule;
         const options = TEMPLATES.map((template, index) => {
-            return `<option value="${index}">${escapeHtml(template.label)}</option>`;
+            const selected = isNew && index === 0 ? ' selected' : '';
+            return `<option value="${index}"${selected}>${escapeHtml(template.label)}</option>`;
         });
+        const keep = isNew ? '' : '<option value="">Keep this rule</option>';
         const text = JSON.stringify(rule ?? TEMPLATES[0].rule, null, 4);
         return `<div class="row">`
             + `<label class="field grow"><span class="label">Start from</span>`
-            + `<select name="template"><option value="">Keep this rule</option>${options.join('')}</select></label>`
+            + `<select name="template">${keep}${options.join('')}</select></label>`
             + `</div>`
             + `<label class="field"><span class="label">Rule (JSON)</span>`
             + `<textarea name="rule" rows="12" spellcheck="false">${escapeHtml(text)}</textarea>`
@@ -373,8 +385,8 @@ export class AwardsEditor {
             id,
             remove: true,
         }];
-        this.say('Not saved yet. Click Save awards.', true);
         this.paint();
+        this.say('Not saved yet. Click Save awards.', true);
     }
 
     startEdit(index) {
@@ -430,10 +442,10 @@ export class AwardsEditor {
         const result = await this.api.post('/api/settings/awards/check', {
             entry,
         });
-        this.showCheck(result);
+        this.showCheck(result, entry.rule.target);
     }
 
-    showCheck(result) {
+    showCheck(result, target) {
         const box = this.root.querySelector('#check-result');
         if (!result.ok) {
             box.innerHTML = `<p class="message bad">${escapeHtml(result.body.error)}</p>`;
@@ -443,7 +455,9 @@ export class AwardsEditor {
             const state = person.earned ? 'won' : `${person.value} of ${person.target} ${person.unit}`;
             return `<li>${escapeHtml(person.name)}: ${escapeHtml(state)}</li>`;
         });
-        box.innerHTML = `<p class="message good">The rule works. Progress now:</p>`
+        const works = `The rule works. The target is ${target}. `
+            + 'Check that "What to watch" gives the same number. Progress now:';
+        box.innerHTML = `<p class="message good">${escapeHtml(works)}</p>`
             + `<ul class="check-list">${people.join('')}</ul>`;
     }
 

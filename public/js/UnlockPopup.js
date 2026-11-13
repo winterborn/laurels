@@ -38,15 +38,16 @@ export class UnlockPopup {
 
     single(award, userId) {
         const definition = this.definitions.get(award.achievementId);
+        const eyebrow = `Just announced · ${definition.laurel}`;
         return `<div class="unlock" style="box-shadow: 0 0 0 2px ${definition.colour}, var(--raised)">`
             + `<img class="unlock-poster" src="${this.api.posterUrl(award.posterKey)}" alt="Poster for ${escapeHtml(award.posterTitle)}">`
             + `<div class="stack">`
-            + `<span class="eyebrow" style="color: ${definition.colour}">New award for you · ${escapeHtml(definition.laurel)}</span>`
+            + `<span class="eyebrow" style="color: ${definition.colour}">${escapeHtml(eyebrow)}</span>`
             + `<span class="display small" id="unlock-title">${escapeHtml(definition.title)}</span>`
             + `<span class="caption">${escapeHtml(`${definition.category} · ${definition.points} points · ${definition.description}`)}</span>`
             + `<div class="row">`
             + `<a class="button primary" href="${awardLink(award.achievementId, userId)}" data-close>See award</a>`
-            + `<button type="button" class="button" data-close>Dismiss</button>`
+            + `<button type="button" class="button" data-close>Close</button>`
             + `</div></div></div>`;
     }
 
@@ -59,9 +60,12 @@ export class UnlockPopup {
         return `<div class="unlock">`
             + `<div class="poster-fan">${posters.join('')}</div>`
             + `<div class="stack">`
-            + `<span class="display small" id="unlock-title">You won ${awards.length} awards while you were away</span>`
+            + `<span class="display small" id="unlock-title">Just announced: ${awards.length} new awards</span>`
             + `<span class="caption">${escapeHtml(list)}</span>`
-            + `<div class="row"><a class="button primary" href="${awardsLink(this.userId)}" data-close>See your awards</a></div>`
+            + `<div class="row">`
+            + `<a class="button primary" href="${awardsLink(this.userId)}" data-close>See your awards</a>`
+            + `<button type="button" class="button" data-close>Close</button>`
+            + `</div>`
             + `</div></div>`;
     }
 

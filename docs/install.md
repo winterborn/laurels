@@ -119,7 +119,7 @@ The environment variable has priority, and the Settings page locks that field.
 | Discord webhook | `DISCORD_WEBHOOK_URL` | none |
 | Public address of Laurels, for posters in Discord | `PUBLIC_URL` | none |
 | Days before the first sync to include in Discord | `NOTIFY_BACKFILL_DAYS` | `0` |
-| Names to show | `USER_ALIASES` | none. Example: `1:Mum,2:Dad` |
+| Rename people | `USER_ALIASES` | none. Example: `1:Mum,2:Dad` |
 | People to show | `ALLOWED_USERS` | everyone who watched something |
 | Sign-in: `plex` or `off` | `AUTH` | `plex` |
 | Guest view on the home network | `LAN_GUESTS` | `false` |
@@ -172,17 +172,17 @@ Laurels then reads Tautulli history with the same rules as Tautulli:
 
 - A play is one row in Tautulli history, with its resumed parts joined.
   Tautulli does not keep plays shorter than its ignore interval (2 minutes by default).
-- A play is watched when Tautulli shows it as watched.
-  By default, this is 85% of the running time, or the start of the credits.
-- The time on screen is the time between start and stop, without pauses.
+- Tautulli marks a play as watched at 85% of the running time, or at the start of the credits.
+  These are the defaults.
+- The time watched is the time between start and stop, without pauses.
 - Laurels reads the plays of archived users and libraries too.
 - Laurels does not read live TV, or plays that are still running.
 
 Laurels then uses these rules:
 
-- A Plex watch inside a Tautulli play gets the start time, the time on screen and the device of that play.
+- A Plex watch inside a Tautulli play gets the start time, the time watched and the device of that play.
 - A watched play with no Plex watch becomes a watch.
-- A play that is not watched adds time on screen. It does not count as a watch.
+- A play that Tautulli does not mark as watched adds to the time watched. It does not count as a watch.
 - Watches from before you installed Tautulli keep the times that Laurels calculates.
 
 ## Your own awards

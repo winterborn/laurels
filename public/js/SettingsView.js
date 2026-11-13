@@ -6,6 +6,9 @@ import {
 import { AwardsEditor } from './AwardsEditor.js';
 import { PlexSignIn } from './PlexSignIn.js';
 
+const DEMO_HELP = 'This button adds one winning watch to the mock server. '
+    + 'Laurels then checks for new watches. The "Just announced" popup opens.';
+
 const ENV_NAMES = {
     plexUrl: 'PLEX_URL',
     tautulliUrl: 'TAUTULLI_URL',
@@ -50,11 +53,13 @@ export class SettingsView {
     render() {
         return this.intro()
             + `<form class="settings" novalidate>`
+            + this.demoSection()
             + this.plexSection()
+            + this.awardsFromSection()
+            + this.householdSection()
             + this.scheduleSection()
             + this.tautulliSection()
             + this.discordSection()
-            + this.householdSection()
             + this.securitySection()
             + `<div class="save-bar">`
             + `<button type="submit" class="button primary">Save settings</button>`
@@ -94,6 +99,21 @@ export class SettingsView {
             + `${this.status.users} people, ${this.status.watches} watches, ${this.status.awards} awards.`;
     }
 
+    // Demo only: add a watch that wins an award.
+    demoSection() {
+        if (!this.settings.demo) {
+            return '';
+        }
+        return `<fieldset class="panel">`
+            + `<legend>Demo</legend>`
+            + `<p class="help">${DEMO_HELP}</p>`
+            + `<div class="row">`
+            + `<button type="button" class="button" data-action="demo-watch">Add a winning watch</button>`
+            + `<span class="message" id="demo-message" role="status"></span>`
+            + `</div>`
+            + `</fieldset>`;
+    }
+
     // Plex
 
     plexSection() {
@@ -126,6 +146,46 @@ export class SettingsView {
             + `</fieldset>`;
     }
 
+    // Watches that win awards
+
+    awardsFromSection() {
+        return `<fieldset class="panel">`
+            + `<legend>Watches that win awards</legend>`
+            + this.awardsFromField()
+            + `</fieldset>`;
+    }
+
+    // Which watches can win awards: from setup on, or all past watches too.
+    awardsFromField() {
+        const current = this.settings.values.awardsFrom ?? 'setup';
+        const lock = this.lockAttr('awardsFrom');
+        const choices = [
+            ['setup', 'Only watches from setup', 'Everyone starts with no awards. Each award needs new watches. '
+                + 'If you change to this, Laurels removes the awards for past watches.'],
+            ['all', 'All watches, also from before setup', 'Laurels gives awards for your past watches, with the date of the watch.'],
+        ];
+        const options = choices.map(([value, label, help]) => {
+            const checked = value === current ? ' checked' : '';
+            return `<label class="choice"><input type="radio" name="awardsFrom" value="${value}"${checked}${lock}>`
+                + `<span><span class="label">${escapeHtml(label)}</span><br>`
+                + `<span class="help">${escapeHtml(help)}</span></span></label>`;
+        });
+        return options.join('')
+            + `<p class="help">${this.helpFor('awardsFrom', 'Your watch history still shows in the Season review.')}</p>`;
+    }
+
+    // Household
+
+    householdSection() {
+        return `<fieldset class="panel">`
+            + `<legend>Household</legend>`
+            + this.textField('userAliases', 'Rename people', '1:Mum, 2:Dad',
+                'Write the account id, a colon and the name. Separate the people with commas.')
+            + this.textField('allowedUsers', 'People to show', 'Mum, Dad',
+                'Write names or account ids, with commas between them. If you leave it empty, Laurels shows everyone who watched something.')
+            + `</fieldset>`;
+    }
+
     // Schedule
 
     scheduleSection() {
@@ -137,8 +197,7 @@ export class SettingsView {
             + `<button type="button" class="button" data-action="check-now">Check now</button>`
             + `<span class="message" id="check-message" role="status"></span>`
             + `</div>`
-            + `</fieldset>`
-            + this.demoSection();
+            + `</fieldset>`;
     }
 
     timeZoneField() {
@@ -153,21 +212,6 @@ export class SettingsView {
             + `</label>`;
     }
 
-    // Demo only: add a watch that wins an award.
-    demoSection() {
-        if (!this.settings.demo) {
-            return '';
-        }
-        return `<fieldset class="panel">`
-            + `<legend>Demo</legend>`
-            + `<p class="help">Adds one watch on the mock server that wins a new award, then checks for new watches. The "Just announced" popup opens on any page.</p>`
-            + `<div class="row">`
-            + `<button type="button" class="button" data-action="demo-watch">Add a winning watch</button>`
-            + `<span class="message" id="demo-message" role="status"></span>`
-            + `</div>`
-            + `</fieldset>`;
-    }
-
     // Tautulli
 
     tautulliSection() {
@@ -176,7 +220,7 @@ export class SettingsView {
         return `<fieldset class="panel">`
             + `<legend>Tautulli (optional)</legend>`
             + `<p class="help">Plex history gives only the end of each watch. `
-            + `Tautulli gives the real start time and the time on screen. `
+            + `Tautulli gives the real start time and the real time watched. `
             + `Laurels then uses them for times of day, days and hours.</p>`
             + this.textField('tautulliUrl', 'Tautulli address', 'http://tautulli:8181',
                 'If Tautulli is on the same Docker network, use http://tautulli:8181.')
@@ -208,38 +252,6 @@ export class SettingsView {
             + `<span class="message" id="discord-message" role="status"></span>`
             + `</div>`
             + `</fieldset>`;
-    }
-
-    // Household
-
-    householdSection() {
-        return `<fieldset class="panel">`
-            + `<legend>Household</legend>`
-            + this.textField('userAliases', 'Names to show', '1:Mum, 2:Dad',
-                'Write the account id, a colon and the name. Separate the people with commas.')
-            + this.textField('allowedUsers', 'People to show', 'Mum, Dad',
-                'Write names or account ids, with commas between them. If you leave it empty, Laurels shows everyone who watched something.')
-            + this.awardsFromField()
-            + `</fieldset>`;
-    }
-
-    // Which watches can win awards: from setup on, or all past watches too.
-    awardsFromField() {
-        const current = this.settings.values.awardsFrom ?? 'setup';
-        const lock = this.lockAttr('awardsFrom');
-        const choices = [
-            ['setup', 'Only watches from setup', 'Everyone starts with no awards. Each award needs new watches. '
-                + 'If you change to this, Laurels removes the awards for past watches.'],
-            ['all', 'All watches, also from before setup', 'Laurels gives awards for your past watches, with the date of the watch.'],
-        ];
-        const options = choices.map(([value, label, help]) => {
-            const checked = value === current ? ' checked' : '';
-            return `<label class="choice"><input type="radio" name="awardsFrom" value="${value}"${checked}${lock}>`
-                + `<span><span class="label">${escapeHtml(label)}</span><br>`
-                + `<span class="help">${escapeHtml(help)}</span></span></label>`;
-        });
-        return `<p class="label">Watches that win awards</p>${options.join('')}`
-            + `<p class="help">${this.helpFor('awardsFrom', 'Your watch history still shows in the Season review.')}</p>`;
     }
 
     // Security

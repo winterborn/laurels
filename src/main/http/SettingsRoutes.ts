@@ -59,7 +59,7 @@ export class SettingsRoutes {
         const url = String(body.plexUrl ?? this.app.settings.plexUrl).replace(/\/+$/, '');
         const token = String(body.plexToken || this.app.settings.plexToken);
         if (!url || !token) {
-            return this.fail('Add the Plex URL and sign in first.');
+            return this.fail('Add the server address and sign in with Plex first.');
         }
         try {
             const info = await new PlexClient(url, token).serverInfo();

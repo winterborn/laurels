@@ -6,6 +6,7 @@ import {
     initialOf,
     laurelLabel,
     progressText,
+    SECRET_RULE,
     slateHtml,
 } from './helpers/index.js';
 import { Laurel } from './Laurel.js';
@@ -51,7 +52,7 @@ export class AwardView {
             definition.laurel,
             `${definition.points} points`,
         ].join(' · ');
-        const rule = this.isHidden ? 'Secret award. Keep watching to find out what it is.' : definition.description;
+        const rule = this.isHidden ? SECRET_RULE : definition.description;
         const hasCitation = !this.isHidden && definition.flavorText;
         const citation = hasCitation ? `<p class="citation">${escapeHtml(definition.flavorText)}</p>` : '';
         return `<section class="detail" aria-labelledby="award-title">`
@@ -103,8 +104,8 @@ export class AwardView {
             : progressText(progress, this.definition);
         return slateHtml([
             ['Award', title],
-            ['Scene', scene],
-            ['Take', this.definition.laurel],
+            ['Progress', scene],
+            ['Tier', this.definition.laurel],
         ]);
     }
 
@@ -114,7 +115,7 @@ export class AwardView {
         const facts = [
             ['Category', this.definition.category],
             ['Points', String(this.definition.points)],
-            ['Household', `${holders} of ${household.length} have it`],
+            ['Household', `${holders} of ${household.length} won it`],
             this.lastFact(),
         ];
         const rows = facts.map(([label, value]) => {
@@ -143,7 +144,7 @@ export class AwardView {
         const award = this.report.award;
         const name = this.report.user.name;
         if (!award) {
-            return `${name} does not have this award yet.`;
+            return `${name} has not won this award yet.`;
         }
         const date = new Date(award.awardedAt * 1000);
         const when = date.toLocaleString('en-GB', {
@@ -164,12 +165,13 @@ export class AwardView {
         const rows = this.report.credits.map((credit, index) => this.creditRow(credit, index));
         const count = this.report.creditCount;
         const shown = rows.length < count ? ` · newest ${rows.length}` : '';
-        const watches = count === 1 ? 'watch' : 'watches';
+        const watches = count === 1 ? 'matching watch' : 'matching watches';
         const body = this.isHidden || !rows.length
             ? '<p class="empty">No watches count toward this award yet.</p>'
             : `<ol class="credit-list">${rows.join('')}</ol>`;
         return `<section aria-labelledby="credits">`
             + `<h2 class="section-head" id="credits">The credits · ${count} ${watches}${shown}</h2>`
+            + `<p class="help">The watches that match the rule of this award.</p>`
             + body
             + `</section>`;
     }
