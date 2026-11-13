@@ -6,3 +6,4 @@ export * from './HouseholdWatches.ts';
 export * from './RuleEngine.ts';
 export * from './Tally.ts';
 export * from './UserHistory.ts';
+export * from './WatchCheck.ts';

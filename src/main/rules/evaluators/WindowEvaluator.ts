@@ -31,19 +31,16 @@ export class WindowEvaluator implements Evaluator<WindowRule> {
             case 'month':
             case 'year':
                 return rule.measure === 'hours'
-                    ? this.hoursByPeriod(history, rule, events)
+                    ? this.hoursByPeriod(history, rule)
                     : this.byPeriod(history, rule, events);
             case '24h':
                 return this.bySlidingDay(history, rule, events);
         }
     }
 
-    // Hours watched in one local day, month or year.
-    private hoursByPeriod(
-        history: UserHistory,
-        rule: WindowRule,
-        events: WatchEvent[],
-    ): RuleResult {
+    // Hours watched in one local day, month or year. Partial plays add their time too.
+    private hoursByPeriod(history: UserHistory, rule: WindowRule): RuleResult {
+        const events = history.selectTime(rule.filter);
         const seconds = new Map<string, number>();
         const targetSeconds = rule.target * 3600;
         const crossing = events.find((event) => {
@@ -85,12 +82,16 @@ export class WindowEvaluator implements Evaluator<WindowRule> {
         return `${periodOfDay(rule.span, day)}|${this.showOf(rule, event)}`;
     }
 
-    // Each watch counts, or each local day counts once.
+    // Each watch counts, or each local day or each item counts once.
     private memberOf(history: UserHistory, rule: WindowRule, event: WatchEvent): string {
-        if (rule.distinct === 'day') {
-            return history.localStart(event).day;
+        switch (rule.distinct) {
+            case 'day':
+                return history.localStart(event).day;
+            case 'item':
+                return event.ratingKey;
+            default:
+                return event.id;
         }
-        return event.id;
     }
 
     private bySlidingDay(
@@ -99,7 +100,7 @@ export class WindowEvaluator implements Evaluator<WindowRule> {
         events: WatchEvent[],
     ): RuleResult {
         const groups = groupBy(events, (event) => this.showOf(rule, event));
-        const hits = [...groups.values()].flatMap((group) => this.windowHits(history, group));
+        const hits = [...groups.values()].flatMap((group) => this.windowHits(history, rule, group));
         const best = hits.reduce((most, hit) => Math.max(most, hit.count), 0);
         const crossings = hits
             .filter((hit) => hit.count >= rule.target)
@@ -109,15 +110,16 @@ export class WindowEvaluator implements Evaluator<WindowRule> {
         return this.result(history, rule, crossing, best, crossing ?? busiest?.event);
     }
 
-    // For each watch: how many watches started in the 24 hours up to it.
-    private windowHits(history: UserHistory, events: WatchEvent[]): WindowHit[] {
+    // For each watch: how many watches (or items) started in the 24 hours up to it.
+    private windowHits(history: UserHistory, rule: WindowRule, events: WatchEvent[]): WindowHit[] {
         return events.map((event, index) => {
             const start = history.startOf(event);
             const earlier = events.slice(0, index + 1);
             const inWindow = earlier.filter((other) => history.startOf(other) > start - DAY_SECONDS);
+            const members = new Set(inWindow.map((other) => this.memberOf(history, rule, other)));
             return {
                 event,
-                count: inWindow.length,
+                count: members.size,
             };
         });
     }

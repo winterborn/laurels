@@ -19,7 +19,9 @@ const MAX_ACTORS = 10;
 export const META_VERSION = 2;
 
 // Plex keeps the history row of an item that left the library, but drops its key.
-// Laurels gives such a row a key of its own, from the history id.
+// Laurels gives such a row a key from its title, so all watches of the item share it:
+// "gone:movie:<title>:<year>" or "gone:episode:<show>:<season>:<episode>".
+// A row with no title gets a key from its history id.
 const GONE_PREFIX = 'gone:';
 
 // Turns Plex JSON into our model. No network here.
@@ -155,11 +157,35 @@ export class PlexMapper {
     }
 
     private goneKeyOf(row: PlexJson): string | undefined {
+        const titleKey = row.type === 'episode' ? this.goneEpisodeKey(row) : this.goneMovieKey(row);
+        if (titleKey) {
+            return `${GONE_PREFIX}${titleKey}`;
+        }
         const historyId = this.keyFrom(row.historyKey);
         if (!historyId) {
             return undefined;
         }
         return `${GONE_PREFIX}${historyId}`;
+    }
+
+    private goneMovieKey(row: PlexJson): string | undefined {
+        const title = this.stringOf(row.title)?.trim().toLowerCase();
+        if (!title) {
+            return undefined;
+        }
+        const year = this.numberOf(row.year) ?? '';
+        return `movie:${title}:${year}`;
+    }
+
+    private goneEpisodeKey(row: PlexJson): string | undefined {
+        const show = this.stringOf(row.grandparentTitle)?.trim().toLowerCase();
+        const season = this.numberOf(row.parentIndex);
+        const episode = this.numberOf(row.index);
+        const isKnown = show !== undefined && season !== undefined && episode !== undefined;
+        if (!isKnown) {
+            return undefined;
+        }
+        return `episode:${show}:${season}:${episode}`;
     }
 
     private itemShowKey(row: PlexJson, kind: ItemKind): string | undefined {

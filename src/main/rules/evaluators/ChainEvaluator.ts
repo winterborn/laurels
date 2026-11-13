@@ -10,15 +10,18 @@ interface Link {
     length: number;
     // With `same`: the values that every watch in the run shares.
     shared: Set<string>;
+    // The films and episodes in the run. A run never uses one twice.
+    items: Set<string>;
 }
 
 const NO_LINK: Link = {
     length: 0,
     shared: new Set(),
+    items: new Set(),
 };
 
 // Watches back to back. Each run that reaches the length counts once,
-// and the next run starts again from zero.
+// and the next run starts again from zero. A run never uses one film or episode twice.
 // steps: each watch in the run matches its step, in order.
 // same: each watch matches the filter and shares a value of this key with the run.
 export class ChainEvaluator {
@@ -67,10 +70,13 @@ export class ChainEvaluator {
     }
 
     private tryAdd(history: UserHistory, rule: ChainRule, base: Link, event: WatchEvent): Link | null {
+        if (base.items.has(event.ratingKey)) {
+            return null;
+        }
         if (rule.steps) {
             const step = rule.steps[base.length];
             const matches = step !== undefined && history.matches(event, step);
-            return matches ? this.link(base.length + 1, new Set()) : null;
+            return matches ? this.link(base, event, new Set()) : null;
         }
         if (!history.matches(event, rule.filter ?? {})) {
             return null;
@@ -81,16 +87,18 @@ export class ChainEvaluator {
     private addShared(history: UserHistory, rule: ChainRule, base: Link, event: WatchEvent): Link | null {
         const values = history.groupsOf(event, rule.same ?? 'item');
         if (base.length === 0) {
-            return values.length ? this.link(1, new Set(values)) : null;
+            return values.length ? this.link(base, event, new Set(values)) : null;
         }
         const shared = new Set(values.filter((value) => base.shared.has(value)));
-        return shared.size ? this.link(base.length + 1, shared) : null;
+        return shared.size ? this.link(base, event, shared) : null;
     }
 
-    private link(length: number, shared: Set<string>): Link {
+    // The run of base with this watch added.
+    private link(base: Link, event: WatchEvent, shared: Set<string>): Link {
         return {
-            length,
+            length: base.length + 1,
             shared,
+            items: new Set([...base.items, event.ratingKey]),
         };
     }
 

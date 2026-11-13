@@ -19,6 +19,8 @@ interface SetWatches {
 }
 
 const DAY_SECONDS = 86_400;
+// A set needs this many episodes in the library, unless the rule says more.
+const MIN_EPISODES = 3;
 
 interface PartialSet {
     setKey: string;
@@ -74,9 +76,10 @@ export class CompleteEvaluator implements Evaluator<CompleteRule> {
         }
     }
 
-    // minEpisodes and maxEpisodes: the set has the right number of episodes.
+    // minEpisodes (at least 3) and maxEpisodes: the set has the right number of episodes.
     private isRightSize(rule: CompleteRule, size: number): boolean {
-        const isBigEnough = rule.minEpisodes === undefined || size >= rule.minEpisodes;
+        const minEpisodes = Math.max(rule.minEpisodes ?? 0, MIN_EPISODES);
+        const isBigEnough = size >= minEpisodes;
         const isSmallEnough = rule.maxEpisodes === undefined || size <= rule.maxEpisodes;
         return isBigEnough && isSmallEnough;
     }

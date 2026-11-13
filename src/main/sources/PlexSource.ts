@@ -23,7 +23,8 @@ const HISTORY_PAGE = 500;
 const CURSOR = 'plex.viewedAt';
 // Raise this when PlexMapper keeps history rows that it skipped before.
 // The next sync then reads all the history again.
-const HISTORY_VERSION = '2';
+// Version 3: removed items have a key from their title.
+const HISTORY_VERSION = '3';
 const HISTORY_VERSION_KEY = 'plex.historyVersion';
 // Metadata requests sent to Plex at the same time.
 const METADATA_BATCH = 4;
@@ -76,6 +77,7 @@ export class PlexSource {
             .filter((event) => event !== null);
         this.saveStubs(rows);
         const added = this.store.saveEvents(events);
+        this.store.saveRatingKeys(events.filter((event) => this.isGone(event)));
         const latest = events.reduce((most, event) => Math.max(most, event.watchedAt), Number(cursor));
         this.store.setState(CURSOR, String(latest));
         this.store.setState(HISTORY_VERSION_KEY, HISTORY_VERSION);

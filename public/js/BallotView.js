@@ -81,12 +81,18 @@ export class BallotView {
             + `${formatNumber(points)} of ${formatNumber(maxPoints)} points`;
         const name = escapeHtml(user.name);
         const markLine = `Every award and its rule. A cross marks each award that ${name} won.`;
-        const timeLine = 'Rewatches count. Times and days use the time zone that the owner set in Settings.';
+        const countLine = 'Each film or episode counts once, unless the award says "same" or "again". '
+            + 'Rewatches add days and hours.';
+        const checkLine = 'With Tautulli, a watch counts only after 70% of its running time on screen. '
+            + 'A show or season needs 3 or more episodes in your library.';
+        const timeLine = 'Times and days use the time zone that the owner set in Settings.';
         return `<header class="page-head">`
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(summary)}</span>`
             + `<h1 class="page-title">${name}'s ballot</h1>`
             + `<p class="help">${markLine}</p>`
+            + `<p class="help">${countLine}</p>`
+            + `<p class="help">${checkLine}</p>`
             + `<p class="help">${timeLine}</p>`
             + `</div>`
             + this.filters()

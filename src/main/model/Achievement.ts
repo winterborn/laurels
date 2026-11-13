@@ -97,8 +97,9 @@ export interface WindowRule {
     // A local calendar day, month or year, or any 24 hours.
     span: 'day' | '24h' | 'month' | 'year';
     groupBy?: 'show' | 'item';
-    // Count each local day once, for example "20 days in one month".
-    distinct?: 'day';
+    // Count each local day once, for example "20 days in one month",
+    // or each film or episode once.
+    distinct?: 'day' | 'item';
     // Count hours watched, not watches.
     measure?: 'hours';
     target: number;

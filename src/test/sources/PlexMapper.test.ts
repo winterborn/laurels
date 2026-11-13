@@ -19,7 +19,7 @@ describe('PlexMapper', () => {
 
     it('keeps the watch of an item that left the library', () => {
         const event = mapper.event(removedEpisode);
-        assert.equal(event?.ratingKey, 'gone:901');
+        assert.equal(event?.ratingKey, 'gone:episode:old show:2:1');
         assert.equal(event?.showKey, 'gone:show:Old show');
         assert.equal(event?.id, 'plex:901');
     });
@@ -38,9 +38,40 @@ describe('PlexMapper', () => {
         assert.equal(show.title, 'Old show');
     });
 
-    it('skips a row with no key and no history id', () => {
+    it('gives all watches of a removed film one key from its title', () => {
+        const film = {
+            type: 'movie',
+            title: 'Old Film',
+            year: 1999,
+            accountID: 7,
+        };
+        const first = mapper.event({
+            ...film,
+            historyKey: '/status/sessions/history/11',
+            viewedAt: 1700000000,
+        });
+        const second = mapper.event({
+            ...film,
+            historyKey: '/status/sessions/history/12',
+            viewedAt: 1800000000,
+        });
+        assert.equal(first?.ratingKey, 'gone:movie:old film:1999');
+        assert.equal(second?.ratingKey, first?.ratingKey);
+        assert.notEqual(second?.id, first?.id);
+    });
+
+    it('uses the history id when a removed episode has no show or number', () => {
         const row = {
             ...removedEpisode,
+            index: undefined,
+        };
+        assert.equal(mapper.event(row)?.ratingKey, 'gone:901');
+    });
+
+    it('skips a row with no key, no title and no history id', () => {
+        const row = {
+            ...removedEpisode,
+            grandparentTitle: undefined,
             historyKey: undefined,
         };
         assert.equal(mapper.event(row), null);

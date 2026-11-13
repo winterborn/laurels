@@ -218,6 +218,18 @@ export class Store {
         return this.writeEvents(events, 'INSERT OR REPLACE');
     }
 
+    // A saved watch keeps its times. Only its item key changes.
+    saveRatingKeys(events: WatchEvent[]): void {
+        const update = this.db.prepare('UPDATE events SET rating_key = ? WHERE id = ? AND rating_key != ?');
+        const changes = this.transaction(() => events.map((event) => {
+            const result = update.run(event.ratingKey, event.id, event.ratingKey);
+            return Number(result.changes);
+        }));
+        if (changes.some((count) => count > 0)) {
+            this.eventCache = null;
+        }
+    }
+
     deleteEvent(id: string): void {
         this.db.prepare('DELETE FROM events WHERE id = ?').run(id);
         this.eventCache = null;

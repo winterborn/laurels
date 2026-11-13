@@ -55,7 +55,7 @@ If the file is not valid JSON, Laurels keeps the awards that it had before.
 |---|---|
 | `id` | A name that no other award uses. Use letters, numbers and `_`. Do not change it later, because won awards use it. |
 | `title` | The name of the award. |
-| `description` | What a person must watch. Give the number and the unit. |
+| `description` | What a person must watch. Give the number and the unit. Write "different" when the rule counts each film or episode once. |
 | `flavorText` | The citation. Start it with "For". |
 | `tier` | `Common`, `Uncommon`, `Rare`, `Epic` or `Legendary`. The page shows Official selection, Special mention, Winner, Grand prize or Lifetime achievement. |
 | `section` | `film`, `tv` or `both`. The page shows Film, Television or Screen. |
@@ -99,17 +99,38 @@ Most rules also take a `filter` (see [Filters](#filters)).
 | `count` | Watches. Add `"distinct": "item"` to count each film or episode once, or `"distinct": "show"` to count each show once. Add `"groupBy"` to need the target from one `director`, `actor`, `studio`, `show` or `item`. | `{"type": "count", "filter": {"kind": "movie"}, "groupBy": "director", "distinct": "item", "target": 5}` |
 | `hours` | Hours watched. | `{"type": "hours", "target": 100}` |
 | `streak` | Days in a row with a watch. | `{"type": "streak", "target": 7}` |
-| `window` | Watches in one `day`, `month` or `year`, or in any `24h`. Add `"distinct": "day"` to count days, not watches. Add `"measure": "hours"` to count hours. Add `"groupBy": "show"` or `"item"` to need one show or one item. | `{"type": "window", "span": "month", "distinct": "day", "target": 20}` |
-| `complete` | Shows or seasons with every episode in your library watched. `set` is `show` or `season`. Add `withinDays` to need the first and last episode close together. Add `minEpisodes` or `maxEpisodes` for the size of the set. | `{"type": "complete", "set": "show", "withinDays": 7, "target": 1}` |
+| `window` | Watches in one `day`, `month` or `year`, or in any `24h`. Add `"distinct": "day"` to count days, or `"distinct": "item"` to count each film or episode once. Add `"measure": "hours"` to count hours. Add `"groupBy": "show"` or `"item"` to need one show or one item. | `{"type": "window", "span": "month", "distinct": "day", "target": 20}` |
+| `complete` | Shows or seasons with every episode in your library watched. `set` is `show` or `season`. Add `withinDays` to need the first and last episode close together. Add `minEpisodes` or `maxEpisodes` for the size of the set. A set needs 3 or more episodes in all cases. | `{"type": "complete", "set": "show", "withinDays": 7, "target": 1}` |
 | `shared` | Films or episodes that other people also watched within `withinDays`. Add `people` to need more than one other person. Each item counts once. | `{"type": "shared", "withinDays": 7, "people": 3, "target": 1}` |
 | `variety` | Different values of one thing (see [Things to group by](#things-to-group-by)). Add `span` (`day`, `month` or `year`) to need them in one period. | `{"type": "variety", "of": "decade", "target": 8}` |
-| `chain` | Watches back to back, with at most `maxGapHours` between them. With `steps`, each watch matches its step, in order. With `same` and `length`, each watch shares one value. | `{"type": "chain", "same": "director", "length": 2, "maxGapHours": 3, "target": 1}` |
+| `chain` | Watches back to back, with at most `maxGapHours` between them. With `steps`, each watch matches its step, in order. With `same` and `length`, each watch shares one value. A chain never uses one film or episode twice. | `{"type": "chain", "same": "director", "length": 2, "maxGapHours": 3, "target": 1}` |
 | `comeback` | Watches of an `item` or a `show` after at least `minDays` away from it. | `{"type": "comeback", "groupBy": "show", "minDays": 365, "target": 1}` |
 | `anniversary` | The same item on the same date in `target` different years. | `{"type": "anniversary", "target": 3}` |
 | `outOfOrder` | With `set` `season`: a season finale before episode 1. With `set` `collection`: a later film of a collection before an earlier one. | `{"type": "outOfOrder", "set": "collection", "target": 1}` |
 | `backwards` | Episodes of one season back to back, each one the episode before the last. | `{"type": "backwards", "target": 3}` |
 | `first` | Items that you watched before anyone else in the house. Another person must watch them later. | `{"type": "first", "target": 10}` |
 | `awards` | Other awards won. | `{"type": "awards", "target": 25}` |
+
+## Watches that count
+
+Laurels checks each watch before the rules count it.
+A watch that fails a check adds time on screen only, for the `hours` rules and `"measure": "hours"`.
+
+1. The running time of the item is 5 minutes or more.
+2. With Tautulli, the person watched 70% of the running time or more.
+   Laurels adds all plays of the item since the last watch that counted.
+   A watch that Plex has but Tautulli does not has no time on screen.
+   This catches "mark as watched" and a jump to the end.
+3. The watch does not overlap a watch that counted.
+   When two watches by one person share more than half of the shorter one, only the earlier one counts.
+
+Laurels does check 2 only for the time that Tautulli covers: from its first play to its last play.
+Without Tautulli, Laurels does checks 1 and 3 only.
+It then calculates the start of a watch from the running time.
+An item with no known running time, for example a removed item, passes checks 1 and 2.
+
+All watches of a removed item share one key, made from its title.
+For an episode, Laurels uses the show title, the season number and the episode number.
 
 ## Filters
 

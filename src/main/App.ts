@@ -18,9 +18,11 @@ import {
 } from './notify/index.ts';
 import {
     Catalogue,
+    type CheckedWatches,
     HouseholdWatches,
     RuleEngine,
     UserHistory,
+    WatchCheck,
 } from './rules/index.ts';
 import { Scoreboard } from './scoring/index.ts';
 import { SettingsStore } from './settings/index.ts';
@@ -170,11 +172,12 @@ export class App {
         const engine = new RuleEngine();
         const users = this.visibleUsers();
         const shown = new Set(users.map((user) => user.id));
-        const events = this.awardEvents(this.store.events()).filter((event) => shown.has(event.userId));
+        const awarded = this.awardWatches();
+        const events = awarded.watches.filter((event) => shown.has(event.userId));
         const household = new HouseholdWatches(events);
         const others = this.achievements.filter((entry) => entry.id !== achievement.id);
         return users.map((user) => {
-            const history = this.awardHistoryOf(user.id);
+            const history = this.awardHistoryOf(user.id, awarded);
             const all = engine.evaluateAll(history, [...others, achievement], household);
             const progress = all[all.length - 1];
             return {
@@ -191,11 +194,11 @@ export class App {
         return new UserHistory(userId, events, this.store.items(), this.settings.timeZone, partial);
     }
 
-    // The watches that can win awards. With awardsFrom "setup", only watches from setup on.
-    awardHistoryOf(userId: string): UserHistory {
+    // The watches of one person that can win awards.
+    awardHistoryOf(userId: string, awarded = this.awardWatches()): UserHistory {
         const isMine = (event: WatchEvent) => event.userId === userId;
-        const events = this.awardEvents(this.store.events()).filter(isMine);
-        const partial = this.awardEvents(this.store.partialPlays()).filter(isMine);
+        const events = awarded.watches.filter(isMine);
+        const partial = awarded.partialPlays.filter(isMine);
         return new UserHistory(userId, events, this.store.items(), this.settings.timeZone, partial);
     }
 
@@ -299,13 +302,25 @@ export class App {
     private score(): void {
         const events = this.store.events();
         this.watcherIds = new Set(events.map((event) => event.userId));
+        const awarded = this.awardWatches();
         this.scoreboard.refresh(
             this.visibleUsers(),
-            this.awardEvents(events),
+            awarded.watches,
             this.store.items(),
             this.achievements,
-            this.awardEvents(this.store.partialPlays()),
+            awarded.partialPlays,
         );
+    }
+
+    // The watches that pass the WatchCheck. With awardsFrom "setup", only watches from setup on.
+    // The check reads all watches, so plays from before setup still add time on screen.
+    private awardWatches(): CheckedWatches {
+        const check = new WatchCheck(this.store.items());
+        const checked = check.apply(this.store.events(), this.store.partialPlays());
+        return {
+            watches: this.awardEvents(checked.watches),
+            partialPlays: this.awardEvents(checked.partialPlays),
+        };
     }
 
     private awardEvents(events: WatchEvent[]): WatchEvent[] {

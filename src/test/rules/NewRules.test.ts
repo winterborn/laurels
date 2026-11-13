@@ -60,14 +60,16 @@ describe('complete within days', () => {
 
     it('needs the first and last episode within the limit', () => {
         const slow = new HistoryBuilder()
-            .show('s', [2])
+            .show('s', [3])
             .watch('s-s1-e1', '2026-01-01T20:00:00Z')
-            .watch('s-s1-e2', '2026-01-20T20:00:00Z')
+            .watch('s-s1-e2', '2026-01-02T20:00:00Z')
+            .watch('s-s1-e3', '2026-01-20T20:00:00Z')
             .build();
         const quick = new HistoryBuilder()
-            .show('s', [2])
+            .show('s', [3])
             .watch('s-s1-e1', '2026-01-01T20:00:00Z')
-            .watch('s-s1-e2', '2026-01-05T20:00:00Z')
+            .watch('s-s1-e2', '2026-01-02T20:00:00Z')
+            .watch('s-s1-e3', '2026-01-05T20:00:00Z')
             .build();
         const rule: Rule = {
             type: 'complete',
