@@ -76,6 +76,7 @@ describe('awards from setup or from all watches', () => {
         await app.runCycle();
         assert.equal(app.settings.awardsFrom, 'setup');
         assert.equal(app.store.awards().length, 0);
+        assert.ok(Number(app.awardsBegin()) > 0);
         await watchFilm(app, mockUrl);
         await app.runCycle();
         const won = app.store.awards().map((award) => award.achievementId);
@@ -86,8 +87,8 @@ describe('awards from setup or from all watches', () => {
         const { app } = await newApp({ awardsFrom: 'all' });
         await app.runCycle();
         assert.ok(app.store.awards().length > 0);
+        assert.equal(app.awardsBegin(), null);
     });
-
 
     it('removes awards for past watches when the owner switches to setup', async () => {
         const { app } = await newApp({ awardsFrom: 'all' });

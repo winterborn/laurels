@@ -202,6 +202,14 @@ export class App {
         return new UserHistory(userId, events, this.store.items(), this.settings.timeZone, partial);
     }
 
+    // The first time that wins awards, or null when all watches win awards.
+    awardsBegin(): number | null {
+        if (this.settings.awardsFrom === 'all') {
+            return null;
+        }
+        return this.awardsStart();
+    }
+
     private rebuild(): void {
         const settings = this.settings;
         this.plex = this.isConfigured ? new PlexClient(settings.plexUrl, settings.plexToken) : null;
@@ -324,10 +332,10 @@ export class App {
     }
 
     private awardEvents(events: WatchEvent[]): WatchEvent[] {
-        if (this.settings.awardsFrom === 'all') {
+        const startsAt = this.awardsBegin();
+        if (startsAt === null) {
             return events;
         }
-        const startsAt = this.awardsStart();
         return events.filter((event) => event.watchedAt >= startsAt);
     }
 

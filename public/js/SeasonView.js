@@ -10,6 +10,12 @@ const PAGE_LINE = 'One person\'s year in films, episodes and awards.';
 const EMPTY_LINE = 'No watches yet. Watch a film or an episode on Plex. '
     + 'It shows here after the next check.';
 
+const HOURS_LINE = {
+    tautulli: 'Hours come from Tautulli: the time on screen.',
+    plex: 'Hours come from the running time of each watch. '
+        + 'Connect Tautulli in Settings to count the real time on screen.',
+};
+
 const MONTHS = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
@@ -19,10 +25,11 @@ const MONTHS = [
 // episodes by month, side by side. Then the top genre, highlights and wins.
 export class SeasonView {
 
-    constructor(api, definitions, report) {
+    constructor(api, definitions, report, hasTautulli) {
         this.api = api;
         this.definitions = definitions;
         this.report = report;
+        this.hasTautulli = hasTautulli;
     }
 
     render() {
@@ -72,7 +79,9 @@ export class SeasonView {
         const items = entries.map(([label, value]) => {
             return `<div class="stat"><dt>${label}</dt><dd>${formatNumber(value)}</dd></div>`;
         });
-        return `<dl class="stat-row big">${items.join('')}</dl>`;
+        const source = this.hasTautulli ? HOURS_LINE.tautulli : HOURS_LINE.plex;
+        return `<dl class="stat-row big">${items.join('')}</dl>`
+            + `<p class="help">${source}</p>`;
     }
 
     // One colour. The busiest months are gold, with their value shown.

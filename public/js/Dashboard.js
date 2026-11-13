@@ -11,6 +11,7 @@ import { SeasonView } from './SeasonView.js';
 import { SettingsView } from './SettingsView.js';
 import {
     escapeHtml,
+    formatDay,
     initialOf,
     onceThisVisit,
     runMeters,
@@ -123,7 +124,9 @@ export class Dashboard {
         const definitions = new Map(definitionList.map((definition) => [definition.id, definition]));
         const ownId = this.ownIdIn(users, me.accountId);
         this.premieres.start(ownId);
+        this.status = status;
         await this.showPage(parts, users, definitions, ownId);
+        this.addStartNote(parts[0]);
     }
 
     async showPage(parts, users, definitions, ownId) {
@@ -146,6 +149,22 @@ export class Dashboard {
             default:
                 await this.showAwards(users, definitions, parts[1] || ownId);
         }
+    }
+
+    // Before the first award, say why older watches win nothing.
+    addStartNote(pageKind) {
+        const startsAt = this.status.awardsBegin;
+        const hasNoAwards = this.status.awards === 0;
+        const isSeason = pageKind === 'season';
+        if (!startsAt || !hasNoAwards || isSeason) {
+            return;
+        }
+        const note = document.createElement('p');
+        note.className = 'start-note';
+        note.textContent = `Awards count watches from ${formatDay(startsAt)}. `
+            + 'Older watches show in the Season review. '
+            + 'The owner can change this in Settings, under "Watches that win awards".';
+        this.page.prepend(note);
     }
 
     // Your own id if you watch on this server, else the top of the standings.
@@ -199,7 +218,7 @@ export class Dashboard {
         const report = await this.api.season(userId, year);
         this.renderHousehold(users, userId);
         this.setPage('season', `${report.user.name}'s season`);
-        this.page.innerHTML = new SeasonView(this.api, definitions, report).render();
+        this.page.innerHTML = new SeasonView(this.api, definitions, report, this.status.tautulli).render();
     }
 
     setPage(kind, title) {

@@ -34,6 +34,8 @@ export class SettingsRoutes {
             users: this.app.visibleUsers().length,
             watches: this.app.store.events().length,
             awards: this.app.store.awards().length,
+            awardsBegin: this.app.isConfigured ? this.app.awardsBegin() : null,
+            tautulli: this.app.settings.tautulliUrl !== '',
         };
     }
 

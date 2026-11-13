@@ -247,14 +247,18 @@ p.caption {
     color: var(--ink-strong);
 }
 
+/* Big households wrap to more rows. */
 .household {
     margin-left: auto;
+    min-width: 0;
     min-height: 36px;
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
 }
 
 .person {
+    flex-shrink: 0;
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -1610,6 +1614,16 @@ tr:first-child .points-cell .meter-fill {
     color: var(--ink-muted);
 }
 
+/* Before the first award: why older watches win nothing. */
+.start-note {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold);
+    font-size: var(--type-s);
+    color: var(--ink);
+}
+
 .help code {
     font-family: var(--mono);
     color: var(--ink);
@@ -1819,16 +1833,16 @@ a.button {
         padding-right: var(--space-4);
     }
 
+    /* All links stay on screen: they wrap to a second row. */
     .nav-links {
         width: 100%;
-        gap: var(--space-4);
-        overflow-x: auto;
-        white-space: nowrap;
-        scrollbar-width: none;
+        flex-wrap: wrap;
+        gap: 0 var(--space-4);
     }
 
     .nav-links a {
-        flex-shrink: 0;
+        padding: var(--space-3) 0;
+        white-space: nowrap;
     }
 
     .household {
