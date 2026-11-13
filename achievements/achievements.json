@@ -207,7 +207,7 @@
     {
         "id": "film_genres",
         "title": "Genre tourist",
-        "description": "Watch films tagged with 5 different genres.",
+        "description": "Watch films from 5 different genres.",
         "flavorText": "For a ticket to every screen in the house.",
         "tier": "Common",
         "section": "film",
@@ -223,7 +223,7 @@
     {
         "id": "film_double",
         "title": "Double feature",
-        "description": "Start 2 different films after 5pm on the same day.",
+        "description": "Start 2 different films from 5pm on the same day.",
         "flavorText": "For staying on for the second picture.",
         "tier": "Common",
         "section": "film",
@@ -907,7 +907,7 @@
         "id": "film_1000",
         "title": "Fade out",
         "description": "Watch 1,000 different films.",
-        "flavorText": "For a thousand films. Roll credits.",
+        "flavorText": "For a thousand films and one last roll of the credits.",
         "tier": "Legendary",
         "section": "film",
         "rule": {
@@ -1531,7 +1531,7 @@
     {
         "id": "tv_square_eyes",
         "title": "Square eyes",
-        "description": "Watch 10 hours of TV in one day.",
+        "description": "Watch 10 hours of episodes in one day.",
         "flavorText": "For eyes that slowly turned square.",
         "tier": "Rare",
         "section": "tv",
@@ -1604,7 +1604,7 @@
     {
         "id": "tv_revival",
         "title": "Revival",
-        "description": "Return to a show after a year away.",
+        "description": "Watch a show again after 1 year or more.",
         "flavorText": "For a comeback that nobody saw coming.",
         "tier": "Rare",
         "section": "tv",
@@ -1652,7 +1652,7 @@
     {
         "id": "tv_sprint",
         "title": "Sprint finish",
-        "description": "Finish a show of 50+ episodes within 30 days.",
+        "description": "Watch every episode of a show with 50 or more episodes within 30 days.",
         "flavorText": "For fifty episodes and one month.",
         "tier": "Rare",
         "section": "tv",
@@ -1776,7 +1776,7 @@
     {
         "id": "tv_full_shelf",
         "title": "Full shelf",
-        "description": "Finish every episode of 25 shows.",
+        "description": "Watch every episode of 25 shows.",
         "flavorText": "For twenty-five box sets with no gaps.",
         "tier": "Epic",
         "section": "tv",
@@ -1889,7 +1889,7 @@
     {
         "id": "both_100h",
         "title": "Running time",
-        "description": "Watch 100 hours of films and TV.",
+        "description": "Watch 100 hours of films and episodes.",
         "flavorText": "For a hundred hours in the dark.",
         "tier": "Uncommon",
         "section": "both",
@@ -1901,7 +1901,7 @@
     {
         "id": "both_500h",
         "title": "Blockbuster",
-        "description": "Watch 500 hours of films and TV.",
+        "description": "Watch 500 hours of films and episodes.",
         "flavorText": "For five hundred hours on the sofa and in the stalls.",
         "tier": "Rare",
         "section": "both",
@@ -1913,7 +1913,7 @@
     {
         "id": "both_1000h",
         "title": "Screen legend",
-        "description": "Watch 1,000 hours of films and TV.",
+        "description": "Watch 1,000 hours of films and episodes.",
         "flavorText": "For a thousand hours of screen.",
         "tier": "Epic",
         "section": "both",

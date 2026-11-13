@@ -7,7 +7,6 @@ import {
     progressText,
 } from './helpers/index.js';
 
-const PAGE_LINE = 'The household, ranked by the points from awards.';
 
 const RANGES = [
     {
@@ -50,7 +49,6 @@ export class CeremonyView {
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(summary)}</span>`
             + `<h1 class="page-title">Ceremony</h1>`
-            + `<p class="help">${PAGE_LINE}</p>`
             + `<p class="help">${escapeHtml(this.pointsText())}</p>`
             + `</div>`
             + this.rangeLinks()

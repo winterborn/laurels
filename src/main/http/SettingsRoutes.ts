@@ -173,7 +173,7 @@ export class SettingsRoutes {
     async demoWatch(userId: string): Promise<RouteResult> {
         const mockUrl = this.app.config.demoMockUrl;
         if (!mockUrl) {
-            return this.fail('This is not the demo.');
+            return this.fail('This works only in the demo.');
         }
         try {
             const result = await new DemoWatch(this.app, mockUrl).run(userId);

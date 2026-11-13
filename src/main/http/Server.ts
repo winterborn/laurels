@@ -106,7 +106,7 @@ export class Server {
         const isPost = request.method === 'POST';
         const isJson = (request.headers['content-type'] ?? '').startsWith('application/json');
         if (isPost && !isJson) {
-            this.sendJson(response, 415, { error: 'Send JSON' });
+            this.sendJson(response, 415, { error: 'Send the request as JSON.' });
             return;
         }
         if (path.startsWith('/api/auth/')) {
@@ -121,7 +121,7 @@ export class Server {
                 await this.handlePost(path, request, response);
                 return;
             default:
-                this.sendJson(response, 405, { error: 'Use GET or POST' });
+                this.sendJson(response, 405, { error: 'Use GET or POST.' });
         }
     }
 
@@ -357,7 +357,7 @@ export class Server {
     ): Promise<void> {
         const poster = await this.posters.get(ratingKey, kind);
         if (!poster) {
-            this.sendJson(response, 404, { error: 'No poster' });
+            this.sendJson(response, 404, { error: 'Laurels has no poster for this item.' });
             return;
         }
         // A title card is short-lived: Plex may have the poster later.

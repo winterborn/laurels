@@ -171,7 +171,6 @@ export class AwardView {
             : `<ol class="credit-list">${rows.join('')}</ol>`;
         return `<section aria-labelledby="credits">`
             + `<h2 class="section-head" id="credits">The credits · ${count} ${watches}${shown}</h2>`
-            + `<p class="help">The watches that match the rule of this award.</p>`
             + body
             + `</section>`;
     }

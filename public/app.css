@@ -1709,6 +1709,22 @@ a.button {
     margin-bottom: var(--space-3);
 }
 
+/* "More settings": the settings that most owners never change. */
+.more-settings summary {
+    cursor: pointer;
+    padding: var(--space-3) 0;
+    font-size: var(--type-m);
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.more-settings-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin-top: var(--space-4);
+}
+
 .server-list {
     display: flex;
     flex-direction: column;

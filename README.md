@@ -2,15 +2,14 @@
 
 **An achievement system for Plex.**
 
-Laurels reads your Plex watch history and gives achievements for the films and TV that your household watches.
-Laurels calls each achievement an award, like an award at a film festival.
+Laurels reads your Plex watch history and gives awards for the films and episodes that your household watches.
 Each award shows the poster of the film or show that won it.
 There are five tiers, from Official selection to Lifetime achievement.
-Each award is in one of three categories: Film, Television or Screen (film and TV together).
+Each award is in one of three categories: Film, Television or Screen (films and episodes together).
 
 The pages:
 
-- **Awards**: one person's newest award, a Film shelf, a Television shelf and the awards that are nearest.
+- **Awards**: one person's newest award, a Film shelf, a Television shelf and the awards nearest to a win.
 - **Ballot**: every award on one ballot, with a mark for each win.
 - **Ceremony**: the household ranked by points.
 - **Press room**: new awards, week by week.
@@ -39,19 +38,19 @@ Laurels works with Plex Media Server. Laurels is not made or endorsed by Plex, I
 
 The first sync reads all of your Plex history.
 By default, only watches from setup win awards, so everyone starts with no awards.
-To give awards for past watches too, open **Settings**, then **Household**, and select **All watches**.
+To give awards for past watches too, open **Settings**, go to **Watches that win awards**, and select **All watches**.
 Laurels then dates each award to the watch that won it.
 
 Awards follow the rules.
 If the rules no longer give an award, Laurels removes it.
-For example, Laurels removes the awards for past watches when you change back to **Only watches from setup**.
+For example, Laurels removes the awards for past watches when you change back to **From setup**.
 
 The full guide is [docs/install.md](docs/install.md).
 It tells you how to connect Laurels to Plex when Plex also runs in Docker.
 
 Optional:
 
-- Connect Tautulli for real start times and real time watched.
+- Connect Tautulli for real start times and the real time on screen.
 - Add your own awards in `/config/awards.json`. See [docs/awards.md](docs/awards.md).
 
 ## Run without Docker
@@ -68,7 +67,7 @@ Laurels keeps its settings in `data/settings.json`.
 ## Try the demo
 
 The demo does not use your Plex server.
-It starts a mock Plex server with six example people. Frankie watches only films. Tess watches only TV.
+It starts a mock Plex server with six example people. Frankie watches only films. Tess watches only episodes.
 
 ```bash
 npm run demo

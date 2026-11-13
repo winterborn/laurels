@@ -2,10 +2,10 @@ import { escapeHtml } from './helpers/index.js';
 import { Laurel } from './Laurel.js';
 import { PlexSignIn } from './PlexSignIn.js';
 
-const ABOUT = 'Your household wins awards for the films and TV that it watches.';
+const ABOUT = 'Your household wins awards for the films and episodes that it watches.';
 const SIGN_IN_LEDE = `${ABOUT} Sign in with your Plex account to see them.`;
 const SETUP_LEDE = `${ABOUT} Sign in with the Plex account that owns your server. `
-    + 'This account becomes the Laurels owner. Only the owner can change the settings.';
+    + 'Only this account can change the settings.';
 
 // The page people see before they sign in.
 export class LoginView {

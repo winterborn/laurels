@@ -17,7 +17,6 @@ import { Laurel } from './Laurel.js';
 
 const SHELF_SIZE = 6;
 const NOMINATIONS_EACH = 2;
-const PAGE_LINE = 'The newest award, the shelves and the awards nearest to a win.';
 
 // One person's Awards page: the latest award (the newest), a Film shelf
 // and a Television shelf side by side, a Screen row, then Nominations.
@@ -52,7 +51,6 @@ export class AwardsView {
             + `<div class="page-intro">`
             + `<span class="eyebrow">${escapeHtml(since)}</span>`
             + `<h1 class="page-title">${escapeHtml(user.name)}'s awards</h1>`
-            + `<p class="help">${PAGE_LINE}</p>`
             + `</div></header>`
             + this.stats();
     }

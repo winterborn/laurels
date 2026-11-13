@@ -30,7 +30,7 @@ export class PressRoomView {
 
     body(sections) {
         if (!sections.length) {
-            return '<p class="empty">No awards yet. New awards show here, newest week first.</p>';
+            return '<p class="empty">No awards yet. Watch a film or an episode on Plex to win the first one.</p>';
         }
         return `<div class="press-weeks">${sections.join('')}</div>`;
     }

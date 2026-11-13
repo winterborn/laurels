@@ -55,12 +55,12 @@ The first Plex account that signs in becomes the Laurels owner.
 
 The first sync reads all of your Plex history.
 By default, only watches from setup win awards, so everyone starts with no awards.
-To give awards for past watches too, open **Settings**, then **Household**, and select **All watches**.
+To give awards for past watches too, open **Settings**, go to **Watches that win awards**, and select **All watches**.
 Laurels then dates each award to the watch that won it.
 
 Awards follow the rules.
 If the rules no longer give an award, Laurels removes it.
-For example, Laurels removes the awards for past watches when you change back to **Only watches from setup**.
+For example, Laurels removes the awards for past watches when you change back to **From setup**.
 Laurels does not send these old awards to Discord.
 
 ## Plex address
@@ -96,7 +96,7 @@ Use a local address if you can. A relay address is slow.
 | The owner of the Plex server | See all awards and change the settings |
 | A person who has access to the Plex server | See all awards. Each person signs in with their own Plex account. |
 | Any other Plex account | Nothing. Laurels does not let this account sign in. |
-| A person on your home network, when guest view is on | See all awards without a sign-in |
+| A person on your home network, when **Home network guests** is on | See all awards without a sign-in |
 
 A sign-in stays valid for 30 days. **Sign out** is at the top right of the page.
 
@@ -114,16 +114,16 @@ The environment variable has priority, and the Settings page locks that field.
 | Plex token | `PLEX_TOKEN` | none (use **Sign in with Plex**) |
 | Tautulli address | `TAUTULLI_URL` | none |
 | Tautulli API key | `TAUTULLI_API_KEY` | none |
-| Time between checks of Plex (minutes) | `POLL_MINUTES` | `5` |
+| Minutes between checks | `POLL_MINUTES` | `5` |
 | Time zone | `TZ` | the time zone of the container |
 | Discord webhook | `DISCORD_WEBHOOK_URL` | none |
-| Public address of Laurels, for posters in Discord | `PUBLIC_URL` | none |
-| Days before the first sync to include in Discord | `NOTIFY_BACKFILL_DAYS` | `0` |
+| Public address, for posters in Discord | `PUBLIC_URL` | none |
+| Past days to post to Discord | `NOTIFY_BACKFILL_DAYS` | `0` |
 | Rename people | `USER_ALIASES` | none. Example: `1:Mum,2:Dad` |
 | People to show | `ALLOWED_USERS` | everyone who watched something |
 | Sign-in: `plex` or `off` | `AUTH` | `plex` |
-| Guest view on the home network | `LAN_GUESTS` | `false` |
-| Watches that win awards: `setup` (from setup on) or `all` | `AWARDS_FROM` | `setup` |
+| Home network guests | `LAN_GUESTS` | `false` |
+| Watches that win awards: `setup` or `all` | `AWARDS_FROM` | `setup` |
 
 Container variables:
 
@@ -148,28 +148,23 @@ Container variables:
   For access from outside your home, use a reverse proxy with HTTPS.
 - Laurels needs its own subdomain, for example `laurels.example.com`.
   A path such as `example.com/laurels` does not work.
-- Guest view uses the IP address of the visitor.
-  Keep guest view off if port 8484 is open to the internet.
+- **Home network guests** uses the IP address of the visitor.
+  Keep it off if port 8484 is open to the internet.
   A visit through a proxy always needs a sign-in.
 - `AUTH=off` removes the sign-in.
   Use it only behind a proxy that has its own sign-in, for example Authelia, Authentik or Cloudflare Access.
 
 ## Update
 
-```bash
-docker compose build laurels
-```
-
-```bash
-docker compose up -d laurels
-```
+Run the two commands in [Start the container](#2-start-the-container).
+If you build the image yourself, run `docker compose build laurels`, then `docker compose up -d laurels`.
 
 The update keeps your settings and awards, because they are in `/config`.
 
 ## Tautulli (optional)
 
 Plex history gives only the end of each watch.
-Laurels then calculates the start from the running time, and counts the full running time as time watched.
+Laurels then calculates the start from the running time, and counts the full running time as time on screen.
 
 If you use Tautulli, connect it on the **Settings** page.
 Laurels then reads Tautulli history with the same rules as Tautulli:
@@ -178,15 +173,15 @@ Laurels then reads Tautulli history with the same rules as Tautulli:
   Tautulli does not keep plays shorter than its ignore interval (2 minutes by default).
 - Tautulli marks a play as watched at 85% of the running time, or at the start of the credits.
   These are the defaults.
-- The time watched is the time between start and stop, without pauses.
+- The time on screen is the time between start and stop, without pauses.
 - Laurels reads the plays of archived users and libraries too.
 - Laurels does not read live TV, or plays that are still running.
 
 Laurels then uses these rules:
 
-- A Plex watch inside a Tautulli play gets the start time, the time watched and the device of that play.
+- A Plex watch inside a Tautulli play gets the start time, the time on screen and the device of that play.
 - A watched play with no Plex watch becomes a watch.
-- A play that Tautulli does not mark as watched adds to the time watched. It does not count as a watch.
+- A play that Tautulli does not mark as watched adds to the time on screen. It does not count as a watch.
 - Watches from before you installed Tautulli keep the times that Laurels calculates.
 
 ## Your own awards

@@ -250,12 +250,13 @@ export class App {
         const requestsBefore = this.plex.requestCount;
         try {
             const report = await this.source.sync();
-            const counts = `${report.users} users, ${report.newEvents} new watches, ${report.newItems} items`;
-            this.recordSync(true, `${counts}${this.costOf(startedAt, requestsBefore)}`);
+            const news = report.newEvents === 1 ? '1 new watch' : `${report.newEvents} new watches`;
+            const detail = `${report.users} users, ${report.newItems} items${this.costOf(startedAt, requestsBefore)}`;
+            this.recordSync(true, news, detail);
             return report;
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            this.recordSync(false, `${message}${this.costOf(startedAt, requestsBefore)}`);
+            this.recordSync(false, message, this.costOf(startedAt, requestsBefore).trim());
             return null;
         }
     }
@@ -297,14 +298,15 @@ export class App {
         return ` in ${seconds} s, ${requests} Plex requests`;
     }
 
-    private recordSync(ok: boolean, message: string): void {
+    // The page shows the message. The log also gets the detail.
+    private recordSync(ok: boolean, message: string, detail: string): void {
         this.lastSync = {
             at: Math.floor(Date.now() / 1000),
             ok,
             message,
         };
         const prefix = ok ? 'Synced' : 'Sync failed';
-        console.log(`${prefix}: ${message}`);
+        console.log(`${prefix}: ${message} (${detail})`);
     }
 
     private score(): void {

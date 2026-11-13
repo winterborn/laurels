@@ -6,8 +6,7 @@ import {
 import { AwardsEditor } from './AwardsEditor.js';
 import { PlexSignIn } from './PlexSignIn.js';
 
-const DEMO_HELP = 'This button adds one winning watch to the mock server. '
-    + 'Laurels then checks for new watches. The "Just announced" popup opens.';
+const DEMO_HELP = 'Adds a watch that wins an award. The "Just announced" popup then opens.';
 
 const ENV_NAMES = {
     plexUrl: 'PLEX_URL',
@@ -55,12 +54,10 @@ export class SettingsView {
             + `<form class="settings" novalidate>`
             + this.demoSection()
             + this.plexSection()
+            + this.tautulliSection()
             + this.awardsFromSection()
             + this.householdSection()
-            + this.scheduleSection()
-            + this.tautulliSection()
-            + this.discordSection()
-            + this.securitySection()
+            + this.moreSettings()
             + `<div class="save-bar">`
             + `<button type="submit" class="button primary">Save settings</button>`
             + `<span class="message" id="save-message" role="status"></span>`
@@ -133,7 +130,7 @@ export class SettingsView {
             + `</div>`
             + `<div id="server-list" class="server-list"></div>`
             + this.textField('plexUrl', 'Server address', 'http://plex:32400',
-                'If Plex is on the same Docker network, use http://plex:32400. If not, use the IP address of the server, for example http://192.168.1.10:32400.')
+                'Use http://plex:32400 on the same Docker network. If not, use the server IP, for example http://192.168.1.10:32400.')
             + `<details class="advanced"><summary>Paste a token instead</summary>`
             + `<label class="field"><span class="label">Plex token</span>`
             + `<input type="password" name="plexToken" autocomplete="off" placeholder="${this.settings.plexTokenSet ? 'Saved. Paste to replace.' : ''}">`
@@ -160,9 +157,8 @@ export class SettingsView {
         const current = this.settings.values.awardsFrom ?? 'setup';
         const lock = this.lockAttr('awardsFrom');
         const choices = [
-            ['setup', 'Only watches from setup', 'Everyone starts with no awards. Each award needs new watches. '
-                + 'If you change to this, Laurels removes the awards for past watches.'],
-            ['all', 'All watches, also from before setup', 'Laurels gives awards for your past watches, with the date of the watch.'],
+            ['setup', 'From setup', 'Everyone starts with no awards. A change to this removes the awards for past watches.'],
+            ['all', 'All watches', 'Past watches also win awards, with the date of the watch.'],
         ];
         const options = choices.map(([value, label, help]) => {
             const checked = value === current ? ' checked' : '';
@@ -179,24 +175,9 @@ export class SettingsView {
     householdSection() {
         return `<fieldset class="panel">`
             + `<legend>Household</legend>`
-            + this.textField('userAliases', 'Rename people', '1:Mum, 2:Dad',
-                'Write the account id, a colon and the name. Separate the people with commas.')
             + this.textField('allowedUsers', 'People to show', 'Mum, Dad',
-                'Write names or account ids, with commas between them. If you leave it empty, Laurels shows everyone who watched something.')
-            + `</fieldset>`;
-    }
-
-    // Schedule
-
-    scheduleSection() {
-        return `<fieldset class="panel">`
-            + `<legend>Schedule</legend>`
-            + this.numberField('pollMinutes', 'Time between checks for new watches (minutes)', 1, 'New watches show in Laurels after one check.')
+                'Use commas between names or account ids. Leave it empty to show everyone who watched something.')
             + this.timeZoneField()
-            + `<div class="row">`
-            + `<button type="button" class="button" data-action="check-now">Check now</button>`
-            + `<span class="message" id="check-message" role="status"></span>`
-            + `</div>`
             + `</fieldset>`;
     }
 
@@ -208,8 +189,41 @@ export class SettingsView {
         });
         return `<label class="field"><span class="label">Time zone</span>`
             + `<select name="timeZone"${this.lockAttr('timeZone')}>${options.join('')}</select>`
-            + `<span class="help">${this.helpFor('timeZone', 'Laurels uses it for times of day, days and streaks.')}</span>`
+            + `<span class="help">${this.helpFor('timeZone', 'For times of day, days and streaks.')}</span>`
             + `</label>`;
+    }
+
+    // More settings: the settings that most owners never change.
+
+    moreSettings() {
+        return `<details class="more-settings"><summary>More settings</summary>`
+            + `<div class="more-settings-body">`
+            + this.namesSection()
+            + this.scheduleSection()
+            + this.discordSection()
+            + this.securitySection()
+            + `</div></details>`;
+    }
+
+    namesSection() {
+        return `<fieldset class="panel">`
+            + `<legend>Names</legend>`
+            + this.textField('userAliases', 'Rename people', '1:Mum, 2:Dad',
+                'Write the account id, a colon and the name. Use commas between people.')
+            + `</fieldset>`;
+    }
+
+    // Schedule
+
+    scheduleSection() {
+        return `<fieldset class="panel">`
+            + `<legend>Schedule</legend>`
+            + this.numberField('pollMinutes', 'Minutes between checks', 1, '')
+            + `<div class="row">`
+            + `<button type="button" class="button" data-action="check-now">Check now</button>`
+            + `<span class="message" id="check-message" role="status"></span>`
+            + `</div>`
+            + `</fieldset>`;
     }
 
     // Tautulli
@@ -219,11 +233,10 @@ export class SettingsView {
         const keyHelp = 'In Tautulli, open Settings, then Web Interface. Copy the API key.';
         return `<fieldset class="panel">`
             + `<legend>Tautulli (optional)</legend>`
-            + `<p class="help">Plex history gives only the end of each watch. `
-            + `Tautulli gives the real start time and the real time watched. `
-            + `Laurels then uses them for times of day, days and hours.</p>`
+            + `<p class="help">Tautulli gives the real start time and time on screen. `
+            + `Without it, Laurels calculates them from Plex.</p>`
             + this.textField('tautulliUrl', 'Tautulli address', 'http://tautulli:8181',
-                'If Tautulli is on the same Docker network, use http://tautulli:8181.')
+                'Use http://tautulli:8181 on the same Docker network.')
             + `<label class="field"><span class="label">Tautulli API key</span>`
             + `<input type="password" name="tautulliApiKey" autocomplete="off" `
             + `placeholder="${keyHint}"${this.lockAttr('tautulliApiKey')}>`
@@ -243,10 +256,10 @@ export class SettingsView {
             + `<legend>Discord</legend>`
             + this.textField('discordWebhookUrl', 'Webhook URL', 'https://discord.com/api/webhooks/…',
                 'In Discord, open the channel settings. Select Integrations, Webhooks, New Webhook, then Copy Webhook URL.')
-            + this.textField('publicUrl', 'Public address of Laurels (optional)', 'https://laurels.example.com',
-                'Discord uses this address to show posters. Leave it empty if Laurels is only on your home network.')
-            + this.numberField('notifyBackfillDays', 'Days before the first sync to include in Discord', 0,
-                'With 0, Discord gets only the awards from after the first sync.')
+            + this.textField('publicUrl', 'Public address (optional)', 'https://laurels.example.com',
+                'Discord uses it to show posters. Leave it empty if Laurels is only on your home network.')
+            + this.numberField('notifyBackfillDays', 'Past days to post', 0,
+                'Days before the first sync. With 0, Discord gets only the awards after it.')
             + `<div class="row">`
             + `<button type="button" class="button" data-action="test-discord">Send test message</button>`
             + `<span class="message" id="discord-message" role="status"></span>`
@@ -266,14 +279,14 @@ export class SettingsView {
             + `<legend>Sign-in</legend>`
             + `<label class="choice"><input type="radio" name="authMode" value="plex"${plexChecked}${lock}>`
             + `<span><span class="label">Sign in with Plex</span><br>`
-            + `<span class="help">Recommended. The owner can change the settings. People who share your server can see the awards.</span></span></label>`
+            + `<span class="help">Recommended. People who share your server see the awards. Only the owner can change the settings.</span></span></label>`
             + `<label class="choice"><input type="radio" name="authMode" value="off"${offChecked}${lock}>`
             + `<span><span class="label">No sign-in</span><br>`
             + `<span class="help">Use this only behind a proxy that has its own sign-in, for example Authelia. Without it, any visitor can change the settings.</span></span></label>`
             + `<span class="help">${this.isLocked('authMode') ? this.helpFor('authMode', '') : ''}</span>`
             + `<label class="choice"><input type="checkbox" name="lanGuests" value="true"${guestsChecked}${this.lockAttr('lanGuests')}>`
-            + `<span><span class="label">Guest view on the home network</span><br>`
-            + `<span class="help">${this.helpFor('lanGuests', 'Use this for a TV browser. Keep it off if port 8484 is open to the internet. A visit through a proxy always needs a sign-in.')}</span></span></label>`
+            + `<span><span class="label">Home network guests</span><br>`
+            + `<span class="help">${this.helpFor('lanGuests', 'Lets a TV browser show the awards with no sign-in. Keep it off if port 8484 is open to the internet. A visit through a proxy always needs a sign-in.')}</span></span></label>`
             + `</fieldset>`;
     }
 
@@ -308,7 +321,7 @@ export class SettingsView {
         if (!this.isLocked(name)) {
             return escapeHtml(help);
         }
-        return `The variable <code>${ENV_NAMES[name]}</code> sets this value. Change it in your Docker settings.`;
+        return `Set by <code>${ENV_NAMES[name]}</code> in your Docker settings.`;
     }
 
     // Events
