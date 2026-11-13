@@ -33,8 +33,8 @@
     --develop: 900ms;
     --scrub: 600ms;
 
-    /* Type scale. Use only these for font-size. */
-    --type-xs: 11px;
+    /* Type scale. Use only these for font-size. 12 px is the smallest size. */
+    --type-xs: 12px;
     --type-s: 13px;
     --type-m: 15px;
     --type-l: 19px;
@@ -56,6 +56,18 @@
     --sans: Inter, 'Helvetica Neue', Arial, sans-serif;
     --gothic: 'League Gothic', 'Arial Narrow', Impact, sans-serif;
     --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+    /* Type roles, as on a film poster:
+       serif for titles and citations, gothic for the marquee (names, ranks, card titles),
+       sans for the interface and body text, mono for figures and the slate. */
+    --weight-body: 400;
+    --weight-ui: 600;
+    --weight-billing: 800;
+    --track-caps: 0.1em;
+    --track-marquee: 0.04em;
+    --track-slate: 0.14em;
+    --leading-marquee: 1.05;
+    --leading-title: 1.1;
 }
 
 * {
@@ -74,6 +86,7 @@ body {
     font-family: var(--sans);
     font-size: var(--type-m);
     line-height: 1.4;
+    font-synthesis: none;
 }
 
 a {
@@ -86,6 +99,11 @@ a:hover {
 
 button {
     font: inherit;
+}
+
+strong,
+b {
+    font-weight: var(--weight-ui);
 }
 
 :focus-visible {
@@ -104,12 +122,22 @@ button {
     white-space: nowrap;
 }
 
+/* Headings that wrap: lines of near equal length, no word alone on a line. */
+h1,
+h2,
+h3,
+legend,
+.eyebrow,
+.section-head {
+    text-wrap: balance;
+}
+
 /* Type: three titles, three labels, one figure style */
 
 .display {
     margin: 0;
     font-family: var(--serif);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     font-size: var(--type-3xl);
     line-height: 1;
     color: var(--ink-strong);
@@ -127,17 +155,17 @@ button {
 .page-title {
     margin: 0;
     font-family: var(--serif);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     font-size: var(--type-2xl);
-    line-height: 1.1;
+    line-height: var(--leading-title);
     color: var(--ink-strong);
 }
 
 .card-title {
     font-family: var(--gothic);
     font-size: var(--type-l);
-    line-height: 1.05;
-    letter-spacing: 0.04em;
+    line-height: var(--leading-marquee);
+    letter-spacing: var(--track-marquee);
     text-transform: uppercase;
     color: var(--ink-strong);
 }
@@ -148,8 +176,8 @@ button {
 
 .eyebrow {
     font-size: var(--type-s);
-    font-weight: 800;
-    letter-spacing: 0.14em;
+    font-weight: var(--weight-billing);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--ink-muted);
 }
@@ -159,8 +187,8 @@ button {
     padding-bottom: var(--space-2);
     border-bottom: 1px solid var(--line);
     font-size: var(--type-s);
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-weight: var(--weight-ui);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--ink-muted);
 }
@@ -194,14 +222,14 @@ p.caption {
 .headline {
     font-family: var(--gothic);
     font-size: var(--type-l);
-    line-height: 1.05;
-    letter-spacing: 0.02em;
+    line-height: var(--leading-marquee);
+    letter-spacing: var(--track-marquee);
     text-transform: uppercase;
     color: var(--ink-strong);
 }
 
 .row-title {
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     color: var(--ink-strong);
 }
 
@@ -231,7 +259,7 @@ p.caption {
 
 .brand {
     font-family: var(--serif);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     font-size: var(--type-l);
     text-decoration: none;
 }
@@ -240,8 +268,8 @@ p.caption {
     display: flex;
     gap: var(--space-5);
     font-size: var(--type-s);
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-weight: var(--weight-ui);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
 }
 
@@ -273,7 +301,7 @@ p.caption {
     border: 2px solid transparent;
     background: var(--avatar);
     color: var(--ink);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     cursor: pointer;
 }
 
@@ -318,7 +346,7 @@ p.caption {
     background: transparent;
     color: var(--ink);
     font-size: var(--type-s);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     text-decoration: underline;
     cursor: pointer;
 }
@@ -418,8 +446,8 @@ p.caption {
 
 .more {
     font-size: var(--type-s);
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-weight: var(--weight-ui);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--ink-muted);
     text-decoration: none;
@@ -455,8 +483,8 @@ p.caption {
     border-bottom: 2px solid transparent;
     color: var(--ink-muted);
     font-size: var(--type-s);
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-weight: var(--weight-ui);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     cursor: pointer;
 }
@@ -500,8 +528,8 @@ p.caption {
 
 .stat dt {
     font-size: var(--type-xs);
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-weight: var(--weight-ui);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--ink-muted);
 }
@@ -509,13 +537,14 @@ p.caption {
 .stat dd {
     margin: 0;
     font-size: var(--type-l);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     color: var(--ink-strong);
 }
 
 .stat-row.big dd {
     font-family: var(--serif);
     font-size: var(--type-2xl);
+    line-height: var(--leading-title);
 }
 
 /* Meter: the one progress bar */
@@ -602,7 +631,7 @@ p.caption {
     align-items: center;
     justify-content: center;
     font-size: var(--type-xl);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
 }
 
 .mini-avatar {
@@ -615,7 +644,7 @@ p.caption {
     align-items: center;
     justify-content: center;
     font-size: var(--type-s);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
 }
 
 /* Awards page: header and stats sit together */
@@ -683,7 +712,7 @@ p.caption {
     top: 2.6%;
     font-family: var(--mono);
     font-size: var(--type-s);
-    letter-spacing: 0.14em;
+    letter-spacing: var(--track-slate);
 }
 
 .screen-label.left {
@@ -778,9 +807,10 @@ p.caption {
 .shelf-title {
     margin: 0;
     font-family: var(--gothic);
-    font-weight: 400;
+    font-weight: var(--weight-body);
     font-size: var(--type-xl);
-    letter-spacing: 0.06em;
+    letter-spacing: var(--track-marquee);
+    line-height: var(--leading-marquee);
     text-transform: uppercase;
     color: var(--ink-strong);
 }
@@ -815,6 +845,7 @@ a.card {
 }
 
 .poster {
+    container-type: inline-size;
     position: relative;
     aspect-ratio: 2 / 3;
     border-radius: 4px;
@@ -851,8 +882,8 @@ a.card:hover .poster {
     background: var(--scrim);
     color: var(--ink-strong);
     font-size: var(--type-xs);
-    font-weight: 800;
-    letter-spacing: 0.08em;
+    font-weight: var(--weight-billing);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
 }
 
@@ -869,9 +900,24 @@ a.card:hover .poster {
 
 .band-tier {
     font-size: var(--type-xs);
-    font-weight: 800;
-    letter-spacing: 0.16em;
+    font-weight: var(--weight-billing);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
+}
+
+/* Narrow cards: the tier name stays on one line. */
+@container (max-width: 190px) {
+    .band-tier {
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+    }
+}
+
+/* Very narrow cards: the ring colour and the laurel show the tier. */
+@container (max-width: 169px) {
+    .band-tier {
+        display: none;
+    }
 }
 
 .sash {
@@ -886,7 +932,7 @@ a.card:hover .poster {
     text-align: center;
     font-family: var(--gothic);
     font-size: var(--type-l);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--track-caps);
 }
 
 /* Nominations */
@@ -951,9 +997,10 @@ a.card:hover .poster {
 .ballot-title {
     margin: 0;
     font-family: var(--gothic);
-    font-weight: 400;
+    font-weight: var(--weight-body);
     font-size: var(--type-2xl);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--track-marquee);
+    line-height: var(--leading-marquee);
     text-transform: uppercase;
 }
 
@@ -978,8 +1025,8 @@ a.card:hover .poster {
 .ballot-category {
     margin: 0;
     font-size: var(--type-s);
-    font-weight: 800;
-    letter-spacing: 0.14em;
+    font-weight: var(--weight-billing);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
 }
 
@@ -1021,7 +1068,7 @@ a.card:hover .poster {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
+    font-weight: var(--weight-billing);
     font-size: var(--type-m);
     line-height: 1;
 }
@@ -1035,7 +1082,7 @@ a.card:hover .poster {
 }
 
 .ballot-name {
-    font-weight: 700;
+    font-weight: var(--weight-ui);
 }
 
 .ballot-rule {
@@ -1138,7 +1185,7 @@ a.card:hover .poster {
 
 .credit-number {
     width: 34px;
-    font-weight: 700;
+    font-weight: var(--weight-ui);
     color: var(--ink-muted);
 }
 
@@ -1191,7 +1238,7 @@ a.card:hover .poster {
 .slate-row dt {
     font-family: var(--mono);
     font-size: var(--type-xs);
-    letter-spacing: 0.16em;
+    letter-spacing: var(--track-slate);
     text-transform: uppercase;
     color: var(--ink-muted);
 }
@@ -1200,8 +1247,8 @@ a.card:hover .poster {
     margin: 0;
     font-family: var(--gothic);
     font-size: var(--type-l);
-    line-height: 1.1;
-    letter-spacing: 0.03em;
+    line-height: var(--leading-marquee);
+    letter-spacing: var(--track-marquee);
     text-transform: uppercase;
     color: var(--ink);
 }
@@ -1296,11 +1343,13 @@ a.card:hover .poster {
 
 .chart th {
     padding: var(--space-2) var(--space-3) var(--space-2) 0;
+    white-space: nowrap;
+    vertical-align: bottom;
     border-bottom: 1px solid var(--line);
     text-align: left;
     font-size: var(--type-s);
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-weight: var(--weight-ui);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--ink-muted);
 }
@@ -1312,8 +1361,18 @@ a.card:hover .poster {
 }
 
 .chart .number {
-    font-family: var(--mono);
     text-align: right;
+}
+
+/* The longest heading over a one-digit column: two lines, on the same baseline as the rest. */
+.standings th:nth-child(2) {
+    white-space: normal;
+    text-wrap: balance;
+}
+
+/* Figures in mono. The heading stays in sans, like every other heading. */
+.chart td.number {
+    font-family: var(--mono);
 }
 
 .chart-rank {
@@ -1349,13 +1408,14 @@ a.card:hover .poster {
     border: 1px solid var(--gold);
     color: var(--gold);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--track-caps);
 }
 
 .chart-name {
     font-family: var(--gothic);
     font-size: var(--type-xl);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--track-marquee);
+    line-height: var(--leading-marquee);
     text-transform: uppercase;
     color: var(--ink-strong);
     text-decoration: none;
@@ -1562,7 +1622,7 @@ tr:first-child .points-cell .meter-fill {
 .title-card-name {
     margin: 0;
     font-family: var(--serif);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     font-size: var(--type-4xl);
     line-height: 1;
     color: var(--ink-strong);
@@ -1629,8 +1689,8 @@ tr:first-child .points-cell .meter-fill {
 .panel legend {
     padding: 0 var(--space-2);
     font-size: var(--type-s);
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-weight: var(--weight-ui);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--ink-muted);
 }
@@ -1642,7 +1702,7 @@ tr:first-child .points-cell .meter-fill {
 }
 
 .label {
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     color: var(--ink-strong);
 }
 
@@ -1700,7 +1760,7 @@ tr:first-child .points-cell .meter-fill {
     border-radius: 4px;
     background: transparent;
     color: var(--ink-strong);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     cursor: pointer;
 }
 
@@ -1724,7 +1784,7 @@ a.button {
     min-height: 36px;
     padding: 0 var(--space-3);
     font-size: var(--type-s);
-    font-weight: 500;
+    font-weight: var(--weight-ui);
 }
 
 .message {
@@ -1751,7 +1811,7 @@ a.button {
     cursor: pointer;
     padding: var(--space-3) 0;
     font-size: var(--type-m);
-    font-weight: 600;
+    font-weight: var(--weight-ui);
     color: var(--ink);
 }
 
@@ -1838,6 +1898,7 @@ a.button {
     color: var(--ink);
 }
 
+/* The standings fit at every width, so the hint stays hidden. */
 .scroll-hint {
     display: none;
 }
@@ -1871,15 +1932,17 @@ a.button {
     .shelf.wide .shelf-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    /* The table fits without a sideways scroll. The rarest award is on each person's page. */
+    .standings th:nth-child(8),
+    .standings td:nth-child(8) {
+        display: none;
+    }
 }
 
 /* Phone */
 
 @media (max-width: 640px) {
-    .scroll-hint {
-        display: block;
-    }
-
     .nav-inner,
     .page {
         padding-left: var(--space-4);
@@ -1951,6 +2014,14 @@ a.button {
         font-size: var(--type-xl);
     }
 
+    /* The title, then its link: every shelf head looks the same. */
+    .shelf-head,
+    .block-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
+
     /* The shelf this person watches more comes first. */
     .shelf-pair.tv-first .shelf.tv {
         order: -1;
@@ -1963,7 +2034,7 @@ a.button {
 
     .screen-label {
         font-size: var(--type-xs);
-        letter-spacing: 0.08em;
+        letter-spacing: var(--track-caps);
     }
 
     .feature {
@@ -1986,6 +2057,7 @@ a.button {
         font-size: var(--type-s);
     }
 
+
     .poster .laurel.small {
         transform: scale(0.75);
         transform-origin: top right;
@@ -2001,6 +2073,8 @@ a.button {
     }
 
     /* Small chart: rank, movement, name, points, awards. */
+    .standings th:nth-child(2),
+    .standings td:nth-child(2),
     .standings th:nth-child(n + 7),
     .standings td:nth-child(n + 7) {
         display: none;
