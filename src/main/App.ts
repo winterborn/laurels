@@ -6,6 +6,7 @@ import type {
     User,
     WatchEvent,
 } from './model/index.ts';
+import { PosterSigner } from './auth/index.ts';
 import type { Config } from './Config.ts';
 import {
     parseAliases,
@@ -48,6 +49,7 @@ export class App {
 
     readonly config: Config;
     readonly store: Store;
+    readonly posterSigner: PosterSigner;
     readonly catalogue: Catalogue;
     readonly settingsStore: SettingsStore;
     plex: PlexClient | null = null;
@@ -65,10 +67,11 @@ export class App {
     constructor(config: Config) {
         this.config = config;
         this.store = new Store(config.databasePath);
+        this.posterSigner = new PosterSigner(this.store);
         this.catalogue = Catalogue.fromFile(config.achievementsPath, config.customAwardsPath);
         this.settingsStore = new SettingsStore(config.settingsPath, config.env);
         this.scoreboard = new Scoreboard(this.settings.timeZone);
-        this.notifier = new DiscordNotifier('', '');
+        this.notifier = new DiscordNotifier('', '', this.posterSigner);
         this.rebuild();
     }
 
@@ -201,7 +204,11 @@ export class App {
         this.plex = this.isConfigured ? new PlexClient(settings.plexUrl, settings.plexToken) : null;
         this.source = this.plex ? new PlexSource(this.plex, this.store) : null;
         this.tautulli = this.tautulliFor(settings);
-        this.notifier = new DiscordNotifier(settings.discordWebhookUrl, settings.publicUrl);
+        this.notifier = new DiscordNotifier(
+            settings.discordWebhookUrl,
+            settings.publicUrl,
+            this.posterSigner,
+        );
         this.scoreboard = new Scoreboard(settings.timeZone);
         this.score();
     }

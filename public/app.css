@@ -1024,6 +1024,22 @@ a.card:hover .poster {
     font-size: var(--type-l);
 }
 
+.spoiler summary {
+    cursor: pointer;
+    color: var(--ink-muted);
+    font-size: var(--type-m);
+}
+
+.spoiler[open] summary {
+    margin-bottom: var(--space-3);
+}
+
+.spoiler-title {
+    margin: 0 0 var(--space-2);
+    font-family: var(--serif);
+    font-size: var(--type-l);
+}
+
 .citation {
     margin: 0;
     font-family: var(--serif);

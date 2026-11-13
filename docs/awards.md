@@ -59,7 +59,7 @@ If the file is not valid JSON, Laurels keeps the awards that it had before.
 | `flavorText` | The citation. Start it with "For". |
 | `tier` | `Common`, `Uncommon`, `Rare`, `Epic` or `Legendary`. The page shows Official selection, Special mention, Winner, Grand prize or Lifetime achievement. |
 | `section` | `film`, `tv` or `both`. The page shows Film, Television or Screen. |
-| `secret` | Optional. `true` hides the rule until a person wins the award. |
+| `secret` | Optional. `true` hides the name and the rule until a person wins the award. A person can click **Show the secret** on the award page to read them. |
 | `rule` | What Laurels counts. See the rule types below. |
 
 ## Change a built-in award

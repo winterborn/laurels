@@ -24,9 +24,17 @@ export class AwardView {
         return this.definition.secret && !this.report.award;
     }
 
+    // The tab title. A secret award keeps its name out of it.
+    get pageTitle() {
+        if (!this.definition) {
+            return 'Award';
+        }
+        return this.isHidden ? 'Secret award' : this.definition.title;
+    }
+
     render() {
         const user = this.report.user;
-        const title = this.isHidden ? 'Secret award' : this.definition.title;
+        const title = this.pageTitle;
         return `<p class="crumbs"><a href="${awardsLink(user.id)}">${escapeHtml(user.name)}'s awards</a>`
             + ` / ${escapeHtml(title)}</p>`
             + this.hero(title)
@@ -52,10 +60,24 @@ export class AwardView {
             + `<span class="eyebrow" style="color: ${definition.colour}">${escapeHtml(eyebrow)}</span>`
             + `<h1 id="award-title" class="display">${escapeHtml(title)}</h1>`
             + `<p class="detail-rule">${escapeHtml(rule)}</p>`
+            + this.spoiler()
             + citation
             + this.facts()
             + `<p class="caption">${escapeHtml(this.wonSentence())}</p>`
             + `</div></section>`;
+    }
+
+    // A secret award stays closed until the person chooses to read it.
+    spoiler() {
+        if (!this.isHidden) {
+            return '';
+        }
+        const definition = this.definition;
+        return `<details class="spoiler">`
+            + `<summary>Show the secret</summary>`
+            + `<p class="spoiler-title">${escapeHtml(definition.title)}</p>`
+            + `<p class="detail-rule">${escapeHtml(definition.description)}</p>`
+            + `</details>`;
     }
 
     poster(title) {

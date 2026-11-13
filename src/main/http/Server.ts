@@ -43,6 +43,7 @@ const CONTENT_TYPES: Record<string, string> = {
 type Need = 'none' | 'viewer' | 'owner';
 
 const LATEST_LIMIT = 8;
+const POSTER_PATH = '/api/poster/';
 // Large enough for a long awards.json from the awards editor.
 const MAX_BODY_BYTES = 512 * 1024;
 
@@ -97,7 +98,7 @@ export class Server {
         const url = new URL(request.url ?? '/', 'http://localhost');
         const path = url.pathname;
         const role = this.auth.accessFor(request).role;
-        const need = this.needFor(path);
+        const need = this.needFor(url);
         if (!this.allows(role, need)) {
             this.refuse(response, role);
             return;
@@ -137,7 +138,11 @@ export class Server {
         }
     }
 
-    private needFor(path: string): Need {
+    private needFor(url: URL): Need {
+        if (this.isSignedPoster(url)) {
+            return 'none';
+        }
+        const path = url.pathname;
         const isApi = path.startsWith('/api/');
         const isOpen = !isApi || path.startsWith('/api/auth/');
         if (isOpen) {
@@ -145,6 +150,17 @@ export class Server {
         }
         const isOwnerOnly = path.startsWith('/api/settings') || path.startsWith('/api/plex/');
         return isOwnerOnly ? 'owner' : 'viewer';
+    }
+
+    // A poster link from a Discord message: /api/poster/1234?sig=...
+    private isSignedPoster(url: URL): boolean {
+        const isPoster = url.pathname.startsWith(POSTER_PATH);
+        const signature = url.searchParams.get('sig') ?? '';
+        if (!isPoster || !signature) {
+            return false;
+        }
+        const segment = url.pathname.slice(POSTER_PATH.length);
+        return this.app.posterSigner.isValid(segment, signature);
     }
 
     private allows(role: Role | null, need: Need): boolean {

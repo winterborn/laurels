@@ -1,3 +1,4 @@
+import type { PosterSigner } from '../auth/index.ts';
 import type {
     Achievement,
     Award,
@@ -28,10 +29,12 @@ export class DiscordNotifier {
 
     private readonly webhookUrl: string;
     private readonly publicUrl: string;
+    private readonly signer: PosterSigner;
 
-    constructor(webhookUrl: string, publicUrl: string) {
+    constructor(webhookUrl: string, publicUrl: string, signer: PosterSigner) {
         this.webhookUrl = webhookUrl;
         this.publicUrl = publicUrl;
+        this.signer = signer;
     }
 
     get isEnabled(): boolean {
@@ -105,7 +108,7 @@ export class DiscordNotifier {
         const fields = [
             {
                 name: 'Tier',
-                value: notice.achievement.tier,
+                value: TIER_WORDS[notice.achievement.tier],
                 inline: true,
             },
             {
@@ -150,12 +153,15 @@ export class DiscordNotifier {
     }
 
     // Discord can show the poster only if it can reach Laurels.
+    // Discord has no session, so the link carries a signature.
     private thumbnail(award: Award): Embed | undefined {
         if (!this.publicUrl) {
             return undefined;
         }
+        const segment = encodeURIComponent(award.posterKey);
+        const signature = this.signer.signatureOf(segment);
         return {
-            url: `${this.publicUrl}/api/poster/${award.posterKey}`,
+            url: `${this.publicUrl}/api/poster/${segment}?sig=${signature}`,
         };
     }
 

@@ -154,8 +154,9 @@ export class Dashboard {
     async showAward(users, definitions, achievementId, userId) {
         const report = await this.api.award(achievementId, userId);
         this.renderHousehold(users, userId);
-        this.setPage('award', definitions.get(achievementId)?.title ?? 'Award');
-        this.page.innerHTML = new AwardView(this.api, definitions, report).render();
+        const view = new AwardView(this.api, definitions, report);
+        this.setPage('award', view.pageTitle);
+        this.page.innerHTML = view.render();
     }
 
     async showCeremony(definitions, range) {
