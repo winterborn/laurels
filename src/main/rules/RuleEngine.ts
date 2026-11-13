@@ -56,12 +56,16 @@ export class RuleEngine {
     }
 
     // A broken rule is logged and shows as locked. It never stops the loop.
+    // A pack award reads only the watches from the day that its pack arrived.
     evaluate(
         history: UserHistory,
         achievement: Achievement,
         household = new HouseholdWatches(history.events),
     ): Progress {
-        return this.safely(achievement, () => this.evaluateRule(history, achievement.rule, household));
+        const startsAt = achievement.startsAt;
+        const scoped = startsAt ? history.since(startsAt) : history;
+        const scopedHousehold = startsAt ? household.since(startsAt) : household;
+        return this.safely(achievement, () => this.evaluateRule(scoped, achievement.rule, scopedHousehold));
     }
 
     private evaluateAwards(achievement: Achievement, others: Progress[]): Progress {

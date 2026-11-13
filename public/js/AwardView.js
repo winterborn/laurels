@@ -109,11 +109,18 @@ export class AwardView {
         ]);
     }
 
+    // A pack award names its pack.
+    packFact() {
+        const pack = this.definition.packInfo;
+        return pack ? [['Award pack', pack.name]] : [];
+    }
+
     facts() {
         const household = this.report.household;
         const holders = household.filter((person) => person.earned).length;
         const facts = [
             ['Category', this.definition.category],
+            ...this.packFact(),
             ['Points', String(this.definition.points)],
             ['Household', `${holders} of ${household.length} won it`],
             this.lastFact(),

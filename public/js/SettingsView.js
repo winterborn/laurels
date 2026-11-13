@@ -7,6 +7,7 @@ import { AwardsEditor } from './AwardsEditor.js';
 import { PlexSignIn } from './PlexSignIn.js';
 
 const DEMO_HELP = 'Adds a watch that wins an award. The "Just announced" popup then opens.';
+const DEMO_PACK_HELP = 'Adds a sample award pack, as if it arrived today. Its awards need new watches.';
 
 const ENV_NAMES = {
     plexUrl: 'PLEX_URL',
@@ -108,6 +109,11 @@ export class SettingsView {
             + `<div class="row">`
             + `<button type="button" class="button" data-action="demo-watch">Add a winning watch</button>`
             + `<span class="message" id="demo-message" role="status"></span>`
+            + `</div>`
+            + `<p class="help">${DEMO_PACK_HELP}</p>`
+            + `<div class="row">`
+            + `<button type="button" class="button" data-action="demo-pack">Add an award pack</button>`
+            + `<span class="message" id="demo-pack-message" role="status"></span>`
             + `</div>`
             + `</fieldset>`;
     }
@@ -351,6 +357,9 @@ export class SettingsView {
             case 'demo-watch':
                 this.demoWatch();
                 return;
+            case 'demo-pack':
+                this.demoPack();
+                return;
             case 'find-servers':
                 this.loadServers();
                 return;
@@ -437,6 +446,16 @@ export class SettingsView {
         const count = result.body.trophies.length;
         this.say('demo-message', `Added: ${result.body.title}. It wins ${count} ${count === 1 ? 'award' : 'awards'}.`, true);
         window.dispatchEvent(new CustomEvent('laurels:check-premieres'));
+    }
+
+    async demoPack() {
+        this.say('demo-pack-message', 'Adding the pack…', true);
+        const result = await this.api.post('/api/settings/demo-pack', {});
+        if (!result.ok) {
+            this.say('demo-pack-message', result.body.error, false);
+            return;
+        }
+        this.say('demo-pack-message', `Added: ${result.body.name}, with ${result.body.awards} awards. See the Press room.`, true);
     }
 
     async testTautulli() {

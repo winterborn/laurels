@@ -10,12 +10,15 @@ import { PressRoomView } from './PressRoomView.js';
 import { SeasonView } from './SeasonView.js';
 import { SettingsView } from './SettingsView.js';
 import {
+    ballotLink,
     escapeHtml,
     formatDay,
     initialOf,
     onceThisVisit,
+    recentPacks,
     runMeters,
     wireFallbacks,
+    withPacks,
 } from './helpers/index.js';
 
 // Routes (one for each page, named like its menu label):
@@ -117,16 +120,20 @@ export class Dashboard {
             return;
         }
         const parts = route.split('/').map((part) => decodeURIComponent(part));
-        const [users, definitionList] = await Promise.all([
+        const [users, definitionList, packs] = await Promise.all([
             this.api.users(),
             this.api.definitions(),
+            this.api.packs(),
         ]);
-        const definitions = new Map(definitionList.map((definition) => [definition.id, definition]));
+        const packed = withPacks(definitionList, packs);
+        const definitions = new Map(packed.map((definition) => [definition.id, definition]));
         const ownId = this.ownIdIn(users, me.accountId);
         this.premieres.start(ownId);
         this.status = status;
+        this.packs = packs;
         await this.showPage(parts, users, definitions, ownId);
         this.addStartNote(parts[0]);
+        this.addPackNote(parts[0], parts[1] || ownId);
     }
 
     async showPage(parts, users, definitions, ownId) {
@@ -164,6 +171,24 @@ export class Dashboard {
         note.textContent = `Awards count watches from ${formatDay(startsAt)}. `
             + 'Older watches show in the Season review. '
             + 'The owner can change this in Settings, under "Watches that win awards".';
+        this.page.prepend(note);
+    }
+
+    // On the Awards page, for 14 days: a new pack and a link to its awards.
+    addPackNote(pageKind, userId) {
+        const isAwardsPage = !pageKind || pageKind === 'awards';
+        const pack = recentPacks(this.packs)[0];
+        if (!isAwardsPage || !pack) {
+            return;
+        }
+        const note = document.createElement('p');
+        note.className = 'start-note';
+        const count = pack.awards === 1 ? '1 new award' : `${pack.awards} new awards`;
+        note.textContent = `New award pack: ${pack.name}, with ${count} to win. `;
+        const link = document.createElement('a');
+        link.href = ballotLink(userId);
+        link.textContent = 'See them on the Ballot';
+        note.append(link, '.');
         this.page.prepend(note);
     }
 
@@ -211,7 +236,7 @@ export class Dashboard {
         const awards = await this.api.awards();
         this.renderHousehold([], '');
         this.setPage('press-room', 'Press room');
-        this.page.innerHTML = new PressRoomView(this.api, definitions, awards).render();
+        this.page.innerHTML = new PressRoomView(this.api, definitions, awards, this.packs).render();
     }
 
     async showSeason(users, definitions, userId, year) {

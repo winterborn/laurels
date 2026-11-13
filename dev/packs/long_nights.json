@@ -1,0 +1,81 @@
+{
+    "id": "long_nights",
+    "name": "Long nights",
+    "description": "A sample pack: five awards for the first watches of a new season.",
+    "awards": [
+        {
+            "id": "long_nights_film_first",
+            "title": "Fresh print",
+            "description": "Watch a film.",
+            "flavorText": "For the first reel of a new season.",
+            "tier": "Common",
+            "section": "film",
+            "rule": {
+                "type": "count",
+                "filter": {
+                    "kind": "movie"
+                },
+                "target": 1
+            }
+        },
+        {
+            "id": "long_nights_film_three",
+            "title": "Late show",
+            "description": "Watch 3 different films.",
+            "flavorText": "For three features while the nights draw in.",
+            "tier": "Uncommon",
+            "section": "film",
+            "rule": {
+                "type": "count",
+                "filter": {
+                    "kind": "movie"
+                },
+                "distinct": "item",
+                "target": 3
+            }
+        },
+        {
+            "id": "long_nights_tv_first",
+            "title": "Cold open",
+            "description": "Watch an episode.",
+            "flavorText": "For the first episode of a new season.",
+            "tier": "Common",
+            "section": "tv",
+            "rule": {
+                "type": "count",
+                "filter": {
+                    "kind": "episode"
+                },
+                "target": 1
+            }
+        },
+        {
+            "id": "long_nights_tv_five",
+            "title": "Box set weather",
+            "description": "Watch 5 different episodes.",
+            "flavorText": "For five episodes while the rain does its worst.",
+            "tier": "Uncommon",
+            "section": "tv",
+            "rule": {
+                "type": "count",
+                "filter": {
+                    "kind": "episode"
+                },
+                "distinct": "item",
+                "target": 5
+            }
+        },
+        {
+            "id": "long_nights_streak",
+            "title": "Season ticket",
+            "description": "Watch something on 3 days in a row.",
+            "flavorText": "For three nights in the same seat.",
+            "tier": "Rare",
+            "section": "both",
+            "rule": {
+                "type": "streak",
+                "target": 3
+            }
+        }
+    ]
+}

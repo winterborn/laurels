@@ -10,9 +10,13 @@ const DAY_SECONDS = 86_400;
 // Who watched each item, and when. Rules that compare people read it.
 export class HouseholdWatches {
 
+    private readonly events: WatchEvent[];
     private readonly byItem = new Map<string, Sighting[]>();
+    // The same household from a later time, kept for the awards of each pack.
+    private readonly later = new Map<number, HouseholdWatches>();
 
     constructor(events: WatchEvent[]) {
+        this.events = events;
         for (const event of events) {
             const sightings = this.byItem.get(event.ratingKey) ?? [];
             sightings.push({
@@ -21,6 +25,17 @@ export class HouseholdWatches {
             });
             this.byItem.set(event.ratingKey, sightings);
         }
+    }
+
+    // The same household, with only the watches from this time on. Pack awards read it.
+    since(time: number): HouseholdWatches {
+        const kept = this.later.get(time);
+        if (kept) {
+            return kept;
+        }
+        const household = new HouseholdWatches(this.events.filter((event) => event.watchedAt >= time));
+        this.later.set(time, household);
+        return household;
     }
 
     // The time when `people` other people watched this item within the window, or undefined.

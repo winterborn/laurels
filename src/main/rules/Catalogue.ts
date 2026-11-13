@@ -9,7 +9,11 @@ import {
     ruleProblem,
     TIER_ORDER,
 } from '../helpers/index.ts';
-import type { Achievement } from '../model/index.ts';
+import type {
+    Achievement,
+    Pack,
+} from '../model/index.ts';
+import { PackReader } from './PackReader.ts';
 
 // One entry of awards.json: a whole award, some fields of a built-in award,
 // or a built-in award to remove.
@@ -32,8 +36,9 @@ const SECTIONS = [
     'both',
 ];
 
-// Loads the built-in achievements.json and the owner's own awards.json,
-// and loads them again when either file changes.
+// Loads the built-in achievements.json, the award packs and the owner's own awards.json,
+// and loads them again when one of them changes.
+// The awards of the packs count as built-in awards.
 // An entry in awards.json adds an award, changes the fields of a built-in award
 // with the same id, or removes it with "remove": true.
 // Bad entries are logged and skipped. A broken file keeps the last good list.
@@ -41,24 +46,32 @@ export class Catalogue {
 
     private readonly path: string;
     private readonly customPath: string;
+    private readonly packReader: PackReader;
     private list: Achievement[] = [];
-    // The built-in awards, before awards.json.
+    // The built-in awards and the pack awards, before awards.json.
     private base: Achievement[] = [];
+    private packList: Pack[] = [];
     private loadedStamp = '';
 
-    static fromFile(path: string, customPath = ''): Catalogue {
-        const catalogue = new Catalogue(path, customPath);
+    static fromFile(path: string, customPath = '', packFolders: string[] = []): Catalogue {
+        const catalogue = new Catalogue(path, customPath, packFolders);
         catalogue.load();
         return catalogue;
     }
 
-    constructor(path: string, customPath = '') {
+    constructor(path: string, customPath = '', packFolders: string[] = []) {
         this.path = path;
         this.customPath = customPath;
+        this.packReader = new PackReader(packFolders);
     }
 
     get achievements(): Achievement[] {
         return this.list;
+    }
+
+    // The award packs that loaded, with the ids of their awards.
+    get packs(): Pack[] {
+        return this.packList;
     }
 
     byId(id: string): Achievement | undefined {
@@ -130,17 +143,21 @@ export class Catalogue {
 
     private load(): void {
         const stamp = this.stampNow();
-        const base = this.readList(this.path).filter((entry) => this.isValid(entry)) as Achievement[];
+        const builtIn = this.readList(this.path).filter((entry) => this.isValid(entry)) as Achievement[];
+        const ids = new Set(builtIn.map((award) => award.id));
+        const packed = this.packReader.read(ids, (award) => this.isValid(award));
+        const base = [...builtIn, ...packed.awards];
         const custom = this.hasCustomFile() ? this.readList(this.customPath) : [];
         this.list = this.merge(base, custom);
         this.base = base;
+        this.packList = packed.packs;
         this.loadedStamp = stamp;
     }
 
-    // The times of both files. A change in either one means a reload.
+    // The times of the files and the pack folders. A change in one of them means a reload.
     private stampNow(): string {
         const customTime = this.hasCustomFile() ? statSync(this.customPath).mtimeMs : 0;
-        return `${statSync(this.path).mtimeMs}|${customTime}`;
+        return `${statSync(this.path).mtimeMs}|${customTime}|${this.packReader.stamp()}`;
     }
 
     private hasCustomFile(): boolean {
@@ -175,9 +192,12 @@ export class Catalogue {
             byId.delete(entry.id);
             return;
         }
+        const base = byId.get(entry.id);
         const merged = {
-            ...byId.get(entry.id),
+            ...base,
             ...entry,
+            pack: base?.pack,
+            startsAt: undefined,
         };
         if (this.isValid(merged)) {
             byId.set(entry.id, merged as Achievement);

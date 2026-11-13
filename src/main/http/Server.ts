@@ -230,6 +230,9 @@ export class Server {
             case 'api/definitions':
                 this.sendJson(response, 200, this.data.definitions());
                 return;
+            case 'api/packs':
+                this.sendJson(response, 200, this.data.packs());
+                return;
             case 'api/users':
                 this.sendUsers(parts[2], response);
                 return;
@@ -314,6 +317,9 @@ export class Server {
                 return;
             case '/api/settings/demo-watch':
                 this.sendResult(response, await this.settings.demoWatch(this.ownAccount(request)));
+                return;
+            case '/api/settings/demo-pack':
+                this.sendResult(response, this.settings.demoPack());
                 return;
             default:
                 this.sendJson(response, 404, { error: 'Laurels cannot find this page.' });

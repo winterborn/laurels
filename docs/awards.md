@@ -89,6 +89,69 @@ The built-in awards are in [achievements/achievements.json](../achievements/achi
 ]
 ```
 
+## Award packs
+
+An award pack is a group of new awards, like a DLC pack on a console.
+Each pack is one `.json` file.
+
+- Laurels ships the packs in `achievements/packs` with the image.
+  You get new packs when you pull a new image.
+- You can add your own packs to the `packs` folder in the Laurels config folder, next to `settings.json`.
+
+Laurels reads the packs again at the next check for new watches.
+
+A pack award counts only watches from the day that the pack arrived on your server.
+So everyone in the house starts the pack with no awards.
+A pack that is in Laurels before the first sync counts like the built-in awards.
+Pack awards do not end. Each pack award stays open for all time.
+
+Because of this, a rule that looks back in time, for example `comeback`, needs time after that day.
+
+When a pack arrives:
+
+- The Press room shows "New award pack", in the week that it arrived.
+- The Awards page shows a note for 14 days.
+- The Ballot shows the pack under the built-in awards, with "New" for 30 days.
+- Discord gets one message, if you set a webhook.
+
+If you remove a pack file, Laurels removes the awards of that pack.
+
+```json
+{
+    "id": "winter_2026",
+    "name": "Winter 2026",
+    "description": "Twelve awards for long nights in.",
+    "awards": [
+        {
+            "id": "winter_2026_late_show",
+            "title": "Late show",
+            "description": "Watch 3 different films.",
+            "flavorText": "For three features while the nights draw in.",
+            "tier": "Uncommon",
+            "section": "film",
+            "rule": {
+                "type": "count",
+                "filter": {
+                    "kind": "movie"
+                },
+                "distinct": "item",
+                "target": 3
+            }
+        }
+    ]
+}
+```
+
+| Field | Value |
+|---|---|
+| `id` | A name that no other pack uses. Use letters, numbers and `_`. Do not change it later. |
+| `name` | The name on the page, for example "Winter 2026". |
+| `description` | Optional. One short line about the pack. |
+| `awards` | The awards. Each award has the same fields as an award in `awards.json`. An award id must not be the id of another award. |
+
+Keep Film and Television even in each pack.
+You can change or remove a pack award in `awards.json`, as you change a built-in award.
+
 ## Rule types
 
 Each rule has a `type` and a `target`.

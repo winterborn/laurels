@@ -1,6 +1,7 @@
 import type {
     Achievement,
     Award,
+    Pack,
     Progress,
     Settings,
     User,
@@ -45,6 +46,13 @@ const DAY_SECONDS = 86_400;
 const INSTALLED_AT = 'app.installedAt';
 // With awardsFrom "setup", only watches from this time win awards.
 const AWARDS_START = 'awards.startsAt';
+// A pack posts to Discord only in its first week.
+const PACK_NEWS_SECONDS = 7 * DAY_SECONDS;
+
+export interface PackInfo extends Pack {
+    // When the pack arrived on this server, or null when it was there from the start.
+    arrivedAt: number | null;
+}
 
 // Sync, score, award, notify. Repeats every pollMinutes.
 export class App {
@@ -70,8 +78,9 @@ export class App {
         this.config = config;
         this.store = new Store(config.databasePath);
         this.posterSigner = new PosterSigner(this.store);
-        this.catalogue = Catalogue.fromFile(config.achievementsPath, config.customAwardsPath);
+        this.catalogue = Catalogue.fromFile(config.achievementsPath, config.customAwardsPath, config.packFolders);
         this.settingsStore = new SettingsStore(config.settingsPath, config.env);
+        this.recordPacks();
         this.scoreboard = new Scoreboard(this.settings.timeZone);
         this.notifier = new DiscordNotifier('', '', this.posterSigner);
         this.rebuild();
@@ -87,8 +96,28 @@ export class App {
         return hasUrl && hasToken;
     }
 
+    // Each pack award starts on the day that its pack arrived.
     get achievements(): Achievement[] {
-        return this.catalogue.achievements;
+        const starts = this.packStarts();
+        return this.catalogue.achievements.map((achievement) => {
+            const startsAt = achievement.pack ? starts.get(achievement.pack) : undefined;
+            if (!startsAt) {
+                return achievement;
+            }
+            return {
+                ...achievement,
+                startsAt,
+            };
+        });
+    }
+
+    // The packs that loaded, with the day that each one arrived.
+    get packs(): PackInfo[] {
+        const starts = this.packStarts();
+        return this.catalogue.packs.map((pack) => ({
+            ...pack,
+            arrivedAt: starts.get(pack.id) ?? null,
+        }));
     }
 
     get isSyncing(): boolean {
@@ -132,6 +161,9 @@ export class App {
     // A sync with no new data gives the same result, so it skips the work.
     private async syncAndScore(): Promise<void> {
         const hasNewRules = this.catalogue.reloadIfChanged();
+        if (hasNewRules) {
+            this.recordPacks();
+        }
         const report = await this.syncPlex();
         if (!report) {
             return;
@@ -144,7 +176,16 @@ export class App {
         }
         this.score();
         await this.grantAwards();
+        await this.announcePacks();
         this.isUpToDate = true;
+    }
+
+    // The owner added or removed a pack file. Laurels reads the packs again now.
+    reloadPacks(): void {
+        if (this.catalogue.reloadIfChanged()) {
+            this.recordPacks();
+        }
+        this.refreshAwards();
     }
 
     // Users with at least one watch, renamed by the aliases setting.
@@ -339,6 +380,56 @@ export class App {
             return events;
         }
         return events.filter((event) => event.watchedAt >= startsAt);
+    }
+
+    // Saves the day that each new pack arrived. A pack that is there before the first
+    // watch is read counts like the built-in awards, so it saves 0.
+    private recordPacks(): void {
+        const isNewInstall = this.store.events().length === 0;
+        const now = Math.floor(Date.now() / 1000);
+        for (const pack of this.catalogue.packs) {
+            const key = `pack.${pack.id}.arrivedAt`;
+            if (!this.store.getState(key)) {
+                this.store.setState(key, String(isNewInstall ? 0 : now));
+            }
+        }
+    }
+
+    // The arrival time of each pack that arrived after the first watches.
+    private packStarts(): Map<string, number> {
+        const starts = new Map<string, number>();
+        for (const pack of this.catalogue.packs) {
+            const arrivedAt = Number(this.store.getState(`pack.${pack.id}.arrivedAt`) ?? '0');
+            if (arrivedAt > 0) {
+                starts.set(pack.id, arrivedAt);
+            }
+        }
+        return starts;
+    }
+
+    // Posts each pack to Discord once, in the first week after it arrived.
+    private async announcePacks(): Promise<void> {
+        if (!this.notifier.isEnabled) {
+            return;
+        }
+        const now = Math.floor(Date.now() / 1000);
+        const news = this.packs.filter((pack) => {
+            const isRecent = pack.arrivedAt !== null && now - pack.arrivedAt < PACK_NEWS_SECONDS;
+            const isPosted = this.store.getState(`pack.${pack.id}.announced`) !== undefined;
+            return isRecent && !isPosted;
+        });
+        for (const pack of news) {
+            await this.announcePack(pack);
+        }
+    }
+
+    private async announcePack(pack: PackInfo): Promise<void> {
+        try {
+            await this.notifier.sendPack(pack);
+            this.store.setState(`pack.${pack.id}.announced`, String(Math.floor(Date.now() / 1000)));
+        } catch (error) {
+            console.error(`Discord could not post the pack ${pack.id}:`, error);
+        }
     }
 
     // The time of setup: the first time Laurels scores in "setup" mode.

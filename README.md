@@ -52,6 +52,7 @@ Optional:
 
 - Connect Tautulli for real start times and the real time on screen.
 - Add your own awards in `/config/awards.json`. See [docs/awards.md](docs/awards.md).
+- Add award packs, groups of new awards like DLC, in `/config/packs`. See [Award packs](docs/awards.md#award-packs).
 
 ## Run without Docker
 

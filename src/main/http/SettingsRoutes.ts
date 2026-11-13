@@ -1,5 +1,8 @@
 import type { App } from '../App.ts';
-import { DemoWatch } from '../demo/index.ts';
+import {
+    DemoPack,
+    DemoWatch,
+} from '../demo/index.ts';
 import { unitOf } from '../helpers/index.ts';
 import type { Settings } from '../model/index.ts';
 import type { CustomEntry } from '../rules/index.ts';
@@ -178,6 +181,18 @@ export class SettingsRoutes {
         try {
             const result = await new DemoWatch(this.app, mockUrl).run(userId);
             return this.ok(result);
+        } catch (error) {
+            return this.fail(this.messageOf(error));
+        }
+    }
+
+    demoPack(): RouteResult {
+        const source = this.app.config.demoPackPath;
+        if (!source) {
+            return this.fail('This works only in the demo.');
+        }
+        try {
+            return this.ok(new DemoPack(this.app, source).run());
         } catch (error) {
             return this.fail(this.messageOf(error));
         }

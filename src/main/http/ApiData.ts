@@ -40,6 +40,21 @@ export class ApiData {
         });
     }
 
+    // GET /api/packs: the award packs, newest first. arrivedAt is null for a pack
+    // that was there from the start.
+    packs(): Json[] {
+        const known = new Set(this.app.achievements.map((achievement) => achievement.id));
+        return this.app.packs
+            .map((pack) => ({
+                id: pack.id,
+                name: pack.name,
+                description: pack.description,
+                arrivedAt: pack.arrivedAt,
+                awards: pack.awardIds.filter((id) => known.has(id)).length,
+            }))
+            .sort((a, b) => (b.arrivedAt ?? 0) - (a.arrivedAt ?? 0));
+    }
+
     // GET /api/awards[?user=id]: newest first.
     awards(userId?: string): Json[] {
         const names = new Map(this.app.visibleUsers().map((user) => [user.id, user.name]));
@@ -137,6 +152,7 @@ export class ApiData {
             points: TIER_POINTS[achievement.tier],
             laurel: TIER_WORDS[achievement.tier],
             colour: TIER_COLOURS[achievement.tier],
+            pack: achievement.pack ?? null,
         };
     }
 

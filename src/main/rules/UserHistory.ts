@@ -25,6 +25,8 @@ export class UserHistory {
     private readonly selected = new Map<string, WatchEvent[]>();
     // The local start of each watch, worked out once.
     private readonly starts = new Map<string, LocalParts>();
+    // The same history from a later time, kept for the awards of each pack.
+    private readonly later = new Map<number, UserHistory>();
 
     constructor(
         userId: string,
@@ -39,6 +41,24 @@ export class UserHistory {
         this.items = items;
         this.timeZone = timeZone;
         this.filter = new EventFilter(this);
+    }
+
+    // The same person, with only the watches from this time on. Pack awards read it.
+    since(time: number): UserHistory {
+        const kept = this.later.get(time);
+        if (kept) {
+            return kept;
+        }
+        const isLater = (event: WatchEvent) => event.watchedAt >= time;
+        const history = new UserHistory(
+            this.userId,
+            this.events.filter(isLater),
+            this.items,
+            this.timeZone,
+            this.partialPlays.filter(isLater),
+        );
+        this.later.set(time, history);
+        return history;
     }
 
     matches(event: WatchEvent, spec: EventFilterSpec): boolean {

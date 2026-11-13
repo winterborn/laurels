@@ -9,6 +9,10 @@ export class Api {
         return this.get('/api/definitions');
     }
 
+    async packs() {
+        return this.get('/api/packs');
+    }
+
     async cabinet(userId) {
         return this.get(`/api/users/${encodeURIComponent(userId)}`);
     }

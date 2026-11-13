@@ -2,6 +2,7 @@ import type { PosterSigner } from '../auth/index.ts';
 import type {
     Achievement,
     Award,
+    Pack,
     User,
 } from '../model/index.ts';
 import {
@@ -56,6 +57,21 @@ export class DiscordNotifier {
                 }
             }
         }
+    }
+
+    // "New award pack: Long nights / 5 new awards. A sample pack."
+    async sendPack(pack: Pack): Promise<void> {
+        if (!this.isEnabled) {
+            return;
+        }
+        const count = pack.awardIds.length;
+        const awards = count === 1 ? '1 new award' : `${count} new awards`;
+        const about = pack.description ? ` ${pack.description}` : '';
+        await this.post({
+            title: `New award pack: ${pack.name}`,
+            description: `${awards}.${about}`,
+            color: this.colourOf('Legendary'),
+        });
     }
 
     // Settings page "Send test message" button.

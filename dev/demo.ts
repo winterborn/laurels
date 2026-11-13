@@ -33,6 +33,7 @@ const config = new Config({
     PLEX_TV_URL: `http://localhost:${MOCK_PORT}`,
     PLEX_AUTH_URL: `http://localhost:${MOCK_PORT}/auth`,
     DEMO_MOCK_URL: `http://localhost:${MOCK_PORT}`,
+    DEMO_PACK_PATH: 'dev/packs/long_nights.json',
 });
 const app = new App(config);
 await app.runCycle();

@@ -4,6 +4,7 @@ import {
     escapeHtml,
     formatDay,
     formatNumber,
+    isNewPack,
     joinNames,
     laurelLabel,
     progressText,
@@ -132,14 +133,39 @@ export class BallotView {
         const definitions = [...this.definitions.values()]
             .filter((definition) => definition.section === category.id);
         const won = definitions.filter((definition) => this.awards.has(definition.id)).length;
-        const rows = this.filtered(definitions).map((definition) => this.row(definition));
-        const body = rows.length
-            ? `<ol class="ballot-list">${rows.join('')}</ol>`
+        const shown = this.filtered(definitions);
+        const body = shown.length
+            ? this.groups(shown)
             : `<p class="ballot-empty">${escapeHtml(this.emptyText())}</p>`;
         return `<section class="ballot-column" aria-label="${category.ballot}">`
             + `<h3 class="ballot-category">${category.ballot} · ${won} of ${definitions.length}</h3>`
             + body
             + `</section>`;
+    }
+
+    // The built-in awards first, then each award pack, newest first.
+    groups(definitions) {
+        const builtIn = definitions.filter((definition) => !definition.packInfo);
+        const packs = [...new Set(definitions.map((definition) => definition.packInfo).filter(Boolean))]
+            .sort((a, b) => (b.arrivedAt ?? 0) - (a.arrivedAt ?? 0));
+        const packGroups = packs.map((pack) => {
+            const own = definitions.filter((definition) => definition.packInfo === pack);
+            return this.packGroup(pack, own);
+        });
+        const builtInList = builtIn.length ? this.list(builtIn) : '';
+        return builtInList + packGroups.join('');
+    }
+
+    list(definitions) {
+        const rows = definitions.map((definition) => this.row(definition));
+        return `<ol class="ballot-list">${rows.join('')}</ol>`;
+    }
+
+    // "Award pack: Long nights", with "New" for its first 30 days.
+    packGroup(pack, definitions) {
+        const badge = isNewPack(pack) ? ` <span class="ballot-new">New</span>` : '';
+        return `<h4 class="ballot-pack">Award pack: ${escapeHtml(pack.name)}${badge}</h4>`
+            + this.list(definitions);
     }
 
     // A column with no rows says why.

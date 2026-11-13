@@ -205,4 +205,9 @@ export interface Achievement {
     section: Section;
     secret?: boolean;
     rule: Rule;
+    // The id of the award pack that adds this award. Built-in awards have none.
+    pack?: string;
+    // Set by the app, never in a file: the first watch time that counts.
+    // A pack award counts only watches from the day that its pack arrived.
+    startsAt?: number;
 }

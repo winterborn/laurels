@@ -8,7 +8,8 @@ A route that changes settings needs the owner.
 
 | Route | Gives |
 |---|---|
-| `GET /api/definitions` | All awards: title, category, tier, points, laurel word, citation, who holds it and household share |
+| `GET /api/definitions` | All awards: title, category, tier, points, laurel word, citation, pack, who holds it and household share |
+| `GET /api/packs` | The award packs, newest first: id, name, description, the number of awards and `arrivedAt` |
 | `GET /api/users` | The people, sorted by points, with their rank, latest award, and film and episode counts |
 | `GET /api/users/:id` | One person: awards, progress and totals |
 | `GET /api/awards` | All awards of all people, newest first |
@@ -23,6 +24,9 @@ A route that changes settings needs the owner.
 
 `category` is `Film`, `Television` or `Screen`.
 `holderIds` lists the people who hold the award, oldest win first.
+
+`pack` is the id of the award pack that adds the award, or `null` for a built-in award.
+`arrivedAt` is the time that a pack arrived, in seconds. It is `null` for a pack that was there from the start.
 
 `householdShare` is a number from 0 to 1.
 It is `null` when the server has fewer than 5 people.
