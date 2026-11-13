@@ -49,7 +49,7 @@ describe('awards editor', () => {
             .map((award) => `${award.id}: ${ruleProblem(award.rule as never)}`)
             .filter((text) => !text.endsWith(': '));
         assert.deepEqual(problems, []);
-        assert.equal(app.catalogue.builtIn().length, 109);
+        assert.equal(app.catalogue.builtIn().length, 118);
     });
 
     it('refuses entries with a problem and says which', () => {

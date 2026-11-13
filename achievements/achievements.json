@@ -538,6 +538,40 @@
         }
     },
     {
+        "id": "film_franchise",
+        "title": "Franchise night",
+        "description": "Watch 3 films from one Plex collection.",
+        "flavorText": "For staying in the same universe.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "groupBy": "collection",
+            "distinct": "item",
+            "target": 3
+        }
+    },
+    {
+        "id": "film_house_style",
+        "title": "House style",
+        "description": "Watch 10 different films from one studio.",
+        "flavorText": "For knowing the logo before the title.",
+        "tier": "Uncommon",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "groupBy": "studio",
+            "distinct": "item",
+            "target": 10
+        }
+    },
+    {
         "id": "film_100",
         "title": "That's a wrap",
         "description": "Watch 100 films.",
@@ -714,6 +748,22 @@
         }
     },
     {
+        "id": "film_directors",
+        "title": "Director's chair",
+        "description": "Watch films by 25 different directors.",
+        "flavorText": "For a seat in every chair.",
+        "tier": "Rare",
+        "section": "film",
+        "rule": {
+            "type": "variety",
+            "of": "director",
+            "filter": {
+                "kind": "movie"
+            },
+            "target": 25
+        }
+    },
+    {
         "id": "film_250",
         "title": "Projectionist",
         "description": "Watch 250 films.",
@@ -823,6 +873,23 @@
             "withinDays": 7,
             "people": 3,
             "target": 1
+        }
+    },
+    {
+        "id": "film_complete_works",
+        "title": "Complete works",
+        "description": "Watch 10 different films by one director.",
+        "flavorText": "For a full retrospective of one career.",
+        "tier": "Epic",
+        "section": "film",
+        "rule": {
+            "type": "count",
+            "filter": {
+                "kind": "movie"
+            },
+            "groupBy": "director",
+            "distinct": "item",
+            "target": 10
         }
     },
     {
@@ -1348,6 +1415,36 @@
         }
     },
     {
+        "id": "tv_limited",
+        "title": "Limited series",
+        "description": "Finish 5 shows of 10 episodes or fewer.",
+        "flavorText": "For five stories with a proper ending.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "maxEpisodes": 10,
+            "target": 5
+        }
+    },
+    {
+        "id": "tv_sampler",
+        "title": "Schedule sampler",
+        "description": "Watch episodes of 25 different shows.",
+        "flavorText": "For a taste of the whole schedule.",
+        "tier": "Uncommon",
+        "section": "tv",
+        "rule": {
+            "type": "variety",
+            "of": "show",
+            "filter": {
+                "kind": "episode"
+            },
+            "target": 25
+        }
+    },
+    {
         "id": "tv_500",
         "title": "Long runner",
         "description": "Watch 500 episodes.",
@@ -1526,6 +1623,21 @@
         }
     },
     {
+        "id": "tv_sprint",
+        "title": "Sprint finish",
+        "description": "Finish a show of 50+ episodes within 30 days.",
+        "flavorText": "For fifty episodes and one month.",
+        "tier": "Rare",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "minEpisodes": 50,
+            "withinDays": 30,
+            "target": 1
+        }
+    },
+    {
         "id": "tv_1000",
         "title": "Network veteran",
         "description": "Watch 1,000 episodes.",
@@ -1630,6 +1742,19 @@
                 "kind": "episode"
             },
             "target": 12
+        }
+    },
+    {
+        "id": "tv_full_shelf",
+        "title": "Full shelf",
+        "description": "Finish every episode of 25 shows.",
+        "flavorText": "For twenty-five box sets with no gaps.",
+        "tier": "Epic",
+        "section": "tv",
+        "rule": {
+            "type": "complete",
+            "set": "show",
+            "target": 25
         }
     },
     {
@@ -1791,6 +1916,20 @@
             "span": "month",
             "distinct": "day",
             "target": 20
+        }
+    },
+    {
+        "id": "both_box_office_month",
+        "title": "Box office month",
+        "description": "Watch 60 hours in one calendar month.",
+        "flavorText": "For a month that belonged to the screen.",
+        "tier": "Rare",
+        "section": "both",
+        "rule": {
+            "type": "window",
+            "span": "month",
+            "measure": "hours",
+            "target": 60
         }
     },
     {
