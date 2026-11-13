@@ -21,7 +21,7 @@ You can also add this service to the compose file that has Plex and your other a
     container_name: laurels
     restart: unless-stopped
     ports:
-      - "8484:8484"
+      - "127.0.0.1:8484:8484"
     environment:
       - PUID=1000
       - PGID=1000
@@ -47,7 +47,7 @@ To update Laurels later, run the same two commands.
 Do these steps immediately after you start the container.
 The first Plex account that signs in becomes the Laurels owner.
 
-1. Open `http://<server>:8484`. The **Set up Laurels** page opens.
+1. On the machine that runs Docker, open `http://localhost:8484`. The **Set up Laurels** page opens.
 2. Click **Sign in with Plex**. Sign in with the account that owns the Plex server.
 3. Select your server in the list, or type its address.
 4. Click **Test connection**.
@@ -140,6 +140,10 @@ Container variables:
   It is also Secure when a proxy sends `X-Forwarded-Proto: https`.
 - `settings.json` contains the Plex token. Only its owner can read the file (mode 0600).
   Laurels does not send the token to the browser.
+- The compose file binds port 8484 to `127.0.0.1`, so only the machine that runs Docker can open Laurels.
+  The first Plex account that signs in becomes the owner, so keep this until you sign in.
+  A reverse proxy on the same Docker network still reaches Laurels.
+- To open Laurels to other devices on your home network, change the port to `"8484:8484"`.
 - Do not forward port 8484 on your router.
   For access from outside your home, use a reverse proxy with HTTPS.
 - Laurels needs its own subdomain, for example `laurels.example.com`.

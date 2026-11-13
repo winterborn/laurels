@@ -32,7 +32,8 @@ Laurels works with Plex Media Server. Laurels is not made or endorsed by Plex, I
    docker compose up -d
    ```
 
-3. Open `http://<server>:8484`.
+3. On the machine that runs Docker, open `http://localhost:8484`.
+   The compose file allows only this machine. See [Security](docs/install.md#security) to open it to other devices.
 4. Click **Sign in with Plex**. Use the account that owns the Plex server.
 5. Select your server. Click **Test connection**, then **Save settings**.
 

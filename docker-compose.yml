@@ -1,7 +1,8 @@
 # Laurels: an achievement system for Plex.
 #
 # 1. Run: docker compose up -d
-# 2. Open http://<server>:8484 and do the steps on "Set up Laurels".
+# 2. On the machine that runs Docker, open http://localhost:8484
+#    and do the steps on "Set up Laurels".
 #
 # Laurels keeps its settings in ./config/settings.json.
 # A variable in this file has priority over the Settings page,
@@ -15,7 +16,11 @@ services:
     container_name: laurels
     restart: unless-stopped
     ports:
-      - "8484:8484"
+      # Only this machine can open Laurels. A reverse proxy on the same
+      # Docker network still reaches it. To open Laurels to other devices
+      # on your home network, change this to "8484:8484" after you sign in
+      # as the owner.
+      - "127.0.0.1:8484:8484"
     environment:
       - PUID=1000            # use the same values as your Plex container
       - PGID=1000
