@@ -91,9 +91,11 @@ export class BallotView {
             + `<span class="eyebrow">${escapeHtml(summary)}</span>`
             + `<h1 class="page-title">${name}'s ballot</h1>`
             + `<p class="help">${markLine}</p>`
+            + `<details class="advanced rules-note"><summary>How watches count</summary>`
             + `<p class="help">${countLine}</p>`
             + `<p class="help">${checkLine}</p>`
             + `<p class="help">${timeLine}</p>`
+            + `</details>`
             + `</div>`
             + this.filters()
             + `</header>`;

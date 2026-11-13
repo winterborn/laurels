@@ -63,7 +63,8 @@ export class SettingsView {
             + `<span class="message" id="save-message" role="status"></span>`
             + `</div>`
             + `</form>`
-            + `<div id="awards-editor"></div>`
+            + `<details class="more-settings awards-disclosure"><summary>Your awards</summary>`
+            + `<div class="more-settings-body" id="awards-editor"></div></details>`
             + `<p class="help disclaimer">Laurels works with Plex Media Server. Laurels is not made or endorsed by Plex, Inc.</p>`;
     }
 

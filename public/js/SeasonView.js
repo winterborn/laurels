@@ -80,8 +80,10 @@ export class SeasonView {
             return `<div class="stat"><dt>${label}</dt><dd>${formatNumber(value)}</dd></div>`;
         });
         const source = this.hasTautulli ? HOURS_LINE.tautulli : HOURS_LINE.plex;
-        return `<dl class="stat-row big">${items.join('')}</dl>`
-            + `<p class="help">${source}</p>`;
+        return `<div class="stat-group">`
+            + `<dl class="stat-row big">${items.join('')}</dl>`
+            + `<p class="help">${source}</p>`
+            + `</div>`;
     }
 
     // One colour. The busiest months are gold, with their value shown.
