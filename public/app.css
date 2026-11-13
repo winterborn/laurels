@@ -165,6 +165,12 @@ button {
     color: var(--ink-muted);
 }
 
+/* Text right under a section rule: the same 12 px as the lists. */
+.section-head + .caption,
+.section-head + p {
+    margin-top: var(--space-3);
+}
+
 .caption {
     font-size: var(--type-s);
     color: var(--ink-muted);
@@ -1906,6 +1912,11 @@ a.button {
         order: 3;
         margin-left: 0;
         padding-bottom: var(--space-3);
+    }
+
+    /* Household pages have no person buttons: no empty row. */
+    .household:empty {
+        display: none;
     }
 
     /* Four stats: two rows of two, with no stat alone on a row. */
